@@ -1,2 +1,2 @@
 # rapid
-The fastest way of install npm packages.
+The fastest way to install npm packages.
