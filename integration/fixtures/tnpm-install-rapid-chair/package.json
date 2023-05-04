@@ -1,0 +1,11 @@
+{
+  "name": "test-app",
+  "scripts": {
+    "preinstall": "node pre.js",
+    "postinstall": "node post.js"
+  },
+  "dependencies": {
+    "chair": "^1.5.54"
+  },
+  "repository": "git@code.alipay.com:tnpm/tnpm.git"
+}

@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "lodash.get": "4.5.2"
+  }
+}

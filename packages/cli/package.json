@@ -1,0 +1,47 @@
+{
+  "name": "@cnpmjs/rapid",
+  "version": "0.0.0",
+  "description": "The rapid npm installed cli built with Nydus",
+  "bin": {
+    "rapid": "bin/rapid.js"
+  },
+  "files": [
+    "bin",
+    "lib"
+  ],
+  "dependencies": {
+    "@cnpmjs/binding": "^2.2.10",
+    "@npmcli/arborist": "^6.1.5",
+    "@npmcli/map-workspaces": "^3.0.0",
+    "await-event": "^2.1.0",
+    "binary-mirror-config": "^2.5.0",
+    "black-hole-stream": "^0.0.1",
+    "chalk": "^4.0.0",
+    "debug": "^2.2.0",
+    "execa": "^5.1.1",
+    "ms": "^0.7.1",
+    "npm-normalize-package-bin": "^1.0.1",
+    "npm-package-arg": "^8.1.5",
+    "p-map": "^4.0.0",
+    "pacote": "^15.0.7",
+    "runscript": "^1.5.1",
+    "semver": "^7.3.8",
+    "urllib": "^2.14.0",
+    "yargs-parser": "^9.0.2"
+  },
+  "homepage": "https://github.com/cnpm/rapid",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:cnpm/rapid.git",
+    "directory": "packages/cli"
+  },
+  "engines": {
+    "node": ">= 14.17.0"
+  },
+  "keywords": [
+    "cnpm",
+    "rapid",
+    "npm"
+  ],
+  "author": "gemwuu <gemwuu@163.com> (https://github.com/gemwuu)"
+}

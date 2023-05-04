@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@ali/egg-bin": "2.6.0"
+  },
+  "repository": "git@code.alipay.com:tnpm/tnpm.git"
+}

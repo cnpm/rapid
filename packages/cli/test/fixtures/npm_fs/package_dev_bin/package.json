@@ -1,0 +1,7 @@
+{
+  "name": "foo",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@alipay/tnpm-scripts-test": "1.0.5"
+  }
+}

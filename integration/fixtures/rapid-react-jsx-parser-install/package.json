@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "react-jsx-parser": "1.29.0"
+  },
+  "repository": "git@code.alipay.com:tnpm/tnpm.git"
+}

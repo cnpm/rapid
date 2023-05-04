@@ -1,0 +1,275 @@
+{
+  "blobIds": [
+    "bucket_0.stgz",
+    "bucket_1.stgz"
+  ],
+  "entries": [
+    {
+      "blobId": "bucket_0.stgz",
+      "entry": {
+        "name": "esbuild/bin/esbuild",
+        "type": "reg",
+        "size": 8497,
+        "linkName": "",
+        "mode": 493,
+        "uid": 500,
+        "gid": 505,
+        "userName": "",
+        "groupName": "",
+        "offset": 512,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:ef861b091da72da0a4f02b1cb7022e97cd2defe92beaf3396d97d4d997a8b04f",
+        "chunkOffset": 0,
+        "chunkSize": 0,
+        "uname": "admin",
+        "gname": "admin"
+      }
+    },
+    {
+      "blobId": "bucket_0.stgz",
+      "entry": {
+        "name": ".bin/esbuild",
+        "type": "symlink",
+        "size": 0,
+        "linkName": "../esbuild/bin/esbuild",
+        "mode": 493,
+        "uid": 500,
+        "gid": 505,
+        "uname": "admin",
+        "gname": "admin",
+        "offset": 0,
+        "devMajor": 0,
+        "devMinor": 0,
+        "NumLink": 0,
+        "digest": ""
+      }
+    },
+    {
+      "blobId": "bucket_0.stgz",
+      "entry": {
+        "name": "esbuild/install.js",
+        "type": "reg",
+        "size": 8774,
+        "linkName": "",
+        "mode": 420,
+        "uid": 500,
+        "gid": 505,
+        "userName": "",
+        "groupName": "",
+        "offset": 9728,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:bc8b6475b4f8947bd74c9b59a255dba21f10124ee9d851c8d633b4282a35a44d",
+        "chunkOffset": 0,
+        "chunkSize": 0,
+        "uname": "admin",
+        "gname": "admin"
+      }
+    },
+    {
+      "blobId": "bucket_0.stgz",
+      "entry": {
+        "name": "esbuild/lib/main.js",
+        "type": "reg",
+        "size": 82433,
+        "linkName": "",
+        "mode": 420,
+        "uid": 500,
+        "gid": 505,
+        "userName": "",
+        "groupName": "",
+        "offset": 19456,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:61cae6504861c4ed547fb90f8e5e9874c3db76a09170021c6316325012caf710",
+        "chunkOffset": 0,
+        "chunkSize": 0,
+        "uname": "admin",
+        "gname": "admin"
+      }
+    },
+    {
+      "blobId": "bucket_0.stgz",
+      "entry": {
+        "name": "esbuild/package.json",
+        "type": "reg",
+        "size": 1259,
+        "linkName": "",
+        "mode": 420,
+        "uid": 500,
+        "gid": 505,
+        "userName": "",
+        "groupName": "",
+        "offset": 102912,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:bccab24e1570c3870ac1228ee8484b0067cfaec483a5cde4773224a044f73574",
+        "chunkOffset": 0,
+        "chunkSize": 0,
+        "uname": "admin",
+        "gname": "admin"
+      }
+    },
+    {
+      "blobId": "bucket_0.stgz",
+      "entry": {
+        "name": "esbuild/LICENSE.md",
+        "type": "reg",
+        "size": 1069,
+        "linkName": "",
+        "mode": 420,
+        "uid": 500,
+        "gid": 505,
+        "userName": "",
+        "groupName": "",
+        "offset": 104960,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681",
+        "chunkOffset": 0,
+        "chunkSize": 0,
+        "uname": "admin",
+        "gname": "admin"
+      }
+    },
+    {
+      "blobId": "bucket_0.stgz",
+      "entry": {
+        "name": "esbuild/README.md",
+        "type": "reg",
+        "size": 175,
+        "linkName": "",
+        "mode": 420,
+        "uid": 500,
+        "gid": 505,
+        "userName": "",
+        "groupName": "",
+        "offset": 107008,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:6d481cd60ec3c679e5e395f547ab4221147f35642894f6b95a8df38fd25c87bd",
+        "chunkOffset": 0,
+        "chunkSize": 0,
+        "uname": "admin",
+        "gname": "admin"
+      }
+    },
+    {
+      "blobId": "bucket_0.stgz",
+      "entry": {
+        "name": "esbuild/lib/main.d.ts",
+        "type": "reg",
+        "size": 18485,
+        "linkName": "",
+        "mode": 420,
+        "uid": 500,
+        "gid": 505,
+        "userName": "",
+        "groupName": "",
+        "offset": 108032,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:3a3793e1d2d4af2e002b3c4a086cc8d7458c19ce3c34f72640652c76ca4f34d9",
+        "chunkOffset": 0,
+        "chunkSize": 0,
+        "uname": "admin",
+        "gname": "admin"
+      }
+    },
+    {
+      "blobId": "bucket_1.stgz",
+      "entry": {
+        "name": "esbuild-linux-64/bin/esbuild",
+        "type": "reg",
+        "size": 8577024,
+        "linkName": "",
+        "mode": 493,
+        "uid": 500,
+        "gid": 505,
+        "userName": "",
+        "groupName": "",
+        "offset": 512,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:d81b4377ac9d9beea82401887dadb82f8683bc1507c3065dec3de8d9e8f23979",
+        "chunkOffset": 0,
+        "chunkSize": 0,
+        "uname": "admin",
+        "gname": "admin"
+      }
+    },
+    {
+      "blobId": "bucket_1.stgz",
+      "entry": {
+        "name": "esbuild-linux-64/package.json",
+        "type": "reg",
+        "size": 328,
+        "linkName": "",
+        "mode": 420,
+        "uid": 500,
+        "gid": 505,
+        "userName": "",
+        "groupName": "",
+        "offset": 8578048,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:ee83b38b2affe619297704c6082eb09f1e9adf15a19728c95c19694433e5e303",
+        "chunkOffset": 0,
+        "chunkSize": 0,
+        "uname": "admin",
+        "gname": "admin"
+      }
+    },
+    {
+      "blobId": "bucket_1.stgz",
+      "entry": {
+        "name": "esbuild-linux-64/README.md",
+        "type": "reg",
+        "size": 141,
+        "linkName": "",
+        "mode": 420,
+        "uid": 500,
+        "gid": 505,
+        "userName": "",
+        "groupName": "",
+        "offset": 8579072,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:3b0ebdffe92e5b77c948c4ac0bf4bc4a38803b15405d0425b517705221c27a2f",
+        "chunkOffset": 0,
+        "chunkSize": 0,
+        "uname": "admin",
+        "gname": "admin"
+      }
+    },
+    {
+      "blobId": "bucket_0.stgz",
+      "entry": {
+        "name": "",
+        "type": "dir",
+        "size": 0,
+        "mode": 493,
+        "uid": 500,
+        "gid": 505,
+        "uname": "admin",
+        "gname": "admin",
+        "offset": 0,
+        "devMajor": 0,
+        "devMinor": 0,
+        "NumLink": 0,
+        "digest": ""
+      }
+    }
+  ]
+}

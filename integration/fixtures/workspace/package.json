@@ -1,0 +1,10 @@
+{
+  "name": "workspace",
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "lodash": "^1.0.0"
+  },
+  "repository": "git@code.alipay.com:tnpm/tnpm.git"
+}
