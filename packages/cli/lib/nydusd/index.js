@@ -6,7 +6,7 @@ const {
   nydusdMnt,
 } = require('../constants');
 const path = require('node:path');
-const fs = require('node:fs');
+const fs = require('node:fs/promises');
 const debug = require('debug')('nydusd');
 const runscript = require('runscript');
 const util = require('../util');

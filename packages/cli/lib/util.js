@@ -508,11 +508,11 @@ exports.findLocalPrefix = function (p) {
   return exports.findLocalPrefix(path.resolve(p, '..'));
 };
 
-exports.readPkgJSON = function readPkgJSON(cwd) {
+exports.readPkgJSON = async function readPkgJSON(cwd) {
   const pkgPath = path.join(cwd || exports.findLocalPrefix(), './package.json');
   let pkg = {};
   try {
-    pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    pkg = JSON.parse(await fs.readFile(pkgPath, 'utf8'));
   } catch (_) {
     // pkg not found, or is not a valid json
     pkg = null;
