@@ -5,7 +5,7 @@ const path = require('node:path');
 const assert = require('node:assert');
 const coffee = require('coffee');
 const runscript = require('runscript');
-const rapid = path.join(__dirname, '../node_modules/.bin/rapid.js');
+const rapid = path.join(__dirname, '../node_modules/.bin/rapid');
 const {
   clean,
 } = require('@cnpmjs/rapid');
