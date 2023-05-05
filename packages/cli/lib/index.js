@@ -66,5 +66,6 @@ exports.install = async options => {
 
 exports.clean = async function clean(cwd) {
   const mode = await nydusd.getNydusMode(cwd);
-  await nydusd.endNydusFs(mode, cwd, await util.readPkgJSON(cwd).pkg);
+  const { pkg } = await util.readPkgJSON(cwd);
+  await nydusd.endNydusFs(mode, cwd, pkg);
 }
