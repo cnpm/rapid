@@ -18,7 +18,6 @@ class DepContext {
    * @param {boolean} options.updateLockfile: 更新依赖树
    */
   constructor(options) {
-    this.npmcoreTreeURL = 'https://npmcore.antfin-inc.com/api/v2/tree';
     this.cwd = options.cwd;
     this.lockId = options.lockId;
     this.depsTreePath = options.depsTreePath;
@@ -37,10 +36,6 @@ class DepContext {
 
     this.modifyDeps = options.modifyDeps;
     this.updateLockfile = options.updateLockfile;
-  }
-
-  get depsTreeURL() {
-    return `${this.npmcoreTreeURL}/${this.lockId}`;
   }
 }
 

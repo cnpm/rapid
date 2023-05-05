@@ -189,21 +189,6 @@ describe('test/cache/util.test.js', () => {
     });
   });
 
-  it('set env should work', () => {
-    const env = getEnv({ foo: '1' }, [
-      '--no-proxy',
-      '--registry=https://registry.npm.alibaba-inc.com',
-      '--disturl=https://npmmirror.oss-cn-shanghai.aliyuncs.com/binaries/node',
-    ]);
-    assert.deepStrictEqual(env, {
-      foo: '1',
-      npm_config_argv: '{"remain":[],"cooked":["--no-proxy","--registry=https://registry.npm.alibaba-inc.com","--disturl=https://npmmirror.oss-cn-shanghai.aliyuncs.com/binaries/node"],"original":["--no-proxy","--registry=https://registry.npm.alibaba-inc.com","--disturl=https://npmmirror.oss-cn-shanghai.aliyuncs.com/binaries/node"]}',
-      npm_config_registry: 'https://registry.npm.alibaba-inc.com',
-      npm_config_r: 'https://registry.npm.alibaba-inc.com',
-      npm_config_disturl: 'https://npmmirror.oss-cn-shanghai.aliyuncs.com/binaries/node',
-    });
-  });
-
   describe('getWorkdir', () => {
     before(() => {
       mm(process, 'cwd', () => '/cwd');
@@ -275,20 +260,20 @@ describe('test/cache/util.test.js', () => {
 
   describe('parseTarballUrl', () => {
     it('should parse successfully with old non-scoped tarball url', () => {
-      const name = getPkgNameFromTarballUrl('https://registry.npm.alibaba-inc.com/egg/download/egg-2.15.1.tgz');
+      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/egg/download/egg-2.15.1.tgz');
       assert.strictEqual(name, 'egg');
     });
     it('should parse successfully with old scoped tarball url', () => {
-      const name = getPkgNameFromTarballUrl('https://registry.npm.alibaba-inc.com/@ali/egg/download/@ali/egg-2.15.1.tgz');
-      assert.strictEqual(name, '@ali/egg');
+      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/@cnpmjs/errors/download/@cnpmjs/errors-2.15.1.tgz');
+      assert.strictEqual(name, '@cnpmjs/errors');
     });
     it('should parse successfully with new non-scoped tarball url', () => {
-      const name = getPkgNameFromTarballUrl('https://registry.antgroup-inc.cn/egg/-/egg-2.15.1.tgz');
+      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/egg/-/egg-2.15.1.tgz');
       assert.strictEqual(name, 'egg');
     });
     it('should parse successfully with new scoped tarball url', () => {
-      const name = getPkgNameFromTarballUrl('https://registry.antgroup-inc.cn/@ali/egg/-/egg-2.15.1.tgz');
-      assert.strictEqual(name, '@ali/egg');
+      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/@cnpmjs/errors/-/errors-2.15.1.tgz');
+      assert.strictEqual(name, '@cnpmjs/errors');
     });
   });
 });

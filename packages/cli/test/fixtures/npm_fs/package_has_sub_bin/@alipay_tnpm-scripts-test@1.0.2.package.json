@@ -10,6 +10,6 @@
     "uuid": "8.3.2"
   },
   "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
+    "registry": "https://registry.npmjs.org"
   }
 }

@@ -15,6 +15,5 @@
   "optionalDependencies": {
     "lodash.union": "4.6.0"
   },
-  "__npminstall_done": false,
-  "repository": "git@code.alipay.com:tnpm/tnpm.git"
+  "__npminstall_done": false
 }

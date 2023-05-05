@@ -3,10 +3,5 @@
   "version": "1.0.0",
   "dependencies": {
     "lodash.has": "4.5.2"
-  },
-  "tnpm": {
-    "fs": "rapid",
-    "mode": "npm"
-  },
-  "repository": "git@code.alipay.com:tnpm/tnpm.git"
+  }
 }

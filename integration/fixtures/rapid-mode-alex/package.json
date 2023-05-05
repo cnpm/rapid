@@ -4,6 +4,5 @@
   },
   "scripts": {
     "postinstall": "echo INIT_CWD=$INIT_CWD"
-  },
-  "repository": "git@code.alipay.com:tnpm/tnpm.git"
+  }
 }

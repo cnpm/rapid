@@ -1,1 +1,20 @@
-{"lockfileVersion":2,"requires":true,"packages":{"":{"version":"1.0.0","dependencies":{"uuid":"latest"},"name":"basementweb"},"node_modules/uuid":{"version":"8.3.2","integrity":"sha1-gNW1ztJxu5r2xEXyGhoExgbO++I=","bin":{"uuid":"dist/bin/uuid"},"resolved":"https://registry.npm.alibaba-inc.com/uuid/download/uuid-8.3.2.tgz"}},"dependencies":{"uuid":{"version":"8.3.2","resolved":"https://registry.npm.alibaba-inc.com/uuid/download/uuid-8.3.2.tgz","integrity":"sha1-gNW1ztJxu5r2xEXyGhoExgbO++I="}},"name":"basementweb","version":"1.0.0"}
+{
+  "name": "rapid-mode-download",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "dependencies": {
+        "uuid": "^8.3.2"
+      }
+    },
+    "node_modules/uuid": {
+      "version": "8.3.2",
+      "resolved": "https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz",
+      "integrity": "sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==",
+      "bin": {
+        "uuid": "dist/bin/uuid"
+      }
+    }
+  }
+}

@@ -161,23 +161,6 @@ describe('test/scripts.test.js', () => {
     describe('project scripts', async () => {
       const fixtures = path.join(__dirname, './fixtures/project-scripts');
       beforeEach(async () => {
-        nock('https://npmcore.antfin-inc.com')
-          .post('/api/v2/tree')
-          .reply(200, {
-            success: true,
-            data: {
-              treeId: 'mock_tree_id',
-              tree: {
-                name: 'mock_tree',
-                version: '1.0.0',
-                required: true,
-                lockfileVersion: 3,
-                packages: {},
-              },
-              warning: 'mock_log',
-            },
-          });
-
         mm(process.env, NYDUS_CSI_ROOT_ENV, 'true');
         mm(process, 'cwd', () => fixtures);
         mm(nydusd, 'startNydusFs', async () => { });
@@ -207,6 +190,7 @@ describe('test/scripts.test.js', () => {
           pkg,
           cwd: fixtures,
           console: global.console,
+          depsTreePath: path.join(fixtures, 'package-lock.json'),
         });
 
         const fileContent = await fs.readFile(path.join(fixtures, '1'), 'utf8');

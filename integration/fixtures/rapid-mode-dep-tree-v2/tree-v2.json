@@ -1,1 +1,24 @@
-{ "lockfileVersion": 2, "requires": true, "packages": { "": { "dependencies": { "lodash.get": "4.4.2" }, "hasInstallScript": true }, "node_modules/lodash.get": { "version": "4.4.2", "hasShrinkwrap": false, "resolved": "https://registry.npm.alibaba-inc.com/lodash.get/download/lodash.get-4.4.2.tgz" } }, "dependencies": { "lodash.get": { "version": "4.4.2", "resolved": "https://registry.npm.alibaba-inc.com/lodash.get/download/lodash.get-4.4.2.tgz" } }, "name": "77e6268f-e8d4-4a6e-89ac-f457841486a4" }
+{
+  "lockfileVersion": 2,
+  "requires": true,
+  "packages": {
+    "": {
+      "dependencies": {
+        "lodash.get": "4.4.2"
+      },
+      "hasInstallScript": true
+    },
+    "node_modules/lodash.get": {
+      "version": "4.4.2",
+      "hasShrinkwrap": false,
+      "resolved": "https://registry.npmjs.org/lodash.get/download/lodash.get-4.4.2.tgz"
+    }
+  },
+  "dependencies": {
+    "lodash.get": {
+      "version": "4.4.2",
+      "resolved": "https://registry.npmjs.org/lodash.get/download/lodash.get-4.4.2.tgz"
+    }
+  },
+  "name": "77e6268f-e8d4-4a6e-89ac-f457841486a4"
+}

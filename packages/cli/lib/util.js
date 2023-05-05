@@ -15,7 +15,6 @@ const {
   FuseDeviceError,
 } = require('./error');
 const execa = require('execa');
-const BlackHoleStream = require('black-hole-stream');
 const normalize = require('npm-normalize-package-bin');
 const {
   tarBucketsDir,
@@ -81,9 +80,7 @@ async function shouldFuseSupport() {
 
     try {
       await execa.command(sh, {
-        stdio: 'pipe',
-        stdout: new BlackHoleStream(),
-        stderr: new BlackHoleStream(),
+        stdio: 'ignore',
       });
     } catch (e) {
       debug(e && e.stdio && e.stdio.stderr.toString());

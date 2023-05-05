@@ -4,9 +4,5 @@
   },
   "workspaces": [
     "packages/*"
-  ],
-  "engines": {
-    "install-node": "16"
-  },
-  "repository": "git@gitlab.alipay-inc.com:tnpm/tnpm.git"
+  ]
 }

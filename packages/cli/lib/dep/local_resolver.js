@@ -2,8 +2,6 @@
 
 const Arborist = require('@npmcli/arborist');
 const urllib = require('urllib');
-const fs = require('node:fs/promises');
-const path = require('node:path');
 const debug = require('debug')('resolver');
 const PackageService = require('./package_service');
 const ArboristLogger = require('./arborist_logger');
@@ -24,43 +22,10 @@ class LocalResolver {
     };
   }
 
-  async storePackageLock(pkgLockJson) {
-    try {
-      const res = await urllib.request(
-        // TODO 后续需要替换为 /submit
-        `${this.ctx.npmcoreTreeURL}/debug`,
-        {
-          method: 'POST',
-          timeout: 1000 * 60,
-          retry: 3,
-          dataType: 'json',
-          contentType: 'json',
-          data: {
-            project: this.ctx.pkg,
-            tree: pkgLockJson,
-            installOptions: this.installOptions,
-          },
-        }
-      );
-      debug('[rapid] upload res', res.data);
-      if (!res?.data?.success) {
-        console.log('[rapid] upload faied, traceId: ', res?.headers?.['request-id']);
-        throw new Error('upload package lock failed');
-      }
-
-      const treeId = res?.data?.data?.treeId;
-      this.ctx.lockId = treeId;
-      console.info('[rapid] 生成依赖树成功 treeId：%s，在线地址：%s', treeId, `${this.ctx.npmcoreTreeURL}/${treeId}`);
-    } catch (e) {
-      console.log('[rapid] upload package lock failed, skip');
-    }
-  }
-
   async resolve() {
     console.time('[rapid] generate deps tree');
     const pkgLockJson = await this.generatePackageLockJson(this.ctx.pkg);
     console.timeEnd('[rapid] generate deps tree');
-    await this.storePackageLock(pkgLockJson);
     return pkgLockJson;
   }
 

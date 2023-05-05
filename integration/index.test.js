@@ -16,21 +16,6 @@ describe('test/tnpm-install-rapid.test.js', () => {
     await clean(fixture);
   });
 
-  describe('nodeEnv is prod, test chair', () => {
-    beforeEach(() => {
-      fixture = path.join(fixtures, 'tnpm-install-rapid-chair');
-    });
-
-    it('should generate deps tree', done => {
-      coffee.fork(rapid, [
-        '--fs=rapid',
-        '--production',
-        '--registry=https://registry.npm.alibaba-inc.com',
-      ], { cwd: fixture })
-        .debug()
-        .end(done);
-    });
-  });
   describe('nodeEnv is prod', () => {
     beforeEach(() => {
       fixture = path.join(fixtures, 'tnpm-install-rapid-prod');

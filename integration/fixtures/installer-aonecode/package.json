@@ -1,6 +1,5 @@
 {
   "dependencies": {
     "lodash.has": "4.5.2"
-  },
-  "repository": "git@code.aone.alibaba-inc.com:tnpm/tnpm.git"
+  }
 }

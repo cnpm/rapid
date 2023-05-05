@@ -146,19 +146,6 @@ describe('test/index.v2.test.js', () => {
     assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
   });
 
-  it('should install @alipay/bakery-sdk successfully', async () => {
-    cwd = path.join(__dirname, './fixtures/bakery_sdk');
-    await coffee
-      .fork(rapid, ['--fs=rapid', '--by=npminstall', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}`], {
-        cwd,
-      })
-      .debug()
-      .expect('code', 0)
-      .end();
-
-    // 两个 .bin 时只有 node_modules 目录，所以只要判断 package.json 存在，就说明安装正确
-    await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules', '@alipay/bakery-sdk/package.json')));
-  });
   it('should install y18n@5.0.8 in production mode successfully', async () => {
     cwd = path.join(__dirname, './fixtures/npmcore');
     await coffee
@@ -174,17 +161,5 @@ describe('test/index.v2.test.js', () => {
 
     const y18n5 = await fs.readFile(path.join(cwd, 'node_modules/xprofiler/node_modules/y18n/package.json'));
     assert.strictEqual(JSON.parse(y18n5).version, '5.0.8');
-  });
-
-  it('should create project deps bin when there are duplicate bins', async () => {
-    cwd = path.join(__dirname, './fixtures/egg-bin');
-    await coffee.fork(rapid, ['--fs=rapid', '--by=npm', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}`], { cwd })
-      .debug()
-      .expect('code', 0)
-      .end();
-
-    await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/.bin/egg-bin')));
-    const link = await fs.readlink(path.join(cwd, 'node_modules/.bin/egg-bin'));
-    assert.strictEqual(link, '../@ali/egg-bin/bin/egg-bin.js');
   });
 });

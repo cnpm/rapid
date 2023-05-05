@@ -16,7 +16,6 @@
     "@npmcli/map-workspaces": "^3.0.0",
     "await-event": "^2.1.0",
     "binary-mirror-config": "^2.5.0",
-    "black-hole-stream": "^0.0.1",
     "chalk": "^4.0.0",
     "debug": "^2.2.0",
     "execa": "^5.1.1",
