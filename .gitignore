@@ -105,3 +105,4 @@ dist
 .tern-port
 
 target
+packages/binding/npm/*/nydusd-bootstrap

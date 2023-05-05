@@ -17,12 +17,6 @@ try {
   // ...
 }
 
-// 服务端生成依赖树判断项目当前运行环境枚举
-const NODE_ENV_ENUMS = {
-  PROD: 'prod', // prodoction
-  ALL: 'all', // development
-};
-
 const baseRapidModeDir = () => path.join(homedir(), '.rapid', 'cache');
 // 依赖 tar 文件目录
 const tarBucketsDir = path.join(baseRapidModeDir(), 'tar_buckets');
@@ -54,14 +48,10 @@ const nydusdLogFile = path.join(baseRapidModeDir(), 'nydusd.log');
 // nydusd 构造 inode bootstrap 文件
 const nydusdBootstrapFile = 'nydusd-bootstrap';
 
-// rapid install mode
-const RAPID_INSTALL = 'rapid';
-
 const NYDUS_CSI_SOCKET_ENV = 'COM_ALIPAY_CSI_NYDUS_SOCK';
 const NYDUS_CSI_ROOT_ENV = 'COM_ALIPAY_CSI_NYDUS_VOLUME_ROOT';
 const NYDUS_CSI_BLOB_ROOT = '/shared';
 const NYDUS_CSI_VOLUME_ID_ENV = 'COM_ALIPAY_CSI_NYDUS_VOLUME_ID';
-const TNPM_NYDUS_TYPE = 'TNPM_NYDUS_TYPE';
 const BOOTSTRAP_BIN = rsBindingPath
   ? path.join(rsBindingPath, 'nydusd-bootstrap')
   : undefined;
@@ -78,7 +68,6 @@ exports.NpmFsMode = NpmFsMode;
 exports.PREFIX_LENGTH = PREFIX_LENGTH;
 exports.baseRapidModeDir = baseRapidModeDir;
 exports.nydusdConfigFile = nydusdConfigFile;
-exports.NODE_ENV_ENUMS = NODE_ENV_ENUMS;
 exports.tarBucketsDir = tarBucketsDir;
 exports.npmCacheConfigPath = npmCacheConfigPath;
 exports.socketPath = socketPath;
@@ -87,7 +76,6 @@ exports.nydusdBootstrapFile = nydusdBootstrapFile;
 exports.nydusd = nydusd;
 exports.unionfs = unionfs;
 exports.nydusdLogFile = nydusdLogFile;
-exports.RAPID_INSTALL = RAPID_INSTALL;
 exports.NYDUS_CSI_SOCKET_ENV = NYDUS_CSI_SOCKET_ENV;
 exports.NYDUS_CSI_ROOT_ENV = NYDUS_CSI_ROOT_ENV;
 exports.NYDUS_CSI_BLOB_ROOT = NYDUS_CSI_BLOB_ROOT;
@@ -98,4 +86,3 @@ exports.NYDUS_TYPE = {
   FUSE: 'FUSE',
   NONE: 'NONE',
 };
-exports.TNPM_NYDUS_TYPE = TNPM_NYDUS_TYPE;

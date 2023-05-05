@@ -8,8 +8,9 @@
   "scripts": {
     "init": "npm run init:test && npm run cp:binary",
     "init:test": "npm run prepare-test --workspaces --if-present --by=npm",
-    "init:ci": "npm run init:test && npm run build:binary && npm run cp:binary",
+    "init:ci": "npm run init:test && npm run build:binary && npm run cp:binary && npm run link:binary",
     "cp:binary": "node scripts/prepareBootstrap.js",
+    "link:binary": "node scripts/linkBinary.js",
     "build": "npm run build:binary && npm run build:binding",
     "build:binary": "cargo build --workspace --release",
     "build:binding": "cd packages/binding && npm run build-release",

@@ -3,7 +3,6 @@
 const {
   NYDUS_CSI_ROOT_ENV,
   NYDUS_TYPE,
-  TNPM_NYDUS_TYPE,
   nydusdMnt,
 } = require('../constants');
 const path = require('node:path');
@@ -49,9 +48,6 @@ exports.getNydusMode = async function (cwd) {
   if (cwd) {
     const installMode = await exports.getNydusInstallMode(cwd);
     if (installMode) return installMode;
-  }
-  if (process.env[TNPM_NYDUS_TYPE]) {
-    return process.env[TNPM_NYDUS_TYPE];
   }
   if (process.env[NYDUS_CSI_ROOT_ENV]) {
     return NYDUS_TYPE.CSI;

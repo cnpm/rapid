@@ -16,7 +16,8 @@ describe('test/install-workspace.test.js', () => {
     await clean(cwd);
     await install({
       cwd,
-      despTreePath: path.join(cwd, 'package-lock.json'),
+      pkg: require(path.join(cwd, 'package.json')),
+      depsTreePath: path.join(cwd, 'package-lock.json'),
     });
 
     await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/lodash/package.json')));
@@ -39,7 +40,8 @@ describe('test/install-workspace.test.js', () => {
     await clean(cwd);
     await install({
       cwd,
-      despTreePath: path.join(cwd, 'package-lock.json'),
+      pkg: require(path.join(cwd, 'package.json')),
+      depsTreePath: path.join(cwd, 'package-lock.json'),
     });
     await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/lodash/package.json')));
     await assert.rejects(fs.stat(path.join(cwd, 'packages/lodash-1/node_modules/lodash/package.json')));
