@@ -11,11 +11,6 @@ const {
   tarBucketsDir,
   NYDUS_TYPE,
 } = require('./constants');
-const {
-  createNydusdConfigFile,
-  shouldFuseSupport,
-  getEnv,
-} = require('./util');
 const util = require('./util');
 const nydusd = require('./nydusd');
 const { MirrorConfig } = require('binary-mirror-config');
@@ -26,10 +21,10 @@ exports.install = async options => {
     await exports.clean(options.cwd);
   }
   // set args to npm_config_xx env
-  options.env = getEnv(options.env, options.args);
+  options.env = util.getEnv(options.env, options.args);
   const nydusMode = await nydusd.getNydusMode();
   if (nydusMode === NYDUS_TYPE.NONE) {
-    await shouldFuseSupport();
+    await util.shouldFuseSupport();
   }
 
   const resolver = new DepResolver(options);
@@ -46,7 +41,7 @@ exports.install = async options => {
     await fs.mkdir(path.dirname(tarIndex), { recursive: true });
   }));
   await fs.mkdir(tarBucketsDir, { recursive: true });
-  await createNydusdConfigFile(nydusdConfigFile);
+  await util.createNydusdConfigFile(nydusdConfigFile);
   const mirrorConfig = new MirrorConfig({
     console: global.console,
   });
@@ -71,5 +66,5 @@ exports.install = async options => {
 
 exports.clean = async function clean(cwd) {
   const mode = await nydusd.getNydusMode(cwd);
-  await nydusd.endNydusFs(mode, cwd, readPkgJSON(cwd).pkg);
+  await nydusd.endNydusFs(mode, cwd, util.readPkgJSON(cwd).pkg);
 }

@@ -498,6 +498,31 @@ exports.sleep = async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 };
 
+exports.findLocalPrefix = function (p) {
+  p = p || process.cwd();
+  const pkg = path.join(p, 'package.json');
+  // 如果没有 package.json 这时候直接返回 process.cwd()
+  if ((p === '/' || p.match(/^[a-z]:\\$/gi)) && !fs.existsSync(pkg)) {
+    return process.cwd();
+  }
+  if (fs.existsSync(pkg)) {
+    return p;
+  }
+  return exports.findLocalPrefix(path.resolve(p, '..'));
+};
+
+exports.readPkgJSON = function readPkgJSON(cwd) {
+  const pkgPath = path.join(cwd || exports.findLocalPrefix(), './package.json');
+  let pkg = {};
+  try {
+    pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  } catch (_) {
+    // pkg not found, or is not a valid json
+    pkg = null;
+  }
+  return { pkg, pkgPath };
+};
+
 exports.getWorkdir = getWorkdir;
 exports.validDep = validDep;
 exports.getDisplayName = getDisplayName;
