@@ -27,7 +27,6 @@ describe('test/tnpm-install-rapid.test.js', () => {
         '--production',
         '--registry=https://registry.npm.alibaba-inc.com',
       ], { cwd: fixture })
-        .beforeScript(path.join(fixture, 'nock-mock-tnpmregistry.js'))
         .debug()
         .end(done);
     });
@@ -42,7 +41,6 @@ describe('test/tnpm-install-rapid.test.js', () => {
         '--fs=rapid',
         '--production',
       ], { cwd: fixture })
-        .beforeScript(path.join(fixture, 'nock-mock-tnpmregistry.js'))
         .debug()
         .expect('code', 0)
         .end();
@@ -57,7 +55,6 @@ describe('test/tnpm-install-rapid.test.js', () => {
 
     it('should generate deps tree', done => {
       coffee.fork(rapid, ['--fs=rapid'], { cwd: fixture })
-        .beforeScript(path.join(fixture, 'nock-mock-tnpmregistry.js'))
         .debug(0)
         .expect('code', 0)
         .expect('stdout', /preinstall\./)
@@ -88,7 +85,6 @@ describe('test/tnpm-install-rapid.test.js', () => {
 
     it('should generate deps tree', done => {
       coffee.fork(rapid, ['--fs=rapid'], { cwd: fixture })
-        .beforeScript(path.join(fixture, 'nock-mock-tnpmregistry.js'))
         .debug()
         .expect('code', 0)
         .end(() => {
@@ -104,7 +100,6 @@ describe('test/tnpm-install-rapid.test.js', () => {
     afterEach(async () => await fs.rm(path.join(fixture, 'node_modules'), { recursive: true }));
     it('should generate deps tree', done => {
       coffee.fork(rapid, ['--fs=rapid'], { cwd: fixture })
-        .beforeScript(path.join(fixture, 'nock-mock-tnpmregistry.js'))
         .debug()
         .expect('code', 0)
         .end(() => {
@@ -146,7 +141,6 @@ describe('test/tnpm-install-rapid.test.js', () => {
 
     it('should generate deps tree', done => {
       coffee.fork(rapid, ['--by=rapid', '--deps-tree-path=./tree.json'], { cwd: fixture })
-        .beforeScript(path.join(fixture, 'nock-mock-npmcore.js'))
         .debug()
         .expect('code', 0)
         .end(() => {

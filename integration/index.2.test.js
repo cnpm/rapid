@@ -104,7 +104,6 @@ describe('test/index.v2.test.js', () => {
       .fork(rapid, ['--fs=rapid'], {
         cwd,
       })
-      .beforeScript(path.join(cwd, 'nock-mock-features.js'))
       .debug()
       .expect('code', 0)
       .end();
@@ -153,7 +152,6 @@ describe('test/index.v2.test.js', () => {
       .fork(rapid, ['--fs=rapid', '--by=npminstall', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}`], {
         cwd,
       })
-      .beforeScript(path.join(cwd, 'nock-mock-features.js'))
       .debug()
       .expect('code', 0)
       .end();
@@ -167,7 +165,6 @@ describe('test/index.v2.test.js', () => {
       .fork(rapid, ['--fs=rapid', '--by=npm', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}`, '--omit=dev'], {
         cwd,
       })
-      .beforeScript(path.join(cwd, 'nock-mock-features.js'))
       .debug()
       .expect('code', 0)
       .end();
