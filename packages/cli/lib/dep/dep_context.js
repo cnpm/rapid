@@ -7,7 +7,7 @@ class DepContext {
   /**
    * @param {object} options -
    * @param {string} options.cwd - 当前目录
-   * @param {string} options.cwd - 当前项目 package.json
+   * @param {string} options.pkg - 当前项目 package.json
    * @param {string} options.lockId - 指定 lockId 来获取依赖树
    * @param {string} options.depsTreePath - 本地依赖树缓存路径
    * @param {object} options.update: 对比 package.json 是否有变化，更新依赖树

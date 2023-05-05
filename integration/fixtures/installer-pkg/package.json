@@ -1,8 +1,0 @@
-{
-  "tnpm": {
-    "mode": "rapid"
-  },
-  "dependencies": {
-    "lodash.has": "4.5.2"
-  }
-}

@@ -5,7 +5,7 @@ const fs = require('node:fs/promises');
 class LocalCacheResolver {
   /**
    * @param {DepContext} ctx -
-   * @param options -
+   * @param {Object} options -
    */
   constructor(ctx, options) {
     this.depsTreePath = ctx.depsTreePath;

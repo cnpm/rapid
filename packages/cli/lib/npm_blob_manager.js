@@ -55,8 +55,8 @@ class NpmBlobManager {
   }
 
   /**
-   * @param {string} blobId
-   * @param {TocIndex} tocIndex
+   * @param {string} blobId -
+   * @param {TocIndex} tocIndex -
    */
   addBlob(blobId, tocIndex) {
     for (const entry of tocIndex.entries) {
@@ -88,8 +88,8 @@ class NpmBlobManager {
   }
 
   /**
-   * @param name -
-   * @param version -
+   * @param {String} name -
+   * @param {String} version -
    * @return {Map<string, TocIndex>} - <BlobId, TocIndex>
    */
   getTocIndexes(name, version) {

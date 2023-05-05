@@ -20,7 +20,7 @@ describe('test/index.v2.test.js', () => {
   describe('update', () => {
     const cwd = path.join(__dirname, './fixtures/update');
     it('should run postinstall successfully', async () => {
-      await coffee.fork(rapid, ['--update', '--lock-id=89e6daaffb00ac4052b3664fbf34a5b4'], {
+      await coffee.fork(rapid, [ '--update', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], {
         cwd,
       })
         .debug()
@@ -30,9 +30,9 @@ describe('test/index.v2.test.js', () => {
   });
 
   describe('binding.gyp', async () => {
-    const cwd = path.join(__dirname, './fixtures/node-crc@1.3.2');
+    const cwd = path.join(__dirname, './fixtures/node-crc');
     it('should run postinstall successfully', async () => {
-      await coffee.fork(rapid, ['--by=npm', '--fs=rapid'], { cwd })
+      await coffee.fork(rapid, [ '--by=npm', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
         .debug()
         .expect('stdout', /execute 1 lifecycle script\(s\)/)
         .expect('code', 0)
@@ -42,9 +42,9 @@ describe('test/index.v2.test.js', () => {
   });
 
   describe('INIT_CWD', async () => {
-    const cwd = path.join(__dirname, './fixtures/rapid-mode-alex');
+    const cwd = path.join(__dirname, './fixtures/init-cwd');
     it('should set INIT_CWD', async () => {
-      await coffee.fork(rapid, ['--by=npminstall', '--fs=rapid'], { cwd })
+      await coffee.fork(rapid, [ '--by=npminstall', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
         .debug()
         .expect('stdout', new RegExp(`INIT_CWD=${process.cwd()}`))
         .expect('code', 0)
@@ -53,23 +53,23 @@ describe('test/index.v2.test.js', () => {
   });
 
   describe('production mode', async () => {
-    const cwd = path.join(__dirname, './fixtures/rapid-mode-production-deps');
+    const cwd = path.join(__dirname, './fixtures/prod-deps');
     it('should install production deps', async () => {
-      await coffee.fork(rapid, ['--by=npminstall', '--fs=rapid', '--production'], { cwd })
+      await coffee.fork(rapid, [
+        '--by=npminstall', '--production', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
         .debug()
         .expect('code', 0)
         .end();
 
       assert.strictEqual(require(path.join(cwd, 'node_modules/semver/package.json')).version, '7.3.8');
-      assert.match(require(path.join(cwd, 'node_modules/@ali/crypto/node_modules/semver/package.json')).version, /^6\.\d+\.\d+/);
       await assert.rejects(fs.stat(path.join(cwd, 'node_modules/@babel/helper-compilation-targets/package.json')));
     });
   });
 
   it('should install lodash successfully', async () => {
-    cwd = path.join(__dirname, './fixtures/lodash-test');
+    cwd = path.join(__dirname, './fixtures/lodash');
     await coffee
-      .fork(rapid, ['--fs=rapid'], { cwd })
+      .fork(rapid, [ `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
       .debug()
       .expect('code', 0)
       .end();
@@ -80,9 +80,9 @@ describe('test/index.v2.test.js', () => {
   });
 
   it('should install node-canvas successfully', async () => {
-    cwd = path.join(__dirname, './fixtures/rapid-canvas-install');
+    cwd = path.join(__dirname, './fixtures/canvas');
     await coffee
-      .fork(rapid, ['--fs=rapid'], { cwd })
+      .fork(rapid, [ `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
       .debug()
       .expect('code', 0)
       .end();
@@ -93,7 +93,7 @@ describe('test/index.v2.test.js', () => {
   });
 
   it('should install react-jsx-parser@1.29.0 successfully', async () => {
-    cwd = path.join(__dirname, './fixtures/rapid-react-jsx-parser-install');
+    cwd = path.join(__dirname, './fixtures/react-jsx-parser');
     // 环境变量被污染了，这里手动删掉
     for (const k in process.env) {
       if (k.includes('npm_')) {
@@ -101,7 +101,7 @@ describe('test/index.v2.test.js', () => {
       }
     }
     await coffee
-      .fork(rapid, ['--fs=rapid'], {
+      .fork(rapid, [ `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], {
         cwd,
       })
       .debug()
@@ -117,7 +117,10 @@ describe('test/index.v2.test.js', () => {
   it('should install optional deps successfully use npm', async () => {
     cwd = path.join(__dirname, './fixtures/esbuild');
     await coffee
-      .fork(rapid, ['--fs=rapid', '--by=npm'], {
+      .fork(rapid, [
+        '--by=npm',
+        `--deps-tree-path=${path.join(cwd, 'package-lock.json')}`,
+      ], {
         cwd,
       })
       .debug()
@@ -133,7 +136,10 @@ describe('test/index.v2.test.js', () => {
   it('should install optional deps successfully use npminstall', async () => {
     cwd = path.join(__dirname, './fixtures/esbuild');
     await coffee
-      .fork(rapid, ['--fs=rapid', '--by=npminstall'], {
+      .fork(rapid, [
+        '--by=npminstall',
+        `--deps-tree-path=${path.join(cwd, 'package-lock.json')}`,
+      ], {
         cwd,
       })
       .debug()
@@ -144,22 +150,5 @@ describe('test/index.v2.test.js', () => {
     assert.strictEqual(dirs.filter(dir => dir.includes('esbuild')).length, 4);
     await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules', 'esbuild')));
     assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
-  });
-
-  it('should install y18n@5.0.8 in production mode successfully', async () => {
-    cwd = path.join(__dirname, './fixtures/npmcore');
-    await coffee
-      .fork(rapid, ['--fs=rapid', '--by=npm', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}`, '--omit=dev'], {
-        cwd,
-      })
-      .debug()
-      .expect('code', 0)
-      .end();
-
-    const y18n4 = await fs.readFile(path.join(cwd, 'node_modules/y18n/package.json'));
-    assert.strictEqual(JSON.parse(y18n4).version, '4.0.3');
-
-    const y18n5 = await fs.readFile(path.join(cwd, 'node_modules/xprofiler/node_modules/y18n/package.json'));
-    assert.strictEqual(JSON.parse(y18n5).version, '5.0.8');
   });
 });

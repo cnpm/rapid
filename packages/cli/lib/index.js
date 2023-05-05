@@ -68,4 +68,4 @@ exports.clean = async function clean(cwd) {
   const mode = await nydusd.getNydusMode(cwd);
   const { pkg } = await util.readPkgJSON(cwd);
   await nydusd.endNydusFs(mode, cwd, pkg);
-}
+};

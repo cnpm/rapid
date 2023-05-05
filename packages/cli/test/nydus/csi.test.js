@@ -102,7 +102,7 @@ describe('test/nydus/csi.test.js', () => {
     await Reflect.apply(
       util.promisify(server.listen),
       server,
-      [socketPath]
+      [ socketPath ]
     );
   });
 

@@ -1,0 +1,10 @@
+{
+  "name": "test-production",
+  "version": "1.0.0",
+  "dependencies": {
+    "semver": "7.3.8"
+  },
+  "devDependencies": {
+    "@babel/helper-compilation-targets": "7.20.0"
+  }
+}

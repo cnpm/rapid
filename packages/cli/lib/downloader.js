@@ -45,7 +45,7 @@ class Downloader {
       bucketCount: this.bucketCount,
       httpConcurrentCount: this.httpConcurrentCount,
       downloadDir: tarBucketsDir,
-      entryWhitelist: ['*/package.json', '*/binding.gyp'],
+      entryWhitelist: [ '*/package.json', '*/binding.gyp' ],
       entryListener: this.entryListener,
       downloadTimeout: this.downloadTimeout,
     });
@@ -75,7 +75,7 @@ class Downloader {
 
   createDownloadTask(pkgLockJson) {
     const taskMap = new Map();
-    for (const [name, pkg] of Object.entries(pkgLockJson.packages)) {
+    for (const [ name, pkg ] of Object.entries(pkgLockJson.packages)) {
       // 根目录忽略，软链接忽略，workspace 子包忽略
       if (name === '' || pkg.link === true || (!pkg.resolved && !pkg.link)) continue;
       const pkgName = Util.getPkgNameFromTarballUrl(pkg.resolved);

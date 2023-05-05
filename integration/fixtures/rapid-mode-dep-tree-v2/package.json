@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "install": "echo 1"
-  },
-  "dependencies": {
-    "chair": "latest"
-  }
-}

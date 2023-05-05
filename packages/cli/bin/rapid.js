@@ -11,18 +11,18 @@ const httpclient = require('../lib/httpclient');
 async function runner() {
   const params = parser(process.argv.slice(2), {
     alias: {
-      'save-dev': ['D'],
-      save: ['save-prod', 'S', 'P'],
-      'save-optional': ['O'],
-      'save-bundle': ['B'],
-      'save-exact': ['E'],
-      'version': ['v'],
-      'usage': ['H', 'h', 'help', '?'],
-      'global': ['g'],
-      'detail': ['d'],
-      'mode': ['by'],
-      'prefix': ['C'],
-      'registry': ['reg'],
+      'save-dev': [ 'D' ],
+      save: [ 'save-prod', 'S', 'P' ],
+      'save-optional': [ 'O' ],
+      'save-bundle': [ 'B' ],
+      'save-exact': [ 'E' ],
+      version: [ 'v' ],
+      usage: [ 'H', 'h', 'help', '?' ],
+      global: [ 'g' ],
+      detail: [ 'd' ],
+      mode: [ 'by' ],
+      prefix: [ 'C' ],
+      registry: [ 'reg' ],
     },
     boolean: [
       'clean',
@@ -53,7 +53,7 @@ async function runner() {
       'mode',
       'omit',
       'cache-dir',
-    ]
+    ],
   });
 
   if (params.clean) {

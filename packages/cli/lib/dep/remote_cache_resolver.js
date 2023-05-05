@@ -3,9 +3,8 @@
 class RemoteCacheResolver {
   /**
    * @param {DepContext} ctx -
-   * @param {Object} options -
    */
-  constructor(ctx, options) {
+  constructor(ctx) {
     this.ctx = ctx;
     this.lockId = ctx.lockId;
   }

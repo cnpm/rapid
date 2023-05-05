@@ -3,9 +3,8 @@
 class RemoteResolver {
   /**
    * @param {DepContext} ctx -
-   * @param {Object} options -
    */
-  constructor(ctx, options) {
+  constructor(ctx) {
     this.ctx = ctx;
     this.pkg = ctx.pkg;
   }

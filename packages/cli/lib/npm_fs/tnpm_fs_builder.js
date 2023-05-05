@@ -33,7 +33,7 @@ class TnpmFsBuilder {
     // 模拟项目依赖的软链，在 blobs 中不存在，随便放一个 blobs 中即可，下面 root dir 同理
     const blobId = this.fsMeta.blobIds[0];
     const packages = packageLockJson.packages;
-    for (const [pkgPath, pkgItem] of Object.entries(packages)) {
+    for (const [ pkgPath, pkgItem ] of Object.entries(packages)) {
       if (this.shouldSkipGenerate(pkgPath, pkgItem)) continue;
       const name = Util.getPackageNameFromPackagePath(pkgPath, packages);
       const version = pkgItem.version;
@@ -49,7 +49,7 @@ class TnpmFsBuilder {
   // 创建依赖真实目录信息
   createRealPkgs(packageLockJson) {
     const packages = packageLockJson.packages;
-    for (const [pkgPath, pkgItem] of Object.entries(packages)) {
+    for (const [ pkgPath, pkgItem ] of Object.entries(packages)) {
       if (this.shouldSkipGenerate(pkgPath, pkgItem)) continue;
       const name = Util.getAliasPackageNameFromPackagePath(pkgPath, packages);
       const version = pkgItem.version;
@@ -89,7 +89,7 @@ class TnpmFsBuilder {
     const displayName = Util.getDisplayName({ name, version }, this.mode);
     if (!pkg) return;
     const bin = pkg.bin || {};
-    for (const [binName, binPath] of Object.entries(bin)) {
+    for (const [ binName, binPath ] of Object.entries(bin)) {
       const entryNewName = path.join(displayName, binPath);
       const binEntry = Util.generateBin({
         binName,
@@ -141,7 +141,7 @@ class TnpmFsBuilder {
     if (!pkg) return;
     const reverseBinMap = Util.resolveBinMap(pkg);
     const tocIndexes = this.blobManager.getTocIndexes(name, version);
-    for (const [blobId, tocIndex] of tocIndexes) {
+    for (const [ blobId, tocIndex ] of tocIndexes) {
       for (const entry of tocIndex.entries) {
         // blobId 中 name 是 foo@1.0.0/index.js
         // 需要替换成 _foo@1.0.0@foo/index.js
@@ -192,7 +192,7 @@ class TnpmFsBuilder {
       ...(projectPkg.optionalDependencies || {}),
     };
 
-    for (const [pkgPath, pkgItem] of Object.entries(packageLockJson.packages)) {
+    for (const [ pkgPath, pkgItem ] of Object.entries(packageLockJson.packages)) {
       if (Util.isFlattenPackage(pkgPath)) {
         const name = Util.getPackageNameFromPackagePath(pkgPath);
         const version = pkgItem.version;
@@ -212,7 +212,7 @@ class TnpmFsBuilder {
   // 1. 项目直接依赖强制打平
   // 2. 非项目直接依赖，打平最大版本号
   getLatestVersions(packageLockJson) {
-    for (const [pkgPath, pkgItem] of Object.entries(packageLockJson.packages)) {
+    for (const [ pkgPath, pkgItem ] of Object.entries(packageLockJson.packages)) {
       if (this.shouldSkipGenerate(pkgPath, pkgItem)) continue;
       const name = Util.getPackageNameFromPackagePath(pkgPath);
       const version = pkgItem.version;

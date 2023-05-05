@@ -59,11 +59,11 @@ async function download(options) {
   const tocIndexes = await downloader.download(depsTree);
   await downloader.shutdown();
 
-  for (const [blobId, tocIndex] of Object.entries(tocIndexes)) {
+  for (const [ blobId, tocIndex ] of Object.entries(tocIndexes)) {
     blobManager.addBlob(blobId, tocIndex);
   }
 
-  for (const [packagePath, depPkg] of Object.entries(depsTree.packages)) {
+  for (const [ packagePath, depPkg ] of Object.entries(depsTree.packages)) {
     const { version, resolved, link, inBundle, optional } = depPkg;
     if (!packagePath.startsWith('node_modules') || link === true || inBundle === true) {
       continue;

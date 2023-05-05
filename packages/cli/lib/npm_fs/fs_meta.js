@@ -27,8 +27,8 @@ class FsMeta {
   }
 
   /**
-   * @param {string} blobId
-   * @param {TocEntry} entry
+   * @param {string} blobId -
+   * @param {TocEntry} entry -
    */
   addEntry(blobId, entry) {
     this._blobIds.add(blobId);
@@ -36,7 +36,7 @@ class FsMeta {
   }
 
   /**
-   * @return {BlobIdsTocIndexes}
+   * @return {BlobIdsTocIndexes} -
    */
   dump() {
     return {

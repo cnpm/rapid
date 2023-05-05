@@ -1,8 +1,6 @@
 'use strict';
 
 const Arborist = require('@npmcli/arborist');
-const urllib = require('urllib');
-const debug = require('debug')('resolver');
 const PackageService = require('./package_service');
 const ArboristLogger = require('./arborist_logger');
 const PACKAGE_SERVICE = Symbol.for('packageService');

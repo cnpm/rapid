@@ -98,9 +98,11 @@ async function endNydusFs(cwd, pkg) {
       overlay,
       baseDir,
       nodeModulesDir,
+      mnt,
     } = await getWorkdir(cwd, pkgPath);
     await runscript(wrapSudo(`umount ${nodeModulesDir}`));
     await runscript(wrapSudo(`umount ${overlay}`));
+    await runscript(wrapSudo(`umount ${mnt}`));
     await nydusdApi.umount(`/${dirname}`);
     // 清除 nydus 相关目录
     await fs.rm(baseDir, { recursive: true, force: true });

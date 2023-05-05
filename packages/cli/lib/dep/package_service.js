@@ -55,9 +55,9 @@ class PackageService {
           ...obj.optionalDependencies,
           ...obj.dependencies,
         };
-        for (const [name, spec] of Object.entries(deps)) {
+        for (const [ name, spec ] of Object.entries(deps)) {
           const request = npa(`${name}@${spec}`);
-          if (['alias', 'version', 'tag', 'range'].includes(request.type)) {
+          if ([ 'alias', 'version', 'tag', 'range' ].includes(request.type)) {
             const opts = {
               ...options,
               isPreFetch: true,
@@ -85,7 +85,7 @@ class PackageService {
         ...manifest.optionalDependencies,
       };
       await Promise.all(
-        Object.entries(dependencies).map(([name, spec]) => {
+        Object.entries(dependencies).map(([ name, spec ]) => {
           debug(`preload ${name}@${spec}}`);
           const res = this.manifest(npa(`${name}@${spec}`), options);
           debug(`${name}@${spec} done`);

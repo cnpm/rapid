@@ -28,7 +28,7 @@ class NpmFsMetaBuilder {
     const packageLock = new PackageLock({ cwd: this.cwd, packageLockJson });
     await packageLock.load();
     const packages = packageLock.packages;
-    for (const [pkgPath, pkgItem] of Object.entries(packages)) {
+    for (const [ pkgPath, pkgItem ] of Object.entries(packages)) {
       if (!pkgPath || !Util.validDep(pkgItem, this.productionMode)) continue;
       // npm alias or normal npm package
       const name = Util.getAliasPackageNameFromPackagePath(pkgPath, packages);
@@ -73,7 +73,7 @@ class NpmFsMetaBuilder {
     };
 
     const tocIndexes = this.blobManager.getTocIndexes(name, version);
-    for (const [blobId, tocIndex] of tocIndexes) {
+    for (const [ blobId, tocIndex ] of tocIndexes) {
       for (const entry of tocIndex.entries) {
         // blobId 中 name 是 foo@1.0.0/index.js
         // 需要替换成  bar/node_modules/foo/index.js

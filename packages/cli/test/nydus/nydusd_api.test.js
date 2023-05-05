@@ -44,11 +44,4 @@ describe('test/nydusd/nydusd_api.test.js', () => {
     assert(fs.existsSync(path.join(constants.nydusdMnt, 'lodash.get')));
     await nydusdApi.umount('/');
   });
-
-  it.skip('should umount success', async () => {
-    await nydusdApi.mount('/a', cwd, bootstrapFile);
-    assert(fs.existsSync(path.join(constants.nydusdMnt, 'a/lodash.has')));
-    await nydusdApi.umount('/a');
-    assert.strictEqual(fs.existsSync(path.join(constants.nydusdMnt, 'a/lodash.has')), false);
-  });
 });

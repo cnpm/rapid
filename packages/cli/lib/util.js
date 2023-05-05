@@ -196,7 +196,7 @@ function getAliasPackageNameFromPackagePath(packagePath, packages) {
 function verifyNpmConstraint(constraints, value) {
   if (!constraints) return true;
   if (!Array.isArray(constraints)) {
-    constraints = [constraints];
+    constraints = [ constraints ];
   }
   const positive = constraints.filter(t => !t.startsWith('!'));
   const negative = constraints.filter(t => t.startsWith('!')).map(t => t.substr(1));
@@ -218,7 +218,7 @@ function resolveBinMap(pkgJSON) {
   normalize(pkgJSON);
   const bin = pkgJSON.bin || {};
   const reverseBinMap = {};
-  for (const [binName, binPath] of Object.entries(bin)) {
+  for (const [ binName, binPath ] of Object.entries(bin)) {
     const normalizedBinPath = path.normalize(binPath);
     if (!reverseBinMap[normalizedBinPath]) {
       /**
@@ -451,7 +451,7 @@ exports.runScript = async (pkgDir, script, options) => {
       setNpmPackageEnv(env, key, pkg[key]);
     }
   } catch (error) {
-    // ignore error 
+    // ignore error
   }
   env.PATH = [
     path.join(__dirname, '../node-gyp-bin'),
@@ -495,7 +495,7 @@ exports.sleep = async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-exports.findLocalPrefix = function (p) {
+exports.findLocalPrefix = function(p) {
   p = p || process.cwd();
   const pkg = path.join(p, 'package.json');
   // 如果没有 package.json 这时候直接返回 process.cwd()

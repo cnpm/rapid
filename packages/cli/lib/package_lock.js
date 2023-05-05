@@ -59,7 +59,7 @@ class PackageLock {
 
     const workspacesMap = {};
 
-    for (const [, wsPath] of workspaces) {
+    for (const [ , wsPath ] of workspaces) {
       const pkgJSON = require(path.join(wsPath, DEFAULT_PACKAGE_FILE));
       workspacesMap[pkgJSON.name] = path.relative(this.cwd, wsPath);
     }
@@ -71,7 +71,7 @@ class PackageLock {
     const packages = this.packages;
     const workspaces = this.workspaces;
     const workspaceDeps = [];
-    for (const [name, pkg] of Object.entries(packages)) {
+    for (const [ name, pkg ] of Object.entries(packages)) {
       if (pkg.link === true && Object.values(workspaces).includes(pkg.resolved)) {
         workspaceDeps.push({
           source: name,

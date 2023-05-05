@@ -71,7 +71,7 @@ async function initDaemon(nydusdBin = '') {
       '--log-file', nydusdLogFile,
     ], {
       detached: true,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: [ 'ignore', 'pipe', 'pipe' ],
     });
   } else {
     subprocess = execa(nydusdBin || nydusd, [
@@ -81,7 +81,7 @@ async function initDaemon(nydusdBin = '') {
       '--log-file', nydusdLogFile,
     ], {
       detached: true,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: [ 'ignore', 'pipe', 'pipe' ],
     });
   }
 

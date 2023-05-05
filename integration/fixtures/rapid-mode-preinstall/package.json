@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "@alipay/tnpm-scripts-test": "1.0.19"
-  },
-  "scripts": {
-    "postinstall": "node -v"
-  }
-}
