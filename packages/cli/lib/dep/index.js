@@ -28,6 +28,8 @@ class DepResolver {
   constructor(options) {
     this.options = options;
     this.ctx = new DepContext(options);
+    this.RemoteCacheResolver = options.RemoteCacheResolver || RemoteCacheResolver;
+    this.RemoteResolver = options.RemoteResolver || RemoteResolver;
   }
 
   async resolve() {
@@ -42,13 +44,13 @@ class DepResolver {
       // 在对应 lockId 的基础上进行依赖树的更新
       if (this.ctx.modifyDeps || this.ctx.updateLockfile) {
         console.log('[rapid] use remote resolver to update deps tree');
-        const resolver = new RemoteResolver(this.ctx, this.options);
+        const resolver = new this.RemoteResolver(this.ctx, this.options);
         return resolver.resolve();
       }
       // 根据 lockId 去读取服务端的依赖树
       try {
         console.log(`[rapid] use remote cache resolver to resolve lockId: ${this.ctx.lockId}`);
-        const resolver = new RemoteCacheResolver(this.ctx, this.options);
+        const resolver = new this.RemoteCacheResolver(this.ctx, this.options);
         return await resolver.resolve();
       } catch (e) {
         e.message = `resolve with lockId: ${this.ctx.lockId} failed: ` + e.message;
@@ -74,7 +76,7 @@ class DepResolver {
     } else {
       // 在服务端生成依赖树
       console.log('[rapid] use remote resolver to generate deps tree');
-      resolver = new RemoteResolver(this.ctx, this.options);
+      resolver = new this.RemoteResolver(this.ctx, this.options);
     }
     return await resolver.resolve();
   }

@@ -8,7 +8,7 @@ const {
   clean,
 } = require('@cnpmjs/rapid');
 
-describe('test/install-workspaces.test.js', () => {
+describe('test/workspaces.test.js', () => {
   let cwd;
 
   it('should install lodash successfully', async () => {
