@@ -2,7 +2,7 @@
 
 const path = require('node:path');
 const fs = require('node:fs/promises');
-const runscript = require('runscript');
+const execa = require('execa');
 const constants = require('../constants');
 const {
   wrapSudo,
@@ -50,7 +50,7 @@ async function mount(cwd, allPkgs) {
     console.time(`[rapid] mount '/${dirname}' to nydusd daemon using socket api`);
     const {
       stderr,
-    } = await runscript(wrapSudo(`${process.execPath} ${path.join(__dirname, './csi_script.js')} ${path.basename(bootstrap)} ${volumeId} ${socketPath} ${csiMountId}`), {
+    } = await execa.command(wrapSudo(`${process.execPath} ${path.join(__dirname, './csi_script.js')} ${path.basename(bootstrap)} ${volumeId} ${socketPath} ${csiMountId}`), {
       stdio: 'pipe',
     });
 
@@ -69,7 +69,7 @@ async function umount(mountId) {
 
   const {
     stderr,
-  } = await runscript(wrapSudo(`${process.execPath} ${path.join(__dirname, './csi_umount_script.js')} ${volumeId} ${socketPath} ${mountId}`), {
+  } = await execa.command(wrapSudo(`${process.execPath} ${path.join(__dirname, './csi_umount_script.js')} ${volumeId} ${socketPath} ${mountId}`), {
     stdio: 'pipe',
   });
 
@@ -84,8 +84,8 @@ async function generateBootStrap(cwd, allPkgs) {
   const tarBucketsDir = constants.NYDUS_CSI_BLOB_ROOT;
   await Promise.all(allPkgs.map(async pkgPath => {
     const { bootstrap, tarIndex } = await getWorkdir(cwd, pkgPath, constants.NYDUS_CSI_BLOB_ROOT);
-    await runscript(wrapSudo(`mkdir -p ${path.dirname(bootstrap)}`));
-    await runscript(`${constants.BOOTSTRAP_BIN} --stargz-config-path=${tarIndex} --stargz-dir=${tarBucketsDir} --bootstrap=${bootstrap}`);
+    await execa.command(wrapSudo(`mkdir -p ${path.dirname(bootstrap)}`));
+    await execa.command(`${constants.BOOTSTRAP_BIN} --stargz-config-path=${tarIndex} --stargz-dir=${tarBucketsDir} --bootstrap=${bootstrap}`);
   }));
 }
 
@@ -94,8 +94,8 @@ async function moveBlobToData() {
   // blob dir is root
   const mkdirp = wrapSudo(`mkdir -p ${blobDir}`);
   const chown = wrapSudo(`chown -R admin:admin ${blobDir}`);
-  await runscript(`${mkdirp} && ${chown}`);
-  await runscript(`mv ${constants.tarBucketsDir}/* ${blobDir}`);
+  await execa.command(`${mkdirp} && ${chown}`);
+  await execa.command(`mv ${constants.tarBucketsDir}/* ${blobDir}`);
 }
 
 async function linkToCurrent(cwd, allPkgs) {
@@ -112,7 +112,7 @@ async function linkToCurrent(cwd, allPkgs) {
     const nydusdMnt = path.join(process.env[constants.NYDUS_CSI_ROOT_ENV], mountId);
     await fs.mkdir(nodeModulesDir, { recursive: true });
     await fs.mkdir(overlay, { recursive: true });
-    await runscript(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`));
+    await execa.command(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`));
     await fs.mkdir(upper, { recursive: true });
     await fs.mkdir(workdir, { recursive: true });
 
@@ -122,7 +122,7 @@ async function linkToCurrent(cwd, allPkgs) {
 -o lowerdir=${nydusdMnt},upperdir=${upper},workdir=${workdir} \
 ${nodeModulesDir}`);
     console.info('[rapid] mountOverlay: `%s`', shScript);
-    await runscript(shScript);
+    await execa.command(shScript);
     console.info('[rapid] overlay mounted.');
   }));
 }
@@ -145,8 +145,8 @@ async function endNydusFs(cwd, pkg) {
     // umount overlay
     try {
       await umount(mountId);
-      await runscript(wrapSudo(`umount ${nodeModulesDir}`));
-      await runscript(wrapSudo(`umount ${overlay}`));
+      await execa.command(wrapSudo(`umount ${nodeModulesDir}`));
+      await execa.command(wrapSudo(`umount ${overlay}`));
     } catch (e) {
       e.message = '[rapid/csi] umount failed: ' + e.message;
       console.error(e);

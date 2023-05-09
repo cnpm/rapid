@@ -8,7 +8,7 @@ const {
 const path = require('node:path');
 const fs = require('node:fs/promises');
 const debug = require('debug')('nydusd');
-const runscript = require('runscript');
+const execa = require('execa');
 const util = require('../util');
 const fuseMode = require('./fuse_mode');
 const csiMode = require('./csi_mode');
@@ -67,7 +67,7 @@ exports.getNydusInstallMode = async function(cwd) {
   } catch (_) {
     return NYDUS_TYPE.NONE;
   }
-  const stdio = await runscript('mount', {
+  const stdio = await execa.command('mount', {
     stdio: 'pipe',
   });
   const stdout = stdio.stdout.toString();

@@ -1,6 +1,6 @@
 {
   "name": "@cnpmjs/rapid",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "The rapid npm installed cli built with Nydus",
   "main": "lib/index.js",
   "bin": {
@@ -24,7 +24,6 @@
     "npm-package-arg": "^8.1.5",
     "p-map": "^4.0.0",
     "pacote": "^15.0.7",
-    "runscript": "^1.5.1",
     "semver": "^7.3.8",
     "urllib": "^2.14.0",
     "yargs-parser": "^9.0.2"

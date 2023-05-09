@@ -3,7 +3,7 @@
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const runscript = require('runscript');
+const execa = require('execa');
 const {
   tarBucketsDir,
   unionfs,
@@ -35,7 +35,7 @@ async function generateBootstrapFile(cwd, pkg) {
   await Promise.all(allPkgs.map(async pkgPath => {
     const { bootstrap, tarIndex } = await getWorkdir(cwd, pkgPath);
     await fs.mkdir(path.dirname(bootstrap), { recursive: true });
-    await runscript(`${BOOTSTRAP_BIN} --stargz-config-path=${tarIndex} --stargz-dir=${tarBucketsDir} --bootstrap=${bootstrap}`);
+    await execa.command(`${BOOTSTRAP_BIN} --stargz-config-path=${tarIndex} --stargz-dir=${tarBucketsDir} --bootstrap=${bootstrap}`);
   }));
   console.timeEnd('[rapid] generate bootstrap');
 }
@@ -64,9 +64,9 @@ async function mountOverlay(cwd, pkg) {
     await fs.mkdir(nodeModulesDir, { recursive: true });
     await fs.mkdir(overlay, { recursive: true });
     if (os.type() === 'Linux') {
-      await runscript(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`));
+      await execa.command(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`));
     } else if (os.type() === 'Darwin') {
-      await runscript(wrapSudo(`mount_tmpfs -o union -e ${overlay}`));
+      await execa.command(wrapSudo(`mount_tmpfs -o union -e ${overlay}`));
     }
     await fs.mkdir(upper, { recursive: true });
     await fs.mkdir(workdir, { recursive: true });
@@ -84,7 +84,7 @@ ${upper}=RW:${mnt}=RO \
 ${nodeModulesDir}`;
     }
     console.info('[rapid] mountOverlay: `%s`', shScript);
-    await runscript(shScript);
+    await execa.command(shScript);
     console.info('[rapid] overlay mounted.');
   }));
 }
@@ -100,9 +100,9 @@ async function endNydusFs(cwd, pkg) {
       nodeModulesDir,
       mnt,
     } = await getWorkdir(cwd, pkgPath);
-    await runscript(wrapSudo(`umount ${nodeModulesDir}`));
-    await runscript(wrapSudo(`umount ${overlay}`));
-    await runscript(wrapSudo(`umount ${mnt}`));
+    await execa.command(wrapSudo(`umount ${nodeModulesDir}`));
+    await execa.command(wrapSudo(`umount ${overlay}`));
+    await execa.command(wrapSudo(`umount ${mnt}`));
     await nydusdApi.umount(`/${dirname}`);
     // 清除 nydus 相关目录
     await fs.rm(baseDir, { recursive: true, force: true });
