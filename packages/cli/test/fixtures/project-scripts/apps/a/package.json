@@ -1,9 +1,6 @@
 {
-  "name": "fake-project",
+  "name": "a",
   "version": "1.0.0",
-  "workspaces": [
-    "apps/a"
-  ],
   "scripts": {
     "preinstall": "echo preinstall >> 1",
     "install": "echo install >> 1",

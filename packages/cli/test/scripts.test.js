@@ -9,7 +9,6 @@ const Scripts = require('../lib/scripts').Scripts;
 const util = require('../lib/util');
 const { install } = require('../lib');
 const httpclient = require('../lib/httpclient');
-const nock = require('nock');
 const { MirrorConfig } = require('binary-mirror-config');
 const {
   NYDUS_CSI_ROOT_ENV,
@@ -195,6 +194,8 @@ describe('test/scripts.test.js', () => {
 
         const fileContent = await fs.readFile(path.join(fixtures, '1'), 'utf8');
         assert.strictEqual(fileContent.toString(), 'preinstall\ninstall\npostinstall\nprepublish\npreprepare\nprepare\npostprepare\n');
+        const fileContent2 = await fs.readFile(path.join(fixtures, 'apps/a/1'), 'utf8');
+        assert.strictEqual(fileContent2.toString(), 'preinstall\ninstall\npostinstall\nprepublish\npreprepare\nprepare\npostprepare\n');
       });
     });
   });

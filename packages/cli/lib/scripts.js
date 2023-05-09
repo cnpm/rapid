@@ -4,10 +4,12 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const chalk = require('chalk');
 const ms = require('ms');
+const mapWorkspaces = require('@npmcli/map-workspaces');
 const os = require('node:os');
 const {
   getDisplayName,
   runScript,
+  readPkgJSON,
 } = require('./util');
 
 // scripts that should run in cwd package and linked package
@@ -150,6 +152,23 @@ exports.Scripts = class Scripts {
       pkg,
     } = this.options;
 
+    const workspaces = await mapWorkspaces({
+      cwd,
+      pkg,
+    });
+
+    // workspaces
+    for (const p of workspaces.values()) {
+      const subpkg = path.join(cwd, p);
+      const pkgJSON = await readPkgJSON(subpkg);
+      await this.runProjectLifecycleScript(subpkg, pkgJSON);
+    }
+
+    // root project
+    await this.runLifecycleScripts(cwd, pkg);
+  }
+
+  async runProjectLifecycleScript(cwd, pkg) {
     const scripts = pkg.scripts;
     for (const script of DEFAULT_ROOT_SCRIPTS) {
       const lifecycleScript = scripts?.[script];
