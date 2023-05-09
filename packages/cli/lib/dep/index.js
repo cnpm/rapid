@@ -30,6 +30,8 @@ class DepResolver {
     this.ctx = new DepContext(options);
     this.RemoteCacheResolver = options.RemoteCacheResolver || RemoteCacheResolver;
     this.RemoteResolver = options.RemoteResolver || RemoteResolver;
+    this.LocalResolver = options.LocalResolver || LocalResolver;
+    this.LocalCacheResolver = options.LocalCacheResolver || LocalCacheResolver;
   }
 
   async resolve() {
@@ -37,7 +39,7 @@ class DepResolver {
       // 本地安装时，直接通过 npm 执行安装和更新依赖树逻辑
       if (this.options.experimentalLocalResolver) {
         console.log('[rapid] use local resolver to update deps tree');
-        const resolver = new LocalResolver(this.ctx, this.options);
+        const resolver = new this.LocalResolver(this.ctx, this.options);
         return resolver.resolve();
       }
       // rapid i lodash.has --lockId=xx 或者 node_modules/.lock-id.txt 存在
@@ -61,7 +63,7 @@ class DepResolver {
     if (this.ctx.depsTreePath) {
       try {
         console.log(`[rapid] use local cache resolver to resolve deps tree: ${this.ctx.depsTreePath}`);
-        const resolver = new LocalCacheResolver(this.ctx, this.options);
+        const resolver = new this.LocalCacheResolver(this.ctx, this.options);
         return await resolver.resolve();
       } catch (e) {
         e.message = `resolve with package-lock.json: ${this.ctx.depsTreePath} failed: ` + e.message;
@@ -72,7 +74,7 @@ class DepResolver {
     if (this.options.experimentalLocalResolver) {
       // 在本地通过 http 接口生成依赖树
       console.log('[rapid] use local resolver to generate deps tree');
-      resolver = new LocalResolver(this.ctx, this.options);
+      resolver = new this.LocalResolver(this.ctx, this.options);
     } else {
       // 在服务端生成依赖树
       console.log('[rapid] use remote resolver to generate deps tree');
