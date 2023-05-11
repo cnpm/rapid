@@ -165,7 +165,7 @@ exports.Scripts = class Scripts {
     }
 
     // root project
-    await this.runLifecycleScripts(cwd, pkg);
+    await this.runProjectLifecycleScript(cwd, pkg);
   }
 
   async runProjectLifecycleScript(cwd, pkg) {
