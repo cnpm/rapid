@@ -65,7 +65,12 @@ async function download(options) {
 
   for (const [ packagePath, depPkg ] of Object.entries(depsTree.packages)) {
     const { version, resolved, link, inBundle, optional } = depPkg;
-    if (!packagePath.startsWith('node_modules') || link === true || inBundle === true) {
+    // 不需要下载 tgz 的情形
+    // 1. "" 为项目依赖
+    // 2. 软链，monorepo 子包
+    // 3. bundleDependencies
+    // 4. optionalDependencies 无 resolved 字段
+    if (!packagePath.startsWith('node_modules') || link === true || inBundle === true || (optional && !resolved)) {
       continue;
     }
     const pkgName = util.getPkgNameFromTarballUrl(resolved);
