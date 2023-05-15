@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "lodash.has": "4.5.2"
+  },
+  "scripts": {
+    "postinstall": "echo INIT_CWD=$INIT_CWD"
+  }
+}

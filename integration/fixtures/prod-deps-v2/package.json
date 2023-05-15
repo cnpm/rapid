@@ -1,0 +1,19 @@
+{
+  "name": "test-app",
+  "scripts": {
+    "postinstall": "node index.js"
+  },
+  "dependencies": {
+    "lodash.get": "4.4.2"
+  },
+  "devDependencies": {
+    "object-pipeline": "1.0.1"
+  },
+  "peerDependencies": {
+    "lodash.chunk": "4.2.0"
+  },
+  "optionalDependencies": {
+    "lodash.union": "4.6.0"
+  },
+  "__npminstall_done": false
+}

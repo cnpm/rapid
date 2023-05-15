@@ -64,6 +64,7 @@ typings/
 
 # Output of 'npm pack'
 *.tgz
+!packages/binding/deps/*.tgz
 
 # Yarn Integrity file
 .yarn-integrity
@@ -102,3 +103,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+target
+packages/binding/npm/*/nydusd-bootstrap

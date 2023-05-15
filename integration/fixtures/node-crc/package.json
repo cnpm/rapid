@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "node-crc": "1.3.2"
+  }
+}

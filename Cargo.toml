@@ -1,0 +1,25 @@
+[package]
+name = "rapid-rs"
+version = "0.1.0"
+authors = ["The cnpmjs Developers"]
+edition = "2018"
+
+[profile.release]
+panic = "abort"
+opt-level = 3  # Optimize for size.
+lto = true
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[workspace]
+members = [
+    "packages/binding",
+    "packages/bootstrap",
+    "packages/bootstrap-bin",
+    "packages/downloader",
+    "packages/fcntl",
+    "packages/rafs",
+    "packages/tokio-tar",
+    "packages/utils"
+]

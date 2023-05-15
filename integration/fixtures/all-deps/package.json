@@ -1,0 +1,19 @@
+{
+  "name": "test-app",
+  "scripts": {
+    "preinstall": "node pre.js",
+    "postinstall": "node index.js"
+  },
+  "dependencies": {
+    "lodash.has": "*"
+  },
+  "devDependencies": {
+    "object-pipeline": "1.0.1"
+  },
+  "peerDependencies": {
+    "lodash.get": "*"
+  },
+  "optionalDependencies": {
+    "lodash.find": "*"
+  }
+}

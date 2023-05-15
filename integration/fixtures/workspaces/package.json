@@ -1,0 +1,9 @@
+{
+  "name": "workspace",
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "lodash": "^1.0.0"
+  }
+}

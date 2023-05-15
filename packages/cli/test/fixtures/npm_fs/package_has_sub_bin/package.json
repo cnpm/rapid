@@ -1,0 +1,8 @@
+{
+  "name": "foo",
+  "version": "1.0.0",
+  "dependencies": {
+    "@alipay/gemwuu-1": "1.0.2",
+    "@alipay/tnpm-scripts-test": "1.0.2"
+  }
+}
