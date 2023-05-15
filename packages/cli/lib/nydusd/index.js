@@ -8,12 +8,12 @@ const {
 const path = require('node:path');
 const fs = require('node:fs/promises');
 const debug = require('debug')('nydusd');
-const execa = require('execa');
+const runscript = require('runscript');
 const util = require('../util');
 const fuseMode = require('./fuse_mode');
 const csiMode = require('./csi_mode');
 
-exports.startNydusFs = async function(mode, cwd, pkg) {
+exports.startNydusFs = async function (mode, cwd, pkg) {
   switch (mode) {
     case NYDUS_TYPE.FUSE: {
       await fuseMode.startNydusFs(cwd, pkg);
@@ -29,7 +29,7 @@ exports.startNydusFs = async function(mode, cwd, pkg) {
   }
 };
 
-exports.endNydusFs = async function(mode, cwd, pkg) {
+exports.endNydusFs = async function (mode, cwd, pkg) {
   debug('endNydusFs, mode: %s, cwd: %s', mode, cwd);
   switch (mode) {
     case NYDUS_TYPE.CSI: {
@@ -44,7 +44,7 @@ exports.endNydusFs = async function(mode, cwd, pkg) {
   }
 };
 
-exports.getNydusMode = async function(cwd) {
+exports.getNydusMode = async function (cwd) {
   if (cwd) {
     const installMode = await exports.getNydusInstallMode(cwd);
     if (installMode) return installMode;
@@ -60,14 +60,14 @@ exports.getNydusMode = async function(cwd) {
   }
 };
 
-exports.getNydusInstallMode = async function(cwd) {
+exports.getNydusInstallMode = async function (cwd) {
   const nmDir = path.join(cwd, 'node_modules');
   try {
     await fs.access(nmDir);
   } catch (_) {
     return NYDUS_TYPE.NONE;
   }
-  const stdio = await execa.command('mount', {
+  const stdio = await runscript('mount', {
     stdio: 'pipe',
   });
   const stdout = stdio.stdout.toString();
