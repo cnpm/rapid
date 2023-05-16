@@ -3,6 +3,7 @@
 const debug = require('debug')('rapid');
 const path = require('node:path');
 const fs = require('node:fs/promises');
+const { existsSync } = require('fs');
 const os = require('node:os');
 const url = require('node:url');
 const crypto = require('node:crypto');
@@ -499,10 +500,10 @@ exports.findLocalPrefix = function(p) {
   p = p || process.cwd();
   const pkg = path.join(p, 'package.json');
   // 如果没有 package.json 这时候直接返回 process.cwd()
-  if ((p === '/' || p.match(/^[a-z]:\\$/gi)) && !fs.existsSync(pkg)) {
+  if ((p === '/' || p.match(/^[a-z]:\\$/gi)) && !existsSync(pkg)) {
     return process.cwd();
   }
-  if (fs.existsSync(pkg)) {
+  if (existsSync(pkg)) {
     return p;
   }
   return exports.findLocalPrefix(path.resolve(p, '..'));

@@ -52,6 +52,7 @@ async function isDaemonRunning() {
 
 // 启动 nydusd daemon
 async function initDaemon(nydusdBin = '') {
+  nydusdBin = nydusdBin || nydusd;
   const isRunning = await isDaemonRunning();
   // 已经启动了，直接返回
   if (isRunning) {
@@ -62,31 +63,35 @@ async function initDaemon(nydusdBin = '') {
   console.time('[rapid] start nydusd daemon');
   await fs.mkdir(nydusdMnt, { recursive: true });
   let subprocess;
+  let args;
   if (process.platform === 'linux') {
-    subprocess = execa('sudo', [
-      nydusdBin || nydusd,
+    args = [
+      nydusdBin,
       '--config', nydusdConfigFile,
       '--mountpoint', nydusdMnt,
       '--apisock', socketPath,
       '--log-file', nydusdLogFile,
-    ], {
+    ];
+    subprocess = execa('sudo', args, {
       detached: true,
       stdio: [ 'ignore', 'pipe', 'pipe' ],
     });
+    console.info('[rapid] startNydusd: %s', args.join(' '));
   } else {
-    subprocess = execa(nydusdBin || nydusd, [
+    args = [
       '--config', nydusdConfigFile,
       '--mountpoint', nydusdMnt,
       '--apisock', socketPath,
       '--log-file', nydusdLogFile,
-    ], {
+    ];
+    subprocess = execa(nydusdBin, args, {
       detached: true,
       stdio: [ 'ignore', 'pipe', 'pipe' ],
     });
+    console.info('[rapid] startNydusd: %s %s', nydusdBin, args.join(' '));
   }
 
   subprocess.unref();
-  console.info('[rapid] startNydusd: %j', subprocess.spawnargs.join(' '));
 
   const signalCode = await Promise.race([
     awaitEvent(subprocess, 'exit'),

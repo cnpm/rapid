@@ -7,6 +7,7 @@ const { clean, install } = require('../lib/index.js');
 const parser = require('yargs-parser');
 const { NpmFsMode } = require('../lib/constants.js');
 const httpclient = require('../lib/httpclient');
+const util = require('../lib/util');
 
 async function runner() {
   const params = parser(process.argv.slice(2), {
@@ -59,9 +60,13 @@ async function runner() {
   if (params.clean) {
     await clean(params.prefix || process.cwd());
   } else {
+    const cwd = params.prefix || process.cwd();
+    const pkgRes = await util.readPkgJSON();
+    const pkg = pkgRes?.pkg || {};
     await install({
       ...params,
-      cwd: params.prefix || process.cwd(),
+      cwd,
+      pkg,
       registry: params.registry || 'https://registry.npmjs.org',
       mode: params.mode || NpmFsMode.NPM,
       env: process.env,
@@ -97,6 +102,7 @@ runner()
   .then(() => {
     process.exit(0);
   })
-  .catch(() => {
+  .catch(e => {
+    console.error(e);
     process.exit(1);
   });
