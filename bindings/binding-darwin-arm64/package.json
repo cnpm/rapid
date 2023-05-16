@@ -1,13 +1,13 @@
 {
-  "name": "@cnpmjs/binding-darwin-x64",
+  "name": "@cnpmjs/binding-darwin-arm64",
   "version": "0.0.0",
-  "description": "downloader darwin x64 binding",
+  "description": "downloader darwin arm64 binding",
   "main": "index.node",
   "homepage": "https://github.com/cnpm/rapid",
   "repository": {
     "type": "git",
     "url": "git@github.com:cnpm/rapid.git",
-    "directory": "packages/binding/npm/binding-darwin-x64"
+    "directory": "packages/binding/npm/binding-darwin-arm64"
   },
   "engines": {
     "node": ">=12.0.0"
@@ -17,12 +17,6 @@
     "nydusd",
     "nydusd-bootstrap",
     "unionfs"
-  ],
-  "os": [
-    "darwin"
-  ],
-  "cpu": [
-    "x64"
   ],
   "scripts": {
     "pack": "npm pack",

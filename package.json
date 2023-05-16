@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "description": "cnpm rapid cli",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "bindings/*"
   ],
   "scripts": {
     "init": "npm run init:test && npm run cp:binary",
