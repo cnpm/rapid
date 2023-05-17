@@ -57,10 +57,10 @@ async function runner() {
     ],
   });
 
+  const cwd = params.prefix || process.cwd();
   if (params.clean) {
-    await clean(params.prefix || process.cwd());
+    await clean(cwd);
   } else {
-    const cwd = params.prefix || process.cwd();
     const pkgRes = await util.readPkgJSON();
     const pkg = pkgRes?.pkg || {};
     await install({
@@ -74,29 +74,6 @@ async function runner() {
     });
   }
 }
-
-// productionMode,
-//     pkg: userconfig.pkg,
-//     console,
-//     env: options.env,
-//     ignoreScripts: false, // 构建依赖安装，默认不忽略
-//     root: cwd,
-//     depsTreePath,
-//     lockId,
-//     args,
-//     mode,
-//     httpclient,
-//     cacheDir: config.cache,
-//     registry: userconfig.registry,
-//     experimentalLocalResolver,
-//     modifyDeps: userconfig.modifyDeps,
-//     hasInstalledNode: !!installNodeVersion,
-//     legacyPeerDeps,
-//     force,
-//     strictPeerDeps,
-//     hasLockfile: await hasLockfile(cwd),
-//     packageLockOnly,
-//     updateLockfile,
 
 runner()
   .then(() => {
