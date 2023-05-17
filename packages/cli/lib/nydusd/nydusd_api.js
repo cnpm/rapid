@@ -145,8 +145,10 @@ async function exitDaemon() {
       socketPath,
       dataType: 'json',
     });
-  } catch (_) {
+  } catch (e) {
     // ignore, nydusd quits with error, but it's ok
+    e.message = 'exit nydusd faield: ' + e.message;
+    console.warn(e);
   }
 }
 

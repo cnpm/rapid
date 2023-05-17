@@ -9,12 +9,16 @@ const rapid = path.join(__dirname, '../node_modules/.bin/rapid');
 const {
   clean,
 } = require('@cnpmjs/rapid');
+const {
+  exitDaemon,
+} = require('@cnpmjs/rapid/lib/nydusd/nydusd_api');
 
-describe.only('test/index.v2.test.js', () => {
+describe('test/index.v2.test.js', () => {
   let cwd;
 
   afterEach(async () => {
     await clean(cwd);
+    await exitDaemon();
   });
 
   describe('update', () => {
@@ -79,7 +83,7 @@ describe.only('test/index.v2.test.js', () => {
     assert(stdout.indexOf(cwd) > 0);
   });
 
-  it.only('should install node-canvas successfully', async () => {
+  it('should install node-canvas successfully', async () => {
     cwd = path.join(__dirname, './fixtures/canvas');
     try {
       await coffee
