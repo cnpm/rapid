@@ -1,10 +1,10 @@
 'use strict';
 
 const {
-  NYDUS_CSI_ROOT_ENV,
   NYDUS_TYPE,
   nydusdMnt,
 } = require('../constants');
+const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs/promises');
 const debug = require('debug')('nydusd');
@@ -25,11 +25,11 @@ const fsImplMap = {
  */
 exports.registerMode = function(mode, fsImpl) {
   fsImplMap[mode] = fsImpl;
-}
+};
 
-exports.unregisterMode = function (mode) {
+exports.unregisterMode = function(mode) {
   fsImplMap[mode] = null;
-}
+};
 
 exports.startNydusFs = async function(mode, cwd, pkg) {
   const impl = fsImplMap[mode];
