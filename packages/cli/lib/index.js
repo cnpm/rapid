@@ -23,7 +23,7 @@ exports.install = async options => {
   // set args to npm_config_xx env
   options.env = util.getEnv(options.env, options.args);
   const nydusMode = await nydusd.getNydusMode();
-  if (nydusMode === NYDUS_TYPE.NONE) {
+  if (!nydusMode || nydusMode === NYDUS_TYPE.NATIVE) {
     await util.shouldFuseSupport();
   }
 

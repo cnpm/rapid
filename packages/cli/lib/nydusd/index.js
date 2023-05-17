@@ -11,37 +11,36 @@ const debug = require('debug')('nydusd');
 const runscript = require('runscript');
 const util = require('../util');
 const fuseMode = require('./fuse_mode');
-const csiMode = require('./csi_mode');
+
+const fsImplMap = {
+  [NYDUS_TYPE.FUSE]: {
+    start: fuseMode.startNydusFs,
+    end: fuseMode.endNydusFs,
+  },
+};
+
+/**
+ * @param {string} mode -
+ * @param {} fsImpl - { start: (cwd: string, pkg: object) => Promise<void>, end: (cwd: string, pkg: object) => Promise<void> }
+ */
+exports.registerMode = function(mode, fsImpl) {
+  fsImplMap[mode] = fsImpl;
+}
+
+exports.unregisterMode = function (mode) {
+  fsImplMap[mode] = null;
+}
 
 exports.startNydusFs = async function(mode, cwd, pkg) {
-  switch (mode) {
-    case NYDUS_TYPE.FUSE: {
-      await fuseMode.startNydusFs(cwd, pkg);
-      return;
-    }
-    case NYDUS_TYPE.CSI: {
-      await csiMode.startNydusFs(cwd, pkg);
-      return;
-    }
-    default: {
-      throw new Error('not support nydusd');
-    }
-  }
+  const impl = fsImplMap[mode];
+  assert(impl, `can not find fs impl for mode: ${mode}`);
+  await impl.start(cwd, pkg);
 };
 
 exports.endNydusFs = async function(mode, cwd, pkg) {
-  debug('endNydusFs, mode: %s, cwd: %s', mode, cwd);
-  switch (mode) {
-    case NYDUS_TYPE.CSI: {
-      await csiMode.endNydusFs(cwd, pkg);
-      return;
-    }
-    case NYDUS_TYPE.FUSE:
-      await fuseMode.endNydusFs(cwd, pkg);
-      return;
-    default:
-      return;
-  }
+  const impl = fsImplMap[mode];
+  assert(impl, `can not find fs impl for mode: ${mode}`);
+  await impl.end(cwd, pkg);
 };
 
 exports.getNydusMode = async function(cwd) {
@@ -49,14 +48,11 @@ exports.getNydusMode = async function(cwd) {
     const installMode = await exports.getNydusInstallMode(cwd);
     if (installMode) return installMode;
   }
-  if (process.env[NYDUS_CSI_ROOT_ENV]) {
-    return NYDUS_TYPE.CSI;
-  }
   try {
     await util.shouldFuseSupport();
     return NYDUS_TYPE.FUSE;
   } catch (_) {
-    return NYDUS_TYPE.NONE;
+    return NYDUS_TYPE.NATIVE;
   }
 };
 
@@ -65,7 +61,7 @@ exports.getNydusInstallMode = async function(cwd) {
   try {
     await fs.access(nmDir);
   } catch (_) {
-    return NYDUS_TYPE.NONE;
+    return null;
   }
   const stdio = await runscript('mount', {
     stdio: 'pipe',
@@ -79,8 +75,5 @@ exports.getNydusInstallMode = async function(cwd) {
   if (hasMntFuse && hasNmDirOverlay) {
     return NYDUS_TYPE.FUSE;
   }
-  if (hasNmDirOverlay) {
-    return NYDUS_TYPE.CSI;
-  }
-  return NYDUS_TYPE.NONE;
+  return NYDUS_TYPE.NATIVE;
 };
