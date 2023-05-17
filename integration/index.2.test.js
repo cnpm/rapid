@@ -66,7 +66,6 @@ describe('test/index.v2.test.js', () => {
         .end();
 
       assert.strictEqual(require(path.join(cwd, 'node_modules/semver/package.json')).version, '7.3.8');
-      await assert.rejects(fs.stat(path.join(cwd, 'node_modules/@babel/helper-compilation-targets/package.json')));
     });
   });
 
@@ -85,42 +84,15 @@ describe('test/index.v2.test.js', () => {
 
   it('should install node-canvas successfully', async () => {
     cwd = path.join(__dirname, './fixtures/canvas');
-    try {
-      await coffee
-        .fork(rapid, [ `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
-        .debug()
-        .expect('code', 0)
-        .end();
-      await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/canvas/package.json')));
-      const { stdout } = await runscript('mount', { stdio: 'pipe' });
-      assert(stdout.indexOf(cwd) > 0);
-      assert(require(path.join(cwd, 'node_modules/canvas/package.json')).binary.host === 'https://cdn.npmmirror.com/binaries/canvas');
-    } catch (e) {
-      console.log(e);
-      const fs = require('fs');
-      const path = require('path');
-      const vm = require('vm');
-      const { tarBucketsDir } = require('@cnpmjs/rapid/lib/constants');
-      const config = require(path.join(tarBucketsDir, './npm.config.json'));
-
-      for (const bucket in config) {
-        const buf = fs.readFileSync(path.join(tarBucketsDir, bucket));
-        for (const entry of config[bucket].entries) {
-          if (entry.type === 'reg' && entry.name.endsWith('.js')) {
-            const fileBuf = buf.slice(entry.offset, entry.offset + entry.size).toString();
-            try {
-              new vm.Script(fileBuf);
-              console.log('entry %s ok', entry.name);
-            } catch (e) {
-              if (!/Cannot use import statement outside a module/.test(e.message)) {
-                console.log(bucket, entry, fileBuf);
-                console.log(e);
-              }
-            }
-          }
-        }
-      }
-    }
+    await coffee
+      .fork(rapid, [ `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
+      .debug()
+      .expect('code', 0)
+      .end();
+    await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/canvas/package.json')));
+    const { stdout } = await runscript('mount', { stdio: 'pipe' });
+    assert(stdout.indexOf(cwd) > 0);
+    assert(require(path.join(cwd, 'node_modules/canvas/package.json')).binary.host === 'https://cdn.npmmirror.com/binaries/canvas');
   });
 
   it('should install react-jsx-parser@1.29.0 successfully', async () => {

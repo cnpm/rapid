@@ -7,6 +7,9 @@ const {
   install,
   clean,
 } = require('@cnpmjs/rapid');
+const {
+  exitDaemon,
+} = require('@cnpmjs/rapid/lib/nydusd/nydusd_api');
 
 describe('test/workspaces.test.js', () => {
   let cwd;
@@ -14,6 +17,7 @@ describe('test/workspaces.test.js', () => {
   it('should install lodash successfully', async () => {
     cwd = path.join(__dirname, './fixtures/workspaces');
     await clean(cwd);
+    await exitDaemon();
     await install({
       cwd,
       pkg: require(path.join(cwd, 'package.json')),
@@ -29,6 +33,7 @@ describe('test/workspaces.test.js', () => {
     assert(lodash2.version.startsWith('2.'));
 
     await clean(cwd);
+    await exitDaemon();
     await assert.rejects(fs.stat(path.join(cwd, 'node_modules/lodash')));
     await assert.rejects(fs.stat(path.join(cwd, 'packages/lodash-1/node_modules/lodash')));
     await assert.rejects(fs.stat(path.join(cwd, 'packages/lodash-2/node_modules/lodash')));
