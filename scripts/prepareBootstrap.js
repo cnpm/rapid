@@ -11,7 +11,7 @@ const util = require('node:util');
 const rootFolder = path.resolve(__dirname, '..');
 const targetFolder = path.resolve(
   rootFolder,
-  util.format('packages/binding/npm/binding-%s-%s', process.platform, process.arch),
+  util.format('bindings/binding-%s-%s', process.platform, process.arch),
 );
 
 const bootstrapBinPath = path.resolve(rootFolder, 'target/release/bootstrap');

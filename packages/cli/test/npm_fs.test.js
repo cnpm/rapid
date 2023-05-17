@@ -30,7 +30,7 @@ describe('test/npm_fs.test.js', () => {
     tnpmTarIndexJson = await TestUtil.readFixtureJson(fixtureDir, 'tnpm.tar.index.json');
 
     blobManager = new BlobManager();
-    for (const [blobId, tocIndex] of Object.entries(blobs)) {
+    for (const [ blobId, tocIndex ] of Object.entries(blobs)) {
       blobManager.addBlob(blobId, tocIndex);
     }
     for (const pkg of depPkgs) {

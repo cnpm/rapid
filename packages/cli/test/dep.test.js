@@ -28,7 +28,7 @@ describe('test/dep.test.js', () => {
     it('should generate true', async () => {
       const resolver = new DepResolver({
         httpclient,
-        cwd: cwd,
+        cwd,
         pkg: require(path.join(cwd, 'package.json')),
         lockId: null,
         depsTreePath: null,

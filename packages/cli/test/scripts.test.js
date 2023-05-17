@@ -165,7 +165,7 @@ describe('test/scripts.test.js', () => {
         mm(nydusd, 'startNydusFs', async () => { });
         mm(downloadDependency, 'download', async () => {
           return {
-            depsTree: [1],
+            depsTree: [ 1 ],
           };
         });
         await fs.rm(path.join(fixtures, '1'), { force: true });

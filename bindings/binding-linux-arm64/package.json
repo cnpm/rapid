@@ -1,27 +1,21 @@
 {
-  "name": "@cnpmjs/binding-linux-x64",
+  "name": "@cnpmjs/binding-linux-arm64",
   "version": "0.0.0",
-  "description": "downloader linux x64 binding",
+  "description": "downloader linux arm64 binding",
   "main": "index.node",
   "homepage": "https://github.com/cnpm/rapid",
   "repository": {
     "type": "git",
     "url": "git@github.com:cnpm/rapid.git",
-    "directory": "packages/binding/npm/binding-linux-x64"
+    "directory": "bindings/binding-linux-arm64"
+  },
+  "engines": {
+    "node": ">=12.0.0"
   },
   "files": [
     "index.node",
     "nydusd",
     "nydusd-bootstrap"
-  ],
-  "engines": {
-    "node": ">=12.0.0"
-  },
-  "os": [
-    "linux"
-  ],
-  "cpu": [
-    "x64"
   ],
   "scripts": {
     "pack": "npm pack",

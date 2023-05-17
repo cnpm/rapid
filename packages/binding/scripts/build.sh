@@ -23,7 +23,7 @@ build_in_linux() {
 }
 
 build() {
-  if [ "${UNAME}" == "Darwin" ]; then
+  if [[ "${UNAME}" == "Darwin" ]]; then
       build_in_macos
   else
       build_in_linux

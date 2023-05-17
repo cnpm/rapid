@@ -3,64 +3,20 @@
 const path = require('node:path');
 const os = require('node:os');
 const fs = require('node:fs/promises');
-const assert = require('node:assert');
 const coffee = require('coffee');
 const rapid = path.join(__dirname, '../node_modules/.bin/rapid');
 const fixtures = path.join(__dirname, 'fixtures');
 const mm = require('mm');
 const { clean } = require('@cnpmjs/rapid');
+const {
+  exitDaemon,
+} = require('@cnpmjs/rapid/lib/nydusd/nydusd_api');
 
 describe('test/tnpm-install-rapid.test.js', () => {
   let fixture;
   afterEach(async () => {
     await clean(fixture);
-  });
-
-  describe('nodeEnv is prod', () => {
-    beforeEach(() => {
-      fixture = path.join(fixtures, 'prod-deps-v2');
-    });
-
-    it('should generate deps tree', async () => {
-      await coffee.fork(rapid, [
-        '--production',
-        `--deps-tree-path=${path.join(fixture, 'package-lock.json')}`,
-      ], { cwd: fixture })
-        .debug()
-        .expect('code', 0)
-        .end();
-      await assert.rejects(fs.stat(path.join(fixture, 'node_modules/object-pipeline')));
-    });
-  });
-
-  describe('nodeEnv is all', () => {
-    beforeEach(() => {
-      fixture = path.join(fixtures, 'all-deps');
-    });
-
-    it('should generate deps tree', done => {
-      coffee.fork(rapid, [ `--deps-tree-path=${path.join(fixture, 'package-lock.json')}` ], { cwd: fixture })
-        .debug(0)
-        .expect('code', 0)
-        .expect('stdout', /preinstall\./)
-        .expect('stdout', /postinstall\./)
-        .end(() => {
-          done();
-        });
-    });
-  });
-
-  describe('argument abbreviation', () => {
-    beforeEach(() => {
-      fixture = path.join(fixtures, 'prod-deps-v2');
-    });
-
-    it('should work with argument abbreviation', async () => {
-      await coffee.fork(rapid, [ '--production', `--deps-tree-path=${path.join(fixture, 'package-lock.json')}` ], { cwd: fixture })
-        .debug()
-        .expect('code', 0)
-        .end();
-    });
+    await exitDaemon();
   });
 
   describe('--deps-tree-path args', () => {

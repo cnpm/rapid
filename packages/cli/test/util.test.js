@@ -8,7 +8,6 @@ const {
   getDisplayName,
   wrapSudo,
   generateBin,
-  getEnv,
   getWorkdir,
   resolveBinMap,
   getPkgNameFromTarballUrl,
@@ -224,7 +223,7 @@ describe('test/cache/util.test.js', () => {
       });
 
       assert.deepStrictEqual(result, {
-        'a.js': ['a'],
+        'a.js': [ 'a' ],
       });
     });
     it('should work with multiple bins with the same file', async () => {
@@ -238,7 +237,7 @@ describe('test/cache/util.test.js', () => {
       });
 
       assert.deepStrictEqual(result, {
-        'a.js': ['a', 'a-cli'],
+        'a.js': [ 'a', 'a-cli' ],
       });
     });
     it('should work with multiple bins with different files', async () => {
@@ -252,8 +251,8 @@ describe('test/cache/util.test.js', () => {
       });
 
       assert.deepStrictEqual(result, {
-        'a.js': ['a'],
-        'b.js': ['b'],
+        'a.js': [ 'a' ],
+        'b.js': [ 'b' ],
       });
     });
   });

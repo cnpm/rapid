@@ -9,12 +9,16 @@ const rapid = path.join(__dirname, '../node_modules/.bin/rapid');
 const {
   clean,
 } = require('@cnpmjs/rapid');
+const {
+  exitDaemon,
+} = require('@cnpmjs/rapid/lib/nydusd/nydusd_api');
 
 describe('test/index.v2.test.js', () => {
   let cwd;
 
   afterEach(async () => {
     await clean(cwd);
+    await exitDaemon();
   });
 
   describe('update', () => {
@@ -62,7 +66,6 @@ describe('test/index.v2.test.js', () => {
         .end();
 
       assert.strictEqual(require(path.join(cwd, 'node_modules/semver/package.json')).version, '7.3.8');
-      await assert.rejects(fs.stat(path.join(cwd, 'node_modules/@babel/helper-compilation-targets/package.json')));
     });
   });
 

@@ -159,9 +159,9 @@ exports.Scripts = class Scripts {
 
     // workspaces
     for (const p of workspaces.values()) {
-      const subpkg = path.join(cwd, p);
-      const pkgJSON = await readPkgJSON(subpkg);
-      await this.runProjectLifecycleScript(subpkg, pkgJSON);
+      const subpkg = path.isAbsolute(p) ? p : path.join(cwd, p);
+      const { pkg } = await readPkgJSON(subpkg);
+      await this.runProjectLifecycleScript(subpkg, pkg);
     }
 
     // root project
