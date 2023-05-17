@@ -467,6 +467,12 @@ exports.runScript = async (pkgDir, script, options) => {
   if (/^npm (ls|list)$/.test(script)) {
     ignoreError = true;
   }
+  // for debug
+  if (script === 'node-gyp rebuild') {
+    console.info('env.PATH: ', env.PATH);
+    await this.runscript('which python3', { stdio: 'inherit' });
+    await this.runscript('echo $PATH', { stdio: 'inherit' });
+  }
 
   try {
     const res = await runscript(script, {
