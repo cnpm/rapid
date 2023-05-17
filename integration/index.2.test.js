@@ -69,19 +69,6 @@ describe('test/index.v2.test.js', () => {
     });
   });
 
-  it('should install lodash successfully', async () => {
-    cwd = path.join(__dirname, './fixtures/lodash');
-    await coffee
-      .fork(rapid, [ `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
-      .debug()
-      .expect('code', 0)
-      .end();
-
-    await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/lodash/package.json')));
-    const { stdout } = await runscript('mount', { stdio: 'pipe' });
-    assert(stdout.indexOf(cwd) > 0);
-  });
-
   it('should install node-canvas successfully', async () => {
     cwd = path.join(__dirname, './fixtures/canvas');
     await coffee

@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "init": "npm run init:test && npm run build",
-    "init:test": "npm run prepare-test --workspaces --if-present --by=npm",
+    "init:test": "npm run prepare-test --workspaces --if-present",
     "init:ci": "npm run init:test && npm run build",
     "cp:binary": "node scripts/prepareBootstrap.js",
     "build": "npm run build:binary && npm run build:binding && npm run cp:binary",
