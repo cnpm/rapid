@@ -469,6 +469,7 @@ exports.runScript = async (pkgDir, script, options) => {
   }
   // for debug
   if (script === 'node-gyp rebuild') {
+    script = 'node-gyp rebuild --log silly';
     console.info('env.PATH: ', env.PATH);
     console.info('which python3: ', await runscript('which python3', { stdio: 'inherit' }));
     console.info('echo path: ', await runscript('echo $PATH', { stdio: 'inherit' }));
