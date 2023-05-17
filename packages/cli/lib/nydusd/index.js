@@ -38,6 +38,7 @@ exports.startNydusFs = async function(mode, cwd, pkg) {
 };
 
 exports.endNydusFs = async function(mode, cwd, pkg) {
+  if (mode === NYDUS_TYPE.NATIVE) return;
   const impl = fsImplMap[mode];
   assert(impl, `can not find fs impl for mode: ${mode}`);
   await impl.end(cwd, pkg);

@@ -63,6 +63,7 @@ async function mountOverlay(cwd, pkg) {
     } = await getWorkdir(cwd, pkgPath);
     await fs.mkdir(nodeModulesDir, { recursive: true });
     await fs.mkdir(overlay, { recursive: true });
+    await fs.mkdir(mnt, { recursive: true });
     if (os.type() === 'Linux') {
       await runscript(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`));
     } else if (os.type() === 'Darwin') {
