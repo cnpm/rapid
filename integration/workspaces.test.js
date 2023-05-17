@@ -24,10 +24,9 @@ describe('test/workspaces.test.js', () => {
     });
 
     await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/lodash/package.json')));
-    console.info('111: ', path.join(cwd, 'packages/lodash-1/node_modules/lodash/package.json'));
-    console.info('nm: ', await fs.readdir(path.join(cwd, 'packages/lodash-1/node_modules')));
     try {
       await fs.stat(path.join(cwd, 'packages/lodash-1/node_modules/lodash/package.json'));
+      console.info('file: ', await fs.readFile(path.join(cwd, 'packages/lodash-1/node_modules/lodash/package.json'), 'utf-8'));
     } catch (error) {
       console.info('error: ', error);
     }
