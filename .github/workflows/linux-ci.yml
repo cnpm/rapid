@@ -49,7 +49,9 @@ jobs:
         run: npm -v
 
       - name: Show Python3 version
-        run: which python3
+        run: |
+          which python3
+          echo $PATH
 
       - name: Change directory ownership
         run: chown -R $(id -un):$(id -gn) .
