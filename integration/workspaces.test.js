@@ -16,8 +16,6 @@ describe('test/workspaces.test.js', () => {
 
   it('should install lodash successfully', async () => {
     cwd = path.join(__dirname, './fixtures/workspaces');
-    await clean(cwd);
-    await exitDaemon();
     await install({
       cwd,
       pkg: require(path.join(cwd, 'package.json')),

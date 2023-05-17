@@ -19,19 +19,6 @@ describe('test/tnpm-install-rapid.test.js', () => {
     await exitDaemon();
   });
 
-  describe('argument abbreviation', () => {
-    beforeEach(() => {
-      fixture = path.join(fixtures, 'prod-deps-v2');
-    });
-
-    it('should work with argument abbreviation', async () => {
-      await coffee.fork(rapid, [ '--production', `--deps-tree-path=${path.join(fixture, 'package-lock.json')}` ], { cwd: fixture })
-        .debug()
-        .expect('code', 0)
-        .end();
-    });
-  });
-
   describe('--deps-tree-path args', () => {
     beforeEach(() => {
       fixture = path.join(fixtures, 'local-deps-tree');

@@ -18,7 +18,6 @@ jobs:
         platform:
           - os: ubuntu-latest
             shell: bash
-        python-version: [ 3.11 ]
 
     runs-on: ${{ matrix.platform.os }}
 
@@ -36,9 +35,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
-        env:
-          PYTHON_VERSION: ${{ matrix.python-version }}
+          python-version: 3.x
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
