@@ -110,3 +110,5 @@ bindings/*/index.node
 
 .idea
 packages/cli/test/fixtures/project-scripts/apps/a/1
+
+package-lock.json

@@ -1,6 +1,0 @@
-{
-  "name": "lodash.test",
-  "dependencies": {
-    "lodash": "*"
-  }
-}

@@ -64,7 +64,7 @@ exports.Scripts = class Scripts {
     let count = 0;
     const total = this.installTasks?.length;
     if (total && this.options.ignoreScripts) {
-      console.warn(chalk.yellow('ignore all lifecycle scripts'));
+      console.warn(chalk.yellow('[rapid] ignore all lifecycle scripts'));
       return;
     }
 

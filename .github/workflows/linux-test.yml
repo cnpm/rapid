@@ -16,9 +16,9 @@ jobs:
       matrix:
         node-version: [ 16.x, 18.x, 20.x ]
         platform:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             shell: bash
-        python-version: [ 3.11 ]
+        python-version: [ 3.9 ]
 
     runs-on: ${{ matrix.platform.os }}
 

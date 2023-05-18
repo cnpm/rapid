@@ -16,7 +16,7 @@ jobs:
       matrix:
         node-version: [ 16.x, 18.x, 20.x ]
         platform:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             shell: bash
 
     runs-on: ${{ matrix.platform.os }}
@@ -35,7 +35,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.x
+          python-version: 3.9
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -52,7 +52,7 @@ jobs:
         run: chown -R $(id -un):$(id -gn) .
 
       - name: Install sudo
-        run: apt-get update && apt-get install -y sudo libssl-dev
+        run: apt-get update && apt-get install -y sudo libssl-dev libpango1.0-dev
 
       - name: Install dependencies
         run: npm i
