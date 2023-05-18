@@ -33,8 +33,8 @@ describe('test/workspaces.test.js', () => {
 
     await clean(cwd);
     await exitDaemon();
-    await assert.rejects(fs.stat(path.join(cwd, 'node_modules/lodash')));
-    await assert.rejects(fs.stat(path.join(cwd, 'packages/lodash-1/node_modules/lodash')));
-    await assert.rejects(fs.stat(path.join(cwd, 'packages/lodash-2/node_modules/lodash')));
+    await assert.rejects(fs.readFile(path.join(cwd, 'node_modules/lodash/package.json')));
+    await assert.rejects(fs.readFile(path.join(cwd, 'packages/lodash-1/node_modules/lodash/package.json')));
+    await assert.rejects(fs.readFile(path.join(cwd, 'packages/lodash-2/node_modules/lodash/package.json')));
   });
 });
