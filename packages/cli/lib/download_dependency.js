@@ -5,6 +5,7 @@ const fs = require('node:fs/promises');
 const {
   tarBucketsDir,
   npmCacheConfigPath,
+  npmIndexConfigPath,
 } = require('./constants');
 const util = require('./util');
 const NpmBlobManager = require('./npm_blob_manager');
@@ -41,8 +42,6 @@ async function download(options) {
   // 3. prepare preInstall/postInstall scripts
   console.info('[rapid] removing tar buckets. dir: %s', tarBucketsDir);
   const { baseDir } = await util.getWorkdir(options.cwd);
-  // 防止多次安装，realBucketCount 不同时数据错乱
-  await fs.rm(tarBucketsDir, { recursive: true, force: true });
   await fs.rm(baseDir, { recursive: true, force: true });
 
   const blobManager = new NpmBlobManager();
@@ -56,10 +55,11 @@ async function download(options) {
   const depsTree = options.depsTree;
 
   console.time('[rapid] parallel download time');
-  const tocIndexes = await downloader.download(depsTree);
+  await downloader.download(depsTree);
+  const { tocMap, indices } = downloader.dumpdata;
   await downloader.shutdown();
 
-  for (const [ blobId, tocIndex ] of Object.entries(tocIndexes)) {
+  for (const [ blobId, tocIndex ] of Object.entries(tocMap)) {
     blobManager.addBlob(blobId, tocIndex);
   }
 
@@ -103,7 +103,9 @@ async function download(options) {
     await fs.mkdir(path.dirname(tarIndex), { recursive: true });
     await fs.writeFile(tarIndex, JSON.stringify(fsMeta), 'utf8');
   }));
-  await fs.writeFile(npmCacheConfigPath, JSON.stringify(tocIndexes), 'utf8');
+  // FIXME atomic write
+  await fs.writeFile(npmCacheConfigPath, JSON.stringify(tocMap), 'utf8');
+  await fs.writeFile(npmIndexConfigPath, JSON.stringify(indices), 'utf8');
   console.timeEnd('[rapid] generate fs meta');
   return {
     depsTree,

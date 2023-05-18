@@ -36,7 +36,7 @@ impl PackageLock {
                             .resolved
                             .as_ref()
                             .unwrap()
-                            .replace(&replace_str, "http://127.0.0.1:8888"),
+                            .replace(&replace_str, "http://127.0.0.1:8000"),
                     )
                     .build()
                     .unwrap();

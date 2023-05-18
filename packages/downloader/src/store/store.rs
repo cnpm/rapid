@@ -150,15 +150,14 @@ impl NpmStore {
         let file_path = bucket_dir.join(&bucket_name);
         let bucket_file = OpenOptions::new()
             .create(true)
-            .write(true)
-            // TODO 现在每次都把文件清空
-            .truncate(true)
+            .append(true)
             .open(file_path)
             .await?;
+        let position = bucket_file.metadata().await?.len();
         let bucket = NpmBucketStore::new_with_entry_listener(
             bucket_name,
             bucket_file,
-            0,
+            position,
             timeout,
             entry_listener,
         )
@@ -225,7 +224,7 @@ mod test {
         let pkg_readers = [(
             PackageRequestBuilder::new()
                 .name("acorn")
-                .version("5.7.4")
+                .version("8.7.1")
                 .sha("mock_sha")
                 .url("mock_url")
                 .build()
@@ -235,7 +234,7 @@ mod test {
                 .append(false)
                 .read(true)
                 .write(false)
-                .open(current_dir.join("test/fixtures/tar/acorn-5.7.4.tgz"))
+                .open(current_dir.join("test/fixtures/tar/acorn-8.7.1.tgz"))
                 .await
                 .unwrap(),
         )];

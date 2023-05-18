@@ -113,7 +113,7 @@ impl PackageRequest {
     /// .unwrap();
     ///
     ///  let prefix = pkg.tar_prefix();
-    /// assert_eq!(prefix, String::from("@mockscope/foo@1.0.0"));
+    /// assert_eq!(prefix, String::from("@mockscope_foo@1.0.0"));
     /// ```
     ///
     pub fn tar_prefix(&self) -> String {

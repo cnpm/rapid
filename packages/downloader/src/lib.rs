@@ -33,6 +33,12 @@ use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 
 #[derive(Debug, Clone)]
+pub struct TocPath {
+    pub map: String,
+    pub index: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct DownloadOptions {
     pub download_dir: String,
     pub bucket_count: u8,
@@ -40,6 +46,7 @@ pub struct DownloadOptions {
     pub retry_time: u8,
     pub entry_listener: Option<EntryListener>,
     pub download_timeout: Duration,
+    pub toc_path: Option<TocPath>,
 }
 
 pub async fn download(
@@ -53,6 +60,7 @@ pub async fn download(
         entry_listener,
         download_timeout,
         retry_time,
+        ..
     } = opts;
 
     let store = NpmStore::new(
@@ -71,35 +79,42 @@ pub async fn download(
     Ok(toc_index_data.toc_map)
 }
 
-#[tokio::test]
-async fn test_downloader() {
-    let req = vec![
-        PackageRequest {
-            name: "lodash.get".to_string(),
-            version: "4.4.2".to_string(),
-            sha: "mock_sha".to_string(),
-            url: "http://127.0.0.1:8888/lodash.get-4.4.2.tgz".to_string(),
-        },
-        PackageRequest {
-            name: "@mockscope/anima-detect".to_string(),
-            version: "1.0.1".to_string(),
-            sha: "mock_sha".to_string(),
-            url: "http://127.0.0.1:8888/@mockscope/anima-detect-1.0.1.tgz".to_string(),
-        },
-    ];
-    let result = download(
-        req,
-        DownloadOptions {
-            download_dir: "/tmp/tar_buckets".to_string(),
-            bucket_count: 1,
-            http_concurrent_count: 1,
-            download_timeout: Duration::from_secs(10),
-            entry_listener: None,
-            retry_time: 1,
-        },
-    )
-    .await
-    .unwrap();
-    // assert_eq!(result.blobIds.capacity(), 1);
-    // assert_eq!(result.entries.capacity(), 32);
+#[cfg(test)]
+mod test_downloader {
+    use std::time::Duration;
+    use crate::{download, DownloadOptions, PackageRequest};
+
+    #[tokio::test]
+    async fn test_downloader() {
+        let req = vec![
+            PackageRequest {
+                name: "lodash".to_string(),
+                version: "4.17.21".to_string(),
+                sha: "mock_sha".to_string(),
+                url: "http://127.0.0.1:8000/lodash-4.17.21.tgz".to_string(),
+            },
+            PackageRequest {
+                name: "moment".to_string(),
+                version: "2.29.4".to_string(),
+                sha: "mock_sha".to_string(),
+                url: "http://127.0.0.1:8000/moment-2.29.4.tgz".to_string(),
+            },
+        ];
+        let result = download(
+            req,
+            DownloadOptions {
+                download_dir: "/tmp/tar_buckets".to_string(),
+                bucket_count: 1,
+                http_concurrent_count: 1,
+                download_timeout: Duration::from_secs(10),
+                entry_listener: None,
+                retry_time: 1,
+                toc_path: None,
+            },
+        )
+            .await
+            .unwrap();
+        // assert_eq!(result.blobIds.capacity(), 1);
+        // assert_eq!(result.entries.capacity(), 32);
+    }
 }

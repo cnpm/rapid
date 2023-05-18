@@ -165,7 +165,7 @@ mod test {
         )
         .await
         .unwrap();
-        let tar_file = current_dir.join("test/fixtures/tar/acorn-5.7.4.tgz");
+        let tar_file = current_dir.join("test/fixtures/tar/acorn-8.7.1.tgz");
         let tar_file = OpenOptions::new()
             .create(false)
             .append(false)
@@ -176,7 +176,7 @@ mod test {
             .unwrap();
         let pkg = PackageRequestBuilder::new()
             .name("acorn")
-            .version("5.7.4")
+            .version("8.7.1")
             .sha("mock_sha")
             .url("mock_url")
             .build()
@@ -202,7 +202,7 @@ mod test {
         let mut store = NpmBucketStore::new(String::from("bucket_2.stgz"), bucket_file, 0, Duration::from_secs(10))
             .await
             .unwrap();
-        let tar_file = current_dir.join("test/fixtures/tar/acorn-5.7.4.tgz");
+        let tar_file = current_dir.join("test/fixtures/tar/acorn-8.7.1.tgz");
         let tar_file = OpenOptions::new()
             .create(false)
             .append(false)
@@ -212,8 +212,8 @@ mod test {
             .await
             .unwrap();
         let pkg = PackageRequestBuilder::new()
-            .name("aria-query")
-            .version("4.2.2")
+            .name("acorn")
+            .version("8.7.1")
             .sha("mock_sha")
             .url("mock_url")
             .build()
@@ -223,7 +223,7 @@ mod test {
         assert!(res.is_ok());
         let new_position = store.position;
 
-        let bad_tar = current_dir.join("test/fixtures/tar/acorn-5.7.4.tgz");
+        let bad_tar = current_dir.join("test/fixtures/tar/acorn-8.7.1.tgz");
         let mut bad_tar = OpenOptions::new()
             .create(false)
             .append(false)
@@ -234,7 +234,7 @@ mod test {
             .unwrap();
         let mut bad_tar_buf = Vec::new();
         bad_tar.read_to_end(&mut bad_tar_buf).await.unwrap();
-        let bad_tar = &bad_tar_buf[0..(bad_tar_buf.len() - 1024 * 127)];
+        let bad_tar = &bad_tar_buf[0..(bad_tar_buf.len() - 1024 * 30)];
 
         let pkg = PackageRequestBuilder::new()
             .name("antd-mobile")
