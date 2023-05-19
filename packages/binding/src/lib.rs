@@ -10,10 +10,7 @@ use downloader::error::Error as TnpmError;
 use downloader::http::{HTTPPool, HTTPReqwester};
 use downloader::store::listener::{EntryListener, PackageEntry};
 use downloader::toc_index_store::{TocIndexStore, TocIndexStoreData, TocIndicesMap, TocMap};
-use downloader::{
-    download as batch_download, DownloadOptions, NpmStore, PackageRequest, PackageRequestBuilder,
-    TocIndex,
-};
+use downloader::{download as batch_download, DownloadOptions, NpmStore, PackageRequest, PackageRequestBuilder, TocIndex, TocPath};
 use log::LevelFilter;
 use napi::sys::napi_value;
 use napi::threadsafe_function::ErrorStrategy;
@@ -30,6 +27,12 @@ use tokio::io::AsyncReadExt;
 use tokio::sync::mpsc::Receiver;
 
 #[napi(object)]
+struct JsTocPath {
+    pub map: String,
+    pub index: String,
+}
+
+#[napi(object)]
 struct JsDownloadOptions {
     pub download_dir: String,
     pub download_timeout: u32,
@@ -38,6 +41,7 @@ struct JsDownloadOptions {
     pub entry_whitelist: Option<Vec<String>>,
     pub entry_listener: Option<JsFunction>,
     pub retry_time: Option<u32>,
+    pub toc_path: Option<JsTocPath>,
 }
 
 #[napi(object)]
@@ -106,6 +110,14 @@ fn parse_download_options(
     } else {
         None
     };
+    let toc_path = if let Some(toc_path) = options.toc_path.take() {
+        Some(TocPath {
+            map: toc_path.map,
+            index: toc_path.index,
+        })
+    } else {
+        None
+    };
 
     Ok(DownloadOptions {
         download_dir: options.download_dir,
@@ -114,6 +126,7 @@ fn parse_download_options(
         download_timeout: Duration::from_millis(options.download_timeout as u64),
         entry_listener,
         retry_time: retry_time as u8,
+        toc_path,
     })
 }
 
@@ -240,7 +253,16 @@ impl JsDownloader {
     #[napi(constructor)]
     pub fn new(env: Env, options: JsDownloadOptions) -> Result<Self, Error> {
         let options = parse_download_options(env, options)?;
-        let toc_index_store = Arc::new(TocIndexStore::new());
+        let toc_index_store = if let Some(toc_path) = &options.toc_path {
+            if let Ok(toc) = TocIndexStore::restore_from_file(&toc_path.map, &toc_path.index) {
+                Arc::new(toc)
+            } else {
+                Arc::new(TocIndexStore::new())
+            }
+        } else {
+            Arc::new(TocIndexStore::new())
+        };
+        // let toc_index_store = Arc::new(TocIndexStore::new());
         Ok(JsDownloader {
             options,
             toc_index_store,

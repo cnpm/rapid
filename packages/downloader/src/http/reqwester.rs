@@ -108,7 +108,7 @@ mod test {
                 PackageRequestBuilder::new()
                     .name("mock-pkg")
                     .version("1.0.0")
-                    .url("http://127.0.0.1:8888/a-sync-waterfall-1.0.1.tgz")
+                    .url("http://127.0.0.1:8000/accepts-1.3.8.tgz")
                     .sha("mock_sha")
                     .build()
                     .unwrap(),

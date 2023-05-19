@@ -110,5 +110,5 @@ bindings/*/index.node
 
 .idea
 packages/cli/test/fixtures/project-scripts/apps/a/1
-
+packages/downloader/test/nginx.conf
 package-lock.json

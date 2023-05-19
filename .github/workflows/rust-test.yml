@@ -1,7 +1,7 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Node TEST Linux
+name: Rust TEST Linux
 
 on:
   push:
@@ -14,11 +14,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 16.x, 18.x, 20.x ]
         platform:
           - os: ubuntu-20.04
             shell: bash
-        python-version: [ 3.9 ]
 
     runs-on: ${{ matrix.platform.os }}
 
@@ -36,14 +34,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
-        env:
-          PYTHON_VERSION: ${{ matrix.python-version }}
+          python-version: 3.9
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20.x
 
       - name: Install npm@9
         run: npm i -g npm@9
@@ -60,7 +56,8 @@ jobs:
       - name: Install dependencies
         run: npm i
 
-      - name: Run Test
-        run: npm run ci
-        env:
-          NODE_OPTIONS: --max_old_space_size=6144
+      - name: Init CI
+        run: npm run init:ci
+
+      - name: Run Rust test
+        run: RUST_BACKTRACE=1 cargo test --workspace --exclude tokio-tar

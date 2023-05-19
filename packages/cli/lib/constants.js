@@ -26,6 +26,7 @@ const nydusdMnt = path.join(baseRapidModeDir(), 'mnt');
 
 // npm 包本地缓存信息
 const npmCacheConfigPath = path.join(tarBucketsDir, 'npm.config.json');
+const npmIndexConfigPath = path.join(tarBucketsDir, 'npm.index.json');
 
 // nydusd 可执行文件，支持 x64 和 arm64 架构的 Linux/macOS
 const nydusd = rsBindingPath
@@ -70,6 +71,7 @@ exports.baseRapidModeDir = baseRapidModeDir;
 exports.nydusdConfigFile = nydusdConfigFile;
 exports.tarBucketsDir = tarBucketsDir;
 exports.npmCacheConfigPath = npmCacheConfigPath;
+exports.npmIndexConfigPath = npmIndexConfigPath;
 exports.socketPath = socketPath;
 exports.nydusdMnt = nydusdMnt;
 exports.nydusdBootstrapFile = nydusdBootstrapFile;

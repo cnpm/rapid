@@ -519,7 +519,7 @@ mod test {
             .create(false)
             .write(false)
             .read(true)
-            .open("./test/fixtures/tar/egg-2.29.1.tgz")
+            .open("./test/fixtures/tar/egg-2.36.0.tgz")
             .await
             .unwrap();
         let buf_writer = BufWriter::new();
@@ -532,7 +532,7 @@ mod test {
 
         let buf = buf_writer.read_buf();
         let bad_buf = bad_buf_writer.read_buf();
-        assert_eq!(buf.len(), 87125);
-        assert_eq!(bad_buf.len(), 87125);
+        assert_eq!(buf.len(), 46109);
+        assert_eq!(bad_buf.len(), 46109);
     }
 }

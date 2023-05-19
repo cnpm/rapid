@@ -102,7 +102,6 @@ impl Downloader {
                             return Err(e);
                         }
                     }
-
                 }
             }
         }
@@ -123,9 +122,9 @@ impl Downloader {
         });
         let map_handler: JoinHandle<Result<(), Error>> = tokio::spawn(async move {
             while let Some(DownloadResponse {
-                pkg_request,
-                reader,
-            }) = response_receiver.recv().await
+                               pkg_request,
+                               reader,
+                           }) = response_receiver.recv().await
             {
                 if let Err(_) = store_request_sender
                     .send(NpmBucketStoreExecuteCommand {
@@ -149,11 +148,11 @@ impl Downloader {
         let toc_index_store = self.toc_index_store.clone();
         let toc_store_handler: JoinHandle<Result<(), Error>> = tokio::spawn(async move {
             while let Some(NpmBucketStoreExecuteResult {
-                toc_index,
-                tar_name,
-                pkg_request,
-                ..
-            }) = store_receiver.recv().await
+                               toc_index,
+                               tar_name,
+                               pkg_request,
+                               ..
+                           }) = store_receiver.recv().await
             {
                 toc_index_store.add_package(
                     pkg_request.name(),
@@ -175,6 +174,9 @@ impl Downloader {
     }
 
     pub async fn download_pkg(&self, request: PackageRequest) -> Result<(), Error> {
+        if self.toc_index_store.has_package(&request.name, &request.version) {
+            return Ok(());
+        }
         let executor = self.http_pool.create_download_request(request).await;
         let DownloadResponse {
             pkg_request,
@@ -192,5 +194,74 @@ impl Downloader {
             toc_index,
         );
         Ok(())
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use std::fs::File;
+    use std::os::unix::fs::MetadataExt;
+    use std::path::Path;
+    use std::sync::Arc;
+    use std::time::Duration;
+    use crate::download::Downloader;
+    use crate::http::HTTPPool;
+    use crate::{NpmStore, PackageRequest};
+    use crate::toc_index_store::TocIndexStore;
+
+    async fn create_downloader(toc_index_store: Arc<TocIndexStore>) -> Downloader {
+        let http_pool = HTTPPool::new(1).expect("create http pool failed");
+        let store = NpmStore::new(
+            1,
+            Path::new("/tmp/should_not_download_exists_pkg.stgz"),
+            Duration::from_secs(5),
+            None,
+        ).await.expect("create store failed");
+        Downloader::new(store, http_pool, toc_index_store, 1)
+    }
+
+    #[tokio::test]
+    async fn should_not_download_exists_pkg() {
+        let toc_index_store = Arc::new(TocIndexStore::new());
+        let downloader = create_downloader(toc_index_store.clone()).await;
+        // first download
+        downloader.download_pkg(PackageRequest {
+            name: String::from("umi"),
+            version: String::from("4.0.7"),
+            sha: String::from("mock_sha"),
+            url: String::from("http://127.0.0.1:8000/umi-4.0.7.tgz"),
+        }).await.expect("download pkg failed");
+        downloader.shutdown().await.expect("shutdown failed");
+
+        let bucket_file = File::open("/tmp/should_not_download_exists_pkg.stgz").expect("open bucket file failed");
+        let metadata = bucket_file.metadata().expect("get bucket file metadata failed");
+        let inode = metadata.ino();
+        let modify_time = metadata.mtime();
+        let bucket_size = metadata.len();
+
+        let bucket_size = bucket_file.metadata().expect("get bucket file metadata failed").len();
+        drop(bucket_file);
+
+        // second download
+        let downloader = create_downloader(toc_index_store.clone()).await;
+        downloader.download_pkg(PackageRequest {
+            name: String::from("umi"),
+            version: String::from("4.0.7"),
+            sha: String::from("mock_sha"),
+            url: String::from("http://127.0.0.1:8000/umi-4.0.7.tgz"),
+        }).await.expect("download pkg failed");
+        downloader.shutdown().await.expect("shutdown failed");
+
+        let bucket_file = File::open("/tmp/should_not_download_exists_pkg.stgz").expect("open bucket file failed");
+        let new_metadata = bucket_file.metadata().expect("get bucket file metadata failed");
+        drop(bucket_file);
+
+        // same file
+        assert_eq!(inode, new_metadata.ino());
+        // same size
+        assert_eq!(bucket_size, new_metadata.len());
+        // not modify file
+        assert_eq!(modify_time, new_metadata.mtime());
     }
 }

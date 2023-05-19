@@ -24,8 +24,40 @@ export interface JsPackageEntry {
   entryName: string
 }
 export function download(requests: Array<JsPackageRequest>, options: JsDownloadOptions): object
+export interface JsTocPath {
+  map: string
+  index: string
+}
+export interface JsDownloadOptions {
+  downloadDir: string
+  downloadTimeout: number
+  bucketCount: number
+  httpConcurrentCount: number
+  entryWhitelist?: Array<string> | undefined | null
+  entryListener?: (...args: any[]) => any | undefined | null
+  retryTime?: number | undefined | null
+  tocPath?: JsTocPath | undefined | null
+}
+export interface JsPackageRequest {
+  name?: string | undefined | null
+  version?: string | undefined | null
+  sha?: string | undefined | null
+  url?: string | undefined | null
+}
+export interface JsPackageEntry {
+  pkgName: string
+  content: string
+  entryName: string
+}
+export function download(requests: Array<JsPackageRequest>, options: JsDownloadOptions): object
 export type JsDownloader = Downloader
 export class Downloader {
+  constructor(options: JsDownloadOptions)
+  init(): object
+  download(request: JsPackageRequest): Promise<void>
+  batchDownloads(jsRequests: Array<JsPackageRequest>): Promise<void>
+  dump(): string
+  shutdown(): Promise<void>
   constructor(options: JsDownloadOptions)
   init(): object
   download(request: JsPackageRequest): Promise<void>
@@ -35,6 +67,9 @@ export class Downloader {
 }
 export type JsFcntl = Fcntl
 export class Fcntl {
+  constructor(filepath: string)
+  lock(): void
+  unlock(): void
   constructor(filepath: string)
   lock(): void
   unlock(): void

@@ -1,7 +1,7 @@
 'use strict';
 
 const Util = require('./util');
-const { tarBucketsDir } = require('./constants');
+const { tarBucketsDir, npmCacheConfigPath, npmIndexConfigPath } = require('./constants');
 const os = require('node:os');
 
 const platform = os.platform();
@@ -28,6 +28,7 @@ class Downloader {
     this.productionMode = options.productionMode;
     this.rapidDownloader = this.createRapidDownloader();
     this.taskMap = new Map();
+    this._dumpData = null;
   }
 
   async init() {
@@ -48,15 +49,33 @@ class Downloader {
       entryWhitelist: [ '*/package.json', '*/binding.gyp' ],
       entryListener: this.entryListener,
       downloadTimeout: this.downloadTimeout,
+      tocPath: {
+        map: npmCacheConfigPath,
+        index: npmIndexConfigPath,
+      },
     });
   }
 
   async download(pkgLockJson) {
     const tasks = this.createDownloadTask(pkgLockJson);
     await this.rapidDownloader.batchDownloads(tasks);
+  }
+
+  get dumpdata() {
+    if (!this._dumpData) {
+      this._dump();
+    }
+    return this._dumpData;
+  }
+
+  _dump() {
     const dataStr = this.rapidDownloader.dump();
-    const data = JSON.parse(dataStr);
-    return data.tocMap;
+    this._dumpData = JSON.parse(dataStr);
+  }
+
+  async getTocIndices() {
+    const { tocMap } = this.dumpdata;
+    return tocMap;
   }
 
   async downloadPkg(pkg) {
