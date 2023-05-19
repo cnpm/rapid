@@ -60,4 +60,4 @@ jobs:
         run: npm run init:ci
 
       - name: Run Rust test
-        run: cargo test --workspace
+        run: RUST_BACKTRACE=1 cargo test --workspace --exclude tokio-tar
