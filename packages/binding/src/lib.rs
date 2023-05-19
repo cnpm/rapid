@@ -4,13 +4,16 @@ extern crate napi_derive;
 use napi::{CallContext, Callback, Env, Error, JsFunction, JsObject, NapiRaw, Status};
 
 use ctor::ctor;
-use fcntl::Fcntl;
 use downloader::download::Downloader;
 use downloader::error::Error as TnpmError;
 use downloader::http::{HTTPPool, HTTPReqwester};
 use downloader::store::listener::{EntryListener, PackageEntry};
 use downloader::toc_index_store::{TocIndexStore, TocIndexStoreData, TocIndicesMap, TocMap};
-use downloader::{download as batch_download, DownloadOptions, NpmStore, PackageRequest, PackageRequestBuilder, TocIndex, TocPath};
+use downloader::{
+    download as batch_download, DownloadOptions, NpmStore, PackageRequest, PackageRequestBuilder,
+    TocIndex, TocPath,
+};
+use fcntl::Fcntl;
 use log::LevelFilter;
 use napi::sys::napi_value;
 use napi::threadsafe_function::ErrorStrategy;
@@ -96,11 +99,7 @@ fn parse_download_options(
     if retry_time > u8::MAX as u32 {
         return Err(Error::new(
             Status::InvalidArg,
-            format!(
-                "retry {} should less than {}",
-                retry_time,
-                u8::MAX
-            ),
+            format!("retry {} should less than {}", retry_time, u8::MAX),
         ));
     }
 
@@ -296,7 +295,12 @@ impl JsDownloader {
                         format!("create npm store failed: {:?}", e),
                     )
                 })?;
-                let downloader = Downloader::new(store, http_pool, self.toc_index_store.clone(), self.options.retry_time);
+                let downloader = Downloader::new(
+                    store,
+                    http_pool,
+                    self.toc_index_store.clone(),
+                    self.options.retry_time,
+                );
                 self.inner = Some(downloader);
                 Ok(())
             },

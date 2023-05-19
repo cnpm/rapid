@@ -59,5 +59,11 @@ jobs:
       - name: Init CI
         run: npm run init:ci
 
+      - name: Check
+        run: |
+          rustup component add rustfmt clippy
+          cargo fmt -- --check
+          cargo clippy -- -Dwarnings
+
       - name: Run Rust test
         run: RUST_BACKTRACE=1 cargo test --workspace --exclude tokio-tar

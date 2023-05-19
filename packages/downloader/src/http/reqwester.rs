@@ -45,9 +45,7 @@ impl HTTPReqwester {
         mut client_builder: reqwest::ClientBuilder,
     ) -> Result<reqwest::ClientBuilder, IoError> {
         // 在大量连接建立时，容易发生 DNS 超时
-        let pre_resolve_list = vec![
-            "registry.npmmirror.com",
-        ];
+        let pre_resolve_list = vec!["registry.npmmirror.com"];
         let mut client_builder = client_builder;
         for address in pre_resolve_list {
             let address_with_port = format!("{}:443", address);
