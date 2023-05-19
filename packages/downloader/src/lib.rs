@@ -81,8 +81,8 @@ pub async fn download(
 
 #[cfg(test)]
 mod test_downloader {
-    use std::time::Duration;
     use crate::{download, DownloadOptions, PackageRequest};
+    use std::time::Duration;
 
     #[tokio::test]
     async fn test_downloader() {
@@ -112,8 +112,8 @@ mod test_downloader {
                 toc_path: None,
             },
         )
-            .await
-            .unwrap();
+        .await
+        .unwrap();
         // assert_eq!(result.blobIds.capacity(), 1);
         // assert_eq!(result.entries.capacity(), 32);
     }

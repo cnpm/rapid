@@ -1,11 +1,10 @@
+use fs2::{lock_contended_error, FileExt};
 use std::fs::{self, File};
-use std::io::{Result};
-use fs2::{FileExt, lock_contended_error};
+use std::io::Result;
 
 pub struct Fcntl {
     file: File,
 }
-
 
 impl Fcntl {
     pub fn new(path: &str) -> Self {
@@ -16,9 +15,7 @@ impl Fcntl {
             .open(&path)
             .unwrap();
 
-        Self {
-            file,
-        }
+        Self { file }
     }
 
     pub fn lock(&mut self) -> Result<()> {
@@ -26,10 +23,8 @@ impl Fcntl {
         match res {
             Err(msg) => {
                 panic!("lock error, {:?}", msg)
-            },
-            Ok(msg) => {
-                Ok(())
             }
+            Ok(msg) => Ok(()),
         }
     }
 
@@ -40,8 +35,8 @@ impl Fcntl {
 
 #[cfg(test)]
 mod test {
-    use std::fs;
     use super::*;
+    use std::fs;
 
     #[test]
     fn test_fcntl_no_panic() {
@@ -56,7 +51,6 @@ mod test {
         f2.lock();
         f2.unlock();
     }
-
 
     #[test]
     #[should_panic]

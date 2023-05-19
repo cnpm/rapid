@@ -1,13 +1,13 @@
+use super::error::{Error, Result};
 use crate::TocIndex;
-use super::error::{Result, Error};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt::format;
 use std::fs::File;
 use std::io::Read;
 use std::ops::Range;
-use std::sync::Mutex;
 use std::path::Path;
+use std::sync::Mutex;
 
 pub type TocMap = HashMap<String /* tarName */, TocIndex>;
 pub type TocIndicesMap =
@@ -48,14 +48,12 @@ impl TocIndexStore {
 
     pub fn restore_from_file<P: AsRef<Path>>(map_path: P, index_path: P) -> Result<Self> {
         let map_file = File::open(map_path)?;
-        let map: TocMap = serde_json::from_reader(map_file).map_err(|e| {
-            Error::FormatError(String::from("parse toc map file failed"))
-        })?;
+        let map: TocMap = serde_json::from_reader(map_file)
+            .map_err(|e| Error::FormatError(String::from("parse toc map file failed")))?;
 
         let index_file = File::open(index_path)?;
-        let index = serde_json::from_reader(index_file).map_err(|e| {
-            Error::FormatError(String::from("parse toc index file failed"))
-        })?;
+        let index = serde_json::from_reader(index_file)
+            .map_err(|e| Error::FormatError(String::from("parse toc index file failed")))?;
         Ok(TocIndexStore::restore(map, index))
     }
 

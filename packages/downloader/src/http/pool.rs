@@ -124,9 +124,7 @@ mod test {
                     .unwrap()
             })
             .collect();
-        let result = pool
-            .batch_execute(download_tasks, sx)
-            .await;
+        let result = pool.batch_execute(download_tasks, sx).await;
         assert!(result.is_ok());
         join!(download_handler).0.unwrap();
     }

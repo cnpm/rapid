@@ -199,9 +199,14 @@ mod test {
             .unwrap();
         let current_dir = std::env::current_dir().unwrap();
 
-        let mut store = NpmBucketStore::new(String::from("bucket_2.stgz"), bucket_file, 0, Duration::from_secs(10))
-            .await
-            .unwrap();
+        let mut store = NpmBucketStore::new(
+            String::from("bucket_2.stgz"),
+            bucket_file,
+            0,
+            Duration::from_secs(10),
+        )
+        .await
+        .unwrap();
         let tar_file = current_dir.join("test/fixtures/tar/acorn-8.7.1.tgz");
         let tar_file = OpenOptions::new()
             .create(false)
