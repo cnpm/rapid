@@ -57,6 +57,17 @@ jobs:
       - name: Install sudo
         run: apt-get update && apt-get install -y sudo libssl-dev libpango1.0-dev nginx
 
+      - name: Rust Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Install dependencies
         run: npm i
 
