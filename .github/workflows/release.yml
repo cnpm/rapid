@@ -1,0 +1,294 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  linux-binding-release:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+
+    runs-on: ubuntu-20.04
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.x
+
+      - name: Install npm@9
+        run: npm i -g npm@9
+
+      - name: Show npm version
+        run: npm -v
+
+      - name: Change directory ownership
+        run: chown -R $(id -un):$(id -gn) .
+
+      - name: Install
+        run: sudo apt-get update && sudo apt-get install -y sudo libssl-dev libpango1.0-dev gcc-aarch64-linux-gnu
+
+      - name: Rust Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-release-${{matrix.arch}}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Build
+        run: |
+          target=$([[ ${{matrix.arch}} == 'amd64' ]] && echo "x86_64-unknown-linux-gnu" || echo "aarch64-unknown-linux-gnu")
+          rustup target add ${target}
+          CARGO_BUILD_TARGET=${target} BUILD_OS=linux BUILD_ARCH=${{matrix.arch}} npm run build
+      - name: Pack
+        run: |
+          pack_arch=$([[ ${{matrix.arch}} == 'amd64' ]] && echo "x64" || echo "arm64")
+          npm pack --workspace @cnpmjs/binding-linux-${pack_arch}  1>tarball_name
+          cat tarball_name
+      - name: prepare release tarball
+        run: |
+          tag=$(echo $GITHUB_REF | cut -d/ -f3-)
+          tarball=$(cat tarball_name)
+          echo "tarball=${tarball}" >> $GITHUB_ENV
+          shasum="${tarball}.sha256sum"
+          sha256sum $tarball > $shasum
+          echo "tarball_shasum=${shasum}" >> $GITHUB_ENV
+      - name: store-artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-binding-release
+          path: |
+            ${{ env.tarball }}
+            ${{ env.tarball_shasum }}        
+
+
+  macos-binding-release:
+    strategy:
+      fail-fast: false
+      matrix:
+        # arch: [amd64, arm64]
+        # nydusd arm64 release is not ready
+        arch: [amd64]
+
+
+    runs-on: macos-11
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.x
+
+      - name: Install npm@9
+        run: npm i -g npm@9
+
+      - name: Show npm version
+        run: npm -v
+
+      - name: Change directory ownership
+        run: chown -R $(id -un):$(id -gn) .
+
+      - name: Rust Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-release-${{matrix.arch}}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Build
+        run: |
+          target=$([[ ${{matrix.arch}} == 'amd64' ]] && echo "x86_64-apple-darwin" || echo "aarch64-apple-darwin")
+          rustup target add ${target}
+          CARGO_BUILD_TARGET=${target} BUILD_OS=darwin BUILD_ARCH=${{matrix.arch}} npm run build
+
+      - name: Pack
+        run: |
+          mkdir -p dist
+          pack_arch=$([[ ${{matrix.arch}} == 'amd64' ]] && echo "x64" || echo "arm64")
+          npm pack --workspace @cnpmjs/binding-darwin-${pack_arch} 1>tarball_name
+          cat tarball_name
+
+      - name: prepare release tarball
+        run: |
+          tag=$(echo $GITHUB_REF | cut -d/ -f3-)
+          tarball=$(cat tarball_name)
+          echo "tarball=${tarball}" >> $GITHUB_ENV
+          shasum="${tarball}.md5sum"
+          md5 $tarball > $shasum
+          echo "tarball_shasum=${shasum}" >> $GITHUB_ENV
+
+      - name: store-artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-binding-release
+          path: |
+            ${{ env.tarball }}
+            ${{ env.tarball_shasum }}        
+
+  lib-release:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+
+    runs-on: ubuntu-20.04
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.x
+
+      - name: Install npm@9
+        run: npm i -g npm@9
+
+      - name: Show npm version
+        run: npm -v
+
+      - name: Change directory ownership
+        run: chown -R $(id -un):$(id -gn) .
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Pack
+        run: |
+          mkdir -p dist
+          npm pack --workspace @cnpmjs/rapid 1>tarball_name
+          cat tarball_name
+
+      - name: prepare release tarball
+        run: |
+          tag=$(echo $GITHUB_REF | cut -d/ -f3-)
+          tarball=$(cat tarball_name)
+          echo "tarball=${tarball}" >> $GITHUB_ENV
+          shasum="${tarball}.sha256sum"
+          sha256sum $tarball > $shasum
+          echo "tarball_shasum=${shasum}" >> $GITHUB_ENV
+
+      - name: store-artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: lib-release
+          path: |
+            ${{ env.tarball }}
+            ${{ env.tarball_shasum }}        
+
+
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+
+    runs-on: ubuntu-20.04
+    needs: [linux-binding-release, macos-binding-release, lib-release]
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: download packages artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: lib-release
+          path: packages
+      - name: download macos binding artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: macos-binding-release
+          path: packages
+      - name: download linux binding artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: linux-binding-release
+          path: packages
+      - name: prepare release env
+        run: |
+          echo "tarballs<<EOF" >> $GITHUB_ENV
+          for I in $(ls packages);do echo "packages/${I}" >> $GITHUB_ENV; done
+          echo "EOF" >> $GITHUB_ENV
+          tag=$(echo $GITHUB_REF | cut -d/ -f3-)
+          echo "tag=${tag}" >> $GITHUB_ENV
+          cat $GITHUB_ENV
+      - name: push release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "cnpm rapid ${{ env.tag }}"
+          generate_release_notes: true
+          files: |
+            ${{ env.tarballs }}
+      - name: npm publish
+        if: github.event_name == 'push'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cat <<EOT >> .npmrc
+          //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
+          registry=https://registry.npmjs.org/
+          always-auth=true
+          EOT
+          for I in $(ls packages); do
+            if [[ "$I" == *.tgz ]]; then
+              rm -rf package && mkdir -p package
+              tar -xzf "packages/$I" --strip-components 1 -C package
+              npm publish --ignore-scripts --dry-run file://$(pwd)/package
+            fi
+          done

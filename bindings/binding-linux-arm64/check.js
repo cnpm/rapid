@@ -17,4 +17,17 @@ for (const file of checkFiles) {
   }
 }
 
+function fixOs() {
+  const jsonPath = path.join(__dirname, 'package.json');
+  const pkgStr = fs.readFileSync(jsonPath, 'utf8');
+  const pkgJson = Object.assign({
+    os: [ 'linux' ],
+    arch: [ 'arm64' ],
+  }, JSON.parse(pkgStr));
+  fs.writeFileSync(jsonPath, JSON.stringify(pkgJson, null, 2));
+}
+
+fixOs();
+
+
 process.exit(0);

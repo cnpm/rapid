@@ -105,6 +105,7 @@ dist
 .tern-port
 
 target
+bindings/*/nydusd
 bindings/*/nydusd-bootstrap
 bindings/*/index.node
 
