@@ -20,7 +20,7 @@
   "scripts": {
     "pack": "npm pack",
     "check:bin": "node check.js",
-    "prepublishOnly": "npm run check:bin"
+    "prepack": "npm run check:bin"
   }
 }
 

@@ -9,6 +9,10 @@ on:
   pull_request:
     branches: [ master ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   build:
     strategy:
@@ -52,7 +56,7 @@ jobs:
         run: chown -R $(id -un):$(id -gn) .
 
       - name: Install sudo
-        run: apt-get update && apt-get install -y sudo libssl-dev libpango1.0-dev nginx
+        run: apt-get update && apt-get install -y sudo libssl-dev libpango1.0-dev nginx psmisc
 
       - name: Rust Cache
         uses: actions/cache@v3
@@ -69,7 +73,8 @@ jobs:
         run: npm i
 
       - name: Init CI
-        run: npm run init:ci
+        run: |
+          CARGO_BUILD_TARGET=x86_64-unknown-linux-gnu BUILD_OS=linux BUILD_ARCH=amd64 npm run init:ci
 
       - name: Run CI
         run: npm run test:integration

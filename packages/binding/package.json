@@ -11,7 +11,7 @@
     "name": "index"
   },
   "scripts": {
-    "build-release": "sh ./scripts/build.sh",
+    "build-release": "bash ./scripts/build.sh",
     "prepare-test": "npm run build-release",
     "test:rs": "cargo test",
     "test": "npm run prepare-test && egg-bin test",

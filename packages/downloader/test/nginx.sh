@@ -1,5 +1,7 @@
 #/usr/bin/env bash
 
+set -eux
+
 TEMPLATE_FILE="${PWD}/test/nginx.example.conf"
 CONFIG_FILE="${PWD}/test/nginx.conf"
 BLOBS_DIR="${PWD}/test/fixtures/tar"
@@ -24,5 +26,5 @@ echo "NEW CONFIG: ${CONFIG_FILE}:"
 cat ${CONFIG_FILE}
 echo ""
 
-killall nginx
+killall nginx || echo "no nginx"
 nginx -c $CONFIG_FILE
