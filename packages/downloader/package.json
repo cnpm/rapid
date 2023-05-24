@@ -10,7 +10,7 @@
   "devDependencies": {
     "mz-modules": "^2.1.0",
     "p-map": "^4.0.0",
-    "urllib": "^2.14.0"
+    "urllib": "^3.16.1"
   },
   "version": "0.0.10"
 }
