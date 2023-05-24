@@ -26,7 +26,7 @@
     "ci": "npm run init:ci && npm run cov",
     "ci:integration": "npm run init:ci && npm run test:integration",
     "ci:rust": "npm run init:ci && npm run test:rust",
-    "version": "lerna version --conventional-commits"
+    "version": "lerna version --conventional-commits --sign-git-commit --sign-git-tag --no-push"
   },
   "devDependencies": {
     "lerna": "6",
