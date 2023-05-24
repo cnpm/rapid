@@ -289,6 +289,6 @@ jobs:
             if [[ "$I" == *.tgz ]]; then
               rm -rf package && mkdir -p package
               tar -xzf "packages/$I" --strip-components 1 -C package
-              npm publish --ignore-scripts --dry-run file://$(pwd)/package
+              npm publish --ignore-scripts file://$(pwd)/package
             fi
           done
