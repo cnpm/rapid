@@ -1,12 +1,12 @@
 'use strict';
 
+const debug = require('node:util').debuglog('rapid:nydusd_api');
+const fs = require('node:fs/promises');
 const urllib = require('urllib');
-const debug = require('debug')('rapid:nydusd_api');
-const util = require('../util');
 const execa = require('execa');
 const runscript = require('runscript');
 const awaitEvent = require('await-event');
-const fs = require('node:fs/promises');
+const util = require('../util');
 
 const {
   nydusd,

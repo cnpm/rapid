@@ -1,9 +1,9 @@
 'use strict';
 
-const debug = require('debug')('rapid');
+const debug = require('node:util').debuglog('rapid');
 const path = require('node:path');
 const fs = require('node:fs/promises');
-const { existsSync } = require('fs');
+const { existsSync } = require('node:fs');
 const os = require('node:os');
 const url = require('node:url');
 const crypto = require('node:crypto');

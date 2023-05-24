@@ -7,7 +7,7 @@ const {
 const assert = require('node:assert');
 const path = require('node:path');
 const fs = require('node:fs/promises');
-const debug = require('debug')('nydusd');
+const debug = require('node:util').debuglog('nydusd');
 const runscript = require('runscript');
 const util = require('../util');
 const fuseMode = require('./fuse_mode');
@@ -21,7 +21,7 @@ const fsImplMap = {
 
 /**
  * @param {string} mode -
- * @param {} fsImpl - { start: (cwd: string, pkg: object) => Promise<void>, end: (cwd: string, pkg: object) => Promise<void> }
+ * @param {object} fsImpl - { start: (cwd: string, pkg: object) => Promise<void>, end: (cwd: string, pkg: object) => Promise<void> }
  */
 exports.registerMode = function(mode, fsImpl) {
   fsImplMap[mode] = fsImpl;

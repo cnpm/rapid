@@ -1,9 +1,9 @@
 'use strict';
 
+const debug = require('node:util').debuglog('resolver');
 const pacote = require('pacote');
 const urllib = require('urllib');
 const npa = require('npm-package-arg');
-const debug = require('debug')('resolver');
 
 const REAL_MANIFEST = Symbol.for('pacote.manifest');
 const PACKAGE_SERVICE = Symbol.for('pacote.packageService');
