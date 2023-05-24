@@ -3,11 +3,12 @@
   "private": true,
   "description": "cnpm integration test",
   "devDependencies": {
-    "@cnpmjs/rapid": "*"
+    "@cnpmjs/rapid": "^0.0.9"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:cnpm/rapid.git",
     "directory": "integration"
-  }
+  },
+  "version": "0.0.9"
 }
