@@ -8,8 +8,9 @@
     "prepare-test": "npm run prepare-test:tar && npm run prepare-test:nginx && sleep 10 && npm run prepare-test:echo"
   },
   "devDependencies": {
-    "urllib": "^2.14.0",
     "mz-modules": "^2.1.0",
-    "p-map": "^4.0.0"
-  }
+    "p-map": "^4.0.0",
+    "urllib": "^2.14.0"
+  },
+  "version": "0.0.9"
 }
