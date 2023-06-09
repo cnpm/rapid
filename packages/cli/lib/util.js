@@ -104,10 +104,20 @@ async function shouldFuseSupport() {
 }
 
 function getPkgNameFromTarballUrl(tarballUrl) {
-  // /@scope/a/download/@scope/a-1.0.0.tgz -> [ '@scope/a', '/download/', '@scope/a-1.0.0.tgz' ]
-  // /@scope/a/-/a-1.0.0.tgz -> [ '@scope/a', '/-/', 'a-1.0.0.tgz' ]
-  const matches = new url.URL(tarballUrl).pathname.substring(1).split(/(\/\-\/|\/download\/)/);
-  return matches[0];
+  const pathname = new url.URL(tarballUrl).pathname.substring(1);
+  if (pathname.includes('@')) {
+    if (pathname.includes('/-/')) { // @scope/download/-/download-1.0.0.tgz
+      return pathname.substring(0, pathname.indexOf('/-/'));
+    }
+    // @scope/download/download/@scope/download-1.0.0.tgz
+    return pathname.substring(0, pathname.lastIndexOf('/download/@'));
+  }
+
+  if (pathname.includes('/-/')) { // download/-/download-1.0.0.tgz
+    return pathname.substring(0, pathname.indexOf('/-/'));
+  }
+  // download/download/download-1.0.0.tgz
+  return pathname.substring(0, pathname.lastIndexOf('/download/'));
 }
 
 function generatePackageId(name, version) {

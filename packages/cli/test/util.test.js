@@ -262,9 +262,17 @@ describe('test/cache/util.test.js', () => {
       const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/egg/download/egg-2.15.1.tgz');
       assert.strictEqual(name, 'egg');
     });
+    it('should parse successfully with old non-scoped tarball url including download', () => {
+      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/download/download/download-2.15.1.tgz');
+      assert.strictEqual(name, 'download');
+    });
     it('should parse successfully with old scoped tarball url', () => {
       const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/@cnpmjs/errors/download/@cnpmjs/errors-2.15.1.tgz');
       assert.strictEqual(name, '@cnpmjs/errors');
+    });
+    it('should parse successfully with old scoped tarball url including download', () => {
+      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/@cnpmjs/download/download/@cnpmjs/download-2.15.1.tgz');
+      assert.strictEqual(name, '@cnpmjs/download');
     });
     it('should parse successfully with new non-scoped tarball url', () => {
       const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/egg/-/egg-2.15.1.tgz');
@@ -273,6 +281,10 @@ describe('test/cache/util.test.js', () => {
     it('should parse successfully with new scoped tarball url', () => {
       const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/@cnpmjs/errors/-/errors-2.15.1.tgz');
       assert.strictEqual(name, '@cnpmjs/errors');
+    });
+    it('should parse successfully with new scoped tarball url including download', () => {
+      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/@cnpmjs/download/-/download-2.15.1.tgz');
+      assert.strictEqual(name, '@cnpmjs/download');
     });
   });
 });
