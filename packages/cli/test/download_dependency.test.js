@@ -3,7 +3,7 @@
 const path = require('node:path');
 const assert = require('node:assert');
 const fs = require('node:fs/promises');
-const runscript = require('runscript');
+const execa = require('execa');
 const httpclient = require('../lib/httpclient');
 const Scripts = require('../lib/scripts').Scripts;
 const mm = require('mm');
@@ -29,7 +29,7 @@ describe('test/download_dependency.test.js', () => {
 
   afterEach(async () => {
     mm.restore();
-    await runscript(`rm -f ${tarBucketsDir}/*`);
+    await execa.command(`rm -f ${tarBucketsDir}/*`);
   });
 
   it('should work', async () => {

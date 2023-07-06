@@ -4,7 +4,6 @@ const debug = require('node:util').debuglog('rapid:nydusd_api');
 const fs = require('node:fs/promises');
 const urllib = require('urllib');
 const execa = require('execa');
-const runscript = require('runscript');
 const awaitEvent = require('await-event');
 const util = require('../util');
 
@@ -124,7 +123,7 @@ async function checkDaemon() {
       debug('mount error: ', error);
       // linux 下需要用 sudo 启动，如果没有权限，这里
       if (error.code === 'EACCES' && process.platform === 'linux') {
-        await runscript(wrapSudo(`chmod 777 ${socketPath}`));
+        await execa.command(wrapSudo(`chmod 777 ${socketPath}`));
       }
       if (Date.now() - startTime <= maxWaitDuration) {
         await util.sleep(100);

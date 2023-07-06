@@ -5,7 +5,7 @@ const util = require('node:util');
 
 class NotSupportedError extends Error {
   constructor(message) {
-    super(util.format('Rapid mode not supported on Current OS(%s)%s', os.type()), message ? `, ${message}` : '');
+    super(util.format('Rapid mode not supported on Current OS(%s)', os.type()), message ? `, ${message}` : '');
     this.name = 'NOT_SUPPORTED';
     this.stack = '';
   }
