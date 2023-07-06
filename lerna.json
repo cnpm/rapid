@@ -4,6 +4,6 @@
     "integration",
     "bindings/*"
   ],
-  "version": "0.0.11",
+  "version": "0.0.12",
   "lerna": "6.6.2"
 }
