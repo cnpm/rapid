@@ -483,6 +483,7 @@ exports.runScript = async (pkgDir, script, options) => {
       cwd: pkgDir,
       env,
       stdio: 'inherit',
+      shell: true,
     });
     return res.stdout;
   } catch (err) {
