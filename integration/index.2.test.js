@@ -5,7 +5,7 @@ const path = require('node:path');
 const assert = require('node:assert');
 const coffee = require('coffee');
 const semver = require('semver');
-const runscript = require('runscript');
+const execa = require('execa');
 const rapid = path.join(__dirname, '../node_modules/.bin/rapid');
 const {
   clean,
@@ -79,7 +79,7 @@ describe('test/index.v2.test.js', () => {
         .expect('code', 0)
         .end();
       await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/canvas/package.json')));
-      const { stdout } = await runscript('mount', { stdio: 'pipe' });
+      const { stdout } = await execa.command('mount', { stdio: 'pipe' });
       assert(stdout.indexOf(cwd) > 0);
       assert(require(path.join(cwd, 'node_modules/canvas/package.json')).binary.host === 'https://cdn.npmmirror.com/binaries/canvas');
     });
@@ -102,7 +102,7 @@ describe('test/index.v2.test.js', () => {
       .end();
 
     await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/react-jsx-parser/package.json')));
-    const { stdout } = await runscript('mount', { stdio: 'pipe' });
+    const { stdout } = await execa.command('mount', { stdio: 'pipe' });
     assert(stdout.indexOf(cwd) > 0);
     assert(require(path.join(cwd, 'node_modules/react-jsx-parser/package.json')).version === '1.29.0');
   });

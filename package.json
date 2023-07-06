@@ -43,7 +43,6 @@
     "nock": "^13.0.9",
     "nyc": "^15.1.0",
     "power-assert": "^1.6.1",
-    "runscript": "^1.5.1",
     "test-exclude": "^6.0.0"
   },
   "homepage": "https://github.com/cnpm/rapid",

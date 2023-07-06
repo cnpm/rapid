@@ -15,7 +15,7 @@ const {
   NotSupportedError,
   FuseDeviceError,
 } = require('./error');
-const runscript = require('runscript');
+const execa = require('execa');
 const normalize = require('npm-normalize-package-bin');
 const {
   tarBucketsDir,
@@ -80,7 +80,7 @@ async function shouldFuseSupport() {
     console.info(`[rapid] detect /dev/fuse: ${sh}`);
 
     try {
-      await runscript(sh, {
+      await execa.command(sh, {
         stdio: 'ignore',
       });
     } catch (e) {
@@ -479,7 +479,7 @@ exports.runScript = async (pkgDir, script, options) => {
   }
 
   try {
-    const res = await runscript(script, {
+    const res = await execa.command(script, {
       cwd: pkgDir,
       env,
       stdio: 'inherit',
