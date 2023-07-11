@@ -169,6 +169,66 @@ jobs:
             ${{ env.tarball }}
             ${{ env.tarball_shasum }}        
 
+  binding-pkg-release:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+
+    runs-on: ubuntu-20.04
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.x
+
+      - name: Install npm@9
+        run: npm i -g npm@9
+
+      - name: Show npm version
+        run: npm -v
+
+      - name: Change directory ownership
+        run: chown -R $(id -un):$(id -gn) .
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Pack
+        run: |
+          mkdir -p dist
+          npm pack --workspace @cnpmjs/binding 1>tarball_name
+          cat tarball_name
+
+      - name: prepare release tarball
+        run: |
+          tag=$(echo $GITHUB_REF | cut -d/ -f3-)
+          tarball=$(cat tarball_name)
+          echo "tarball=${tarball}" >> $GITHUB_ENV
+          shasum="${tarball}.sha256sum"
+          sha256sum $tarball > $shasum
+          echo "tarball_shasum=${shasum}" >> $GITHUB_ENV
+
+      - name: store-artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: binding-pkg-release
+          path: |
+            ${{ env.tarball }}
+            ${{ env.tarball_shasum }}        
+
   lib-release:
     strategy:
       fail-fast: false
@@ -237,7 +297,7 @@ jobs:
         arch: [amd64]
 
     runs-on: ubuntu-20.04
-    needs: [linux-binding-release, macos-binding-release, lib-release]
+    needs: [linux-binding-release, macos-binding-release, binding-pkg-release, lib-release]
 
     defaults:
       run:
@@ -248,6 +308,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: lib-release
+          path: packages
+      - name: download binding pkg packages artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: binding-pkg-release
           path: packages
       - name: download macos binding artifacts
         uses: actions/download-artifact@v3
