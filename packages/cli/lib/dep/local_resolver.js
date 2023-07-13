@@ -1,7 +1,6 @@
 'use strict';
 
 const Arborist = require('@npmcli/arborist');
-const PackageService = require('./package_service');
 const ArboristLogger = require('./arborist_logger');
 const PACKAGE_SERVICE = Symbol.for('packageService');
 const ROOT_PACKAGE = Symbol.for('rootPackage');
@@ -11,7 +10,6 @@ class LocalResolver {
     const { registry, force, legacyPeerDeps, strictPeerDeps } = options;
     this.ctx = ctx;
     this.options = options;
-    this.packageService = new PackageService(options);
     this.installOptions = {
       registry,
       force,
@@ -49,7 +47,6 @@ class LocalResolver {
     };
 
     const arborist = new Arborist(arboristOptions);
-    this.packageService.preload(pkgJson, true);
     const idealTree = await arborist.buildIdealTree({});
     const meta = idealTree.meta;
     const res = meta.commit();

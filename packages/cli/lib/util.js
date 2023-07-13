@@ -499,7 +499,7 @@ exports.saveLockFile = async function saveLockFile(cwd, lockfile, lockId) {
   const lockfilePath = path.join(cwd, 'package-lock.json');
   const lockfileData = `${JSON.stringify(lockfile, null, 2)}${os.EOL}`;
   await fs.writeFile(lockfilePath, lockfileData, 'utf-8');
-  await fs.writeFile(path.join(cwd, '.lock-id.txt'), lockId, 'utf-8');
+  lockId && await fs.writeFile(path.join(cwd, '.lock-id.txt'), lockId, 'utf-8');
 };
 
 exports.sleep = async function sleep(ms) {
