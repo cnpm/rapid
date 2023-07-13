@@ -1,9 +1,9 @@
 'use strict';
 
-const fs = require('fs/promises');
-const path = require('path');
-const os = require('os');
-const assert = require('assert');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const os = require('node:os');
+const assert = require('node:assert');
 const mm = require('mm');
 const { install } = require('../lib/index');
 
