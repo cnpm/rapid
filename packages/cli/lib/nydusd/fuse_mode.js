@@ -60,6 +60,8 @@ async function mountOverlay(cwd, pkg) {
       mnt,
       overlay,
       nodeModulesDir,
+      volumeName,
+      tmpDmg,
     } = await getWorkdir(cwd, pkgPath);
     await fs.mkdir(nodeModulesDir, { recursive: true });
     await fs.mkdir(overlay, { recursive: true });
@@ -67,7 +69,10 @@ async function mountOverlay(cwd, pkg) {
     if (os.type() === 'Linux') {
       await execa.command(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`));
     } else if (os.type() === 'Darwin') {
-      await execa.command(wrapSudo(`mount_tmpfs -o union -e ${overlay}`));
+      // hdiutil create -size 512m -fs "APFS" -volname "NewAPFSDisk" -type SPARSE -layout NONE -imagekey diskimage-class=CRawDiskImage loopfile.dmg
+      await fs.rm(tmpDmg, { force: true });
+      await execa.command(`hdiutil create -size 512m -fs APFS -volname ${volumeName} -type SPARSE -layout NONE -imagekey diskimage-class=CRawDiskImage ${tmpDmg}`);
+      await execa.command(`hdiutil attach -mountpoint ${overlay} ${tmpDmg}`);
     }
     await fs.mkdir(upper, { recursive: true });
     await fs.mkdir(workdir, { recursive: true });
@@ -100,8 +105,14 @@ async function endNydusFs(cwd, pkg) {
       baseDir,
       nodeModulesDir,
     } = await getWorkdir(cwd, pkgPath);
-    await execa.command(wrapSudo(`umount ${nodeModulesDir}`));
-    await execa.command(wrapSudo(`umount ${overlay}`));
+    if (os.type() === 'Darwin') {
+      await execa.command(`umount ${nodeModulesDir}`);
+      // hdiutil detach
+      await execa.command(`hdiutil detach ${overlay}`);
+    } else {
+      await execa.command(wrapSudo(`umount ${nodeModulesDir}`));
+      await execa.command(wrapSudo(`umount ${overlay}`));
+    }
     await nydusdApi.umount(`/${dirname}`);
     // 清除 nydus 相关目录
     await fs.rm(baseDir, { recursive: true, force: true });

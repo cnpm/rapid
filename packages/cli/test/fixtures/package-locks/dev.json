@@ -11,7 +11,7 @@
     },
     "node_modules/bindings": {
       "version": "1.5.0",
-      "resolved": "https://registry.npmjs.org/bindings/download/bindings-1.5.0.tgz",
+      "resolved": "https://registry.npmjs.org/bindings/-/bindings-1.5.0.tgz",
       "integrity": "sha1-EDU8npRTNLwFEabZCzj7x8nFBN8=",
       "dev": true,
       "dependencies": {
@@ -26,7 +26,7 @@
     },
     "node_modules/fsevents": {
       "version": "1.2.13",
-      "resolved": "https://registry.npmjs.org/fsevents/download/fsevents-1.2.13.tgz",
+      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-1.2.13.tgz",
       "integrity": "sha1-8yXLBFVZJCi88Rs4M3DvcOO/zDg=",
       "deprecated": "fsevents 1 will break on node v14+ and could be using insecure binaries. Upgrade to fsevents 2.",
       "hasInstallScript": true,
@@ -44,7 +44,7 @@
     },
     "node_modules/nan": {
       "version": "2.15.0",
-      "resolved": "https://registry.npmjs.org/nan/download/nan-2.15.0.tgz",
+      "resolved": "https://registry.npmjs.org/nan/-/nan-2.15.0.tgz",
       "integrity": "sha1-PzSkc/8Y4VwbVia2KQO1rW5mX+4=",
       "dev": true
     }
@@ -52,7 +52,7 @@
   "dependencies": {
     "bindings": {
       "version": "1.5.0",
-      "resolved": "https://registry.npmjs.org/bindings/download/bindings-1.5.0.tgz",
+      "resolved": "https://registry.npmjs.org/bindings/-/bindings-1.5.0.tgz",
       "integrity": "sha1-EDU8npRTNLwFEabZCzj7x8nFBN8=",
       "dev": true,
       "requires": {
@@ -67,7 +67,7 @@
     },
     "fsevents": {
       "version": "1.2.13",
-      "resolved": "https://registry.npmjs.org/fsevents/download/fsevents-1.2.13.tgz",
+      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-1.2.13.tgz",
       "integrity": "sha1-8yXLBFVZJCi88Rs4M3DvcOO/zDg=",
       "dev": true,
       "requires": {
@@ -77,7 +77,7 @@
     },
     "nan": {
       "version": "2.15.0",
-      "resolved": "https://registry.npmjs.org/nan/download/nan-2.15.0.tgz",
+      "resolved": "https://registry.npmjs.org/nan/-/nan-2.15.0.tgz",
       "integrity": "sha1-PzSkc/8Y4VwbVia2KQO1rW5mX+4=",
       "dev": true
     }

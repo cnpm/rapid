@@ -209,6 +209,9 @@ describe('test/cache/util.test.js', () => {
         depsJSONPath: `${os.homedir()}/.rapid/cache/cwd_a875d54f3f579b69acac56867277fbf2/root_d41d8cd98f00b204e9800998ecf8427e/overlay/upper/.package-lock.json`,
         csiMountId: `${os.homedir()}/.rapid/cache/cwd_a875d54f3f579b69acac56867277fbf2/root_d41d8cd98f00b204e9800998ecf8427e/csi_mount_id.txt`,
         projectDir: `${os.homedir()}/.rapid/cache/cwd_a875d54f3f579b69acac56867277fbf2`,
+        prefix: 'root_d41d8cd98f00b204e9800998ecf8427e',
+        tmpDmg: `${os.homedir()}/.rapid/cache/cwd_a875d54f3f579b69acac56867277fbf2/root_d41d8cd98f00b204e9800998ecf8427e/tmp.dmg`,
+        volumeName: 'rapid-root_d41d8cd98f00b204e9800998ecf8427e',
       });
 
     });
@@ -259,11 +262,11 @@ describe('test/cache/util.test.js', () => {
 
   describe('parseTarballUrl', () => {
     it('should parse successfully with old non-scoped tarball url', () => {
-      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/egg/download/egg-2.15.1.tgz');
+      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/egg/-/egg-2.15.1.tgz');
       assert.strictEqual(name, 'egg');
     });
     it('should parse successfully with old non-scoped tarball url including download', () => {
-      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/download/download/download-2.15.1.tgz');
+      const name = getPkgNameFromTarballUrl('https://registry.npmjs.org/download/-/download-2.15.1.tgz');
       assert.strictEqual(name, 'download');
     });
     it('should parse successfully with old scoped tarball url', () => {

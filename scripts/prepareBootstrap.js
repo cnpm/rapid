@@ -7,8 +7,12 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const process = require('node:process');
 const util = require('node:util');
-const os = process.env.BUILD_OS || 'darwin';
+let os = process.env.BUILD_OS || 'darwin';
 const arch = process.env.BUILD_ARCH || 'amd64';
+
+if (os === 'macos') {
+  os = 'darwin';
+}
 
 const rootFolder = path.resolve(__dirname, '..');
 const targetFolder = path.resolve(
@@ -17,6 +21,7 @@ const targetFolder = path.resolve(
 );
 
 console.log('target folder: ', targetFolder);
+console.log('root folder: ', rootFolder);
 
 const bootstrapBinPath = process.env.CARGO_BUILD_TARGET ? path.resolve(rootFolder, 'target', process.env.CARGO_BUILD_TARGET, 'release/bootstrap') : path.resolve(rootFolder, 'target/release/bootstrap');
 const targetBinPath = path.resolve(targetFolder, 'nydusd-bootstrap');
@@ -26,8 +31,10 @@ const targetNodeBindingPath = path.resolve(targetFolder, 'index.node');
 
 (async () => {
   try {
-    await fs.copyFile(bootstrapBinPath, targetBinPath);
-    await fs.copyFile(nodeBindingPath, targetNodeBindingPath);
+    console.log(`mv ${bootstrapBinPath} to ${targetBinPath}`);
+    await fs.rename(bootstrapBinPath, targetBinPath);
+    console.log(`mv ${nodeBindingPath} to ${targetNodeBindingPath}`);
+    await fs.rename(nodeBindingPath, targetNodeBindingPath);
   } catch (err) {
     console.warn('prepare nydus-bootstrap bin failed, nydusd mounting tests may fail', err);
     process.exit(1);

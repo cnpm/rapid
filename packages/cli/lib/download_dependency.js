@@ -3,7 +3,6 @@
 const path = require('node:path');
 const fs = require('node:fs/promises');
 const {
-  tarBucketsDir,
   npmCacheConfigPath,
   npmIndexConfigPath,
 } = require('./constants');
@@ -40,9 +39,6 @@ async function download(options) {
   // 2. download tar
   //   - listen and store package entry
   // 3. prepare preInstall/postInstall scripts
-  console.info('[rapid] removing tar buckets. dir: %s', tarBucketsDir);
-  const { baseDir } = await util.getWorkdir(options.cwd);
-  await fs.rm(baseDir, { recursive: true, force: true });
 
   const blobManager = new NpmBlobManager();
   const entryListener = entryListenerFactory(blobManager);

@@ -91,7 +91,7 @@ async function shouldFuseSupport() {
 
   if (os.type() === 'Darwin') {
     try {
-      await fs.stat('/Library/Filesystems/macfuse.fs/Contents/Resources/mount_macfuse');
+      await fs.stat('/usr/local/bin/go-nfsv4');
       console.warn('[rapid] rapid mode is supported on macOS **experimentally**.');
     } catch (error) {
       throw new NotSupportedError('install macFUSE first.');
@@ -356,8 +356,11 @@ async function getWorkdir(cwd, subPath = '', csiDir) {
 
   return {
     projectDir: workdir,
+    prefix,
     dirname: path.join(dirname, prefix),
     baseDir: path.join(workdir, prefix), // .rapid/cache/xxx
+    volumeName: 'rapid-' + prefix, // xxx
+    tmpDmg: path.join(workdir, prefix, 'tmp.dmg'), // .rapid/cache/xxx/overlay
     overlay: path.join(workdir, prefix, 'overlay'), // .rapid/cache/xxx/overlay
     upper: path.join(workdir, prefix, 'overlay', 'upper'), // .rapid/cache/xxx/overlay/upper
     workdir: path.join(workdir, prefix, 'overlay', 'workdir'), // .rapid/cache/xxx/overlay/workdir
