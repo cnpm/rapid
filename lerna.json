@@ -1,9 +1,4 @@
 {
-  "packages": [
-    "packages/*",
-    "integration",
-    "bindings/*"
-  ],
   "version": "0.0.14",
-  "lerna": "6.6.2"
+  "lerna": "7.1.4"
 }

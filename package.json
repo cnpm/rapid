@@ -29,7 +29,7 @@
     "version": "lerna version --conventional-commits --sign-git-commit --sign-git-tag --no-push --no-private"
   },
   "devDependencies": {
-    "lerna": "6",
+    "lerna": "^7.1.4",
     "@eggjs/tsconfig": "^1.0.0",
     "@types/mocha": "^8.2.0",
     "@types/node": "^18.16.3",
