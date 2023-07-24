@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 0.1.0 (2023-07-24)
+
+
+### Features
+
+* use fuse-t ([#26](https://github.com/cnpm/rapid/issues/26)) ([693402d](https://github.com/cnpm/rapid/commit/693402d337651215502034c1b65d594737019408))
+
+
+
+
+
 
 
 **Note:** Version bump only for package @cnpmjs/binding-darwin-x64
