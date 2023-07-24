@@ -4,7 +4,7 @@ set -eux
 
 # https://github.com/dragonflyoss/image-service/releases/download/v2.1.6/nydus-static-v2.1.6-darwin-amd64.tgz
 
-NYDUS_VERSION=v2.0.0-cnpm.2
+NYDUS_VERSION=v2.0.0-cnpm.3
 os="${BUILD_OS:-darwin}"
 arch="${BUILD_ARCH:-amd64}"
 
