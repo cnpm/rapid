@@ -10,13 +10,18 @@ const mm = require('mm');
 const { clean } = require('@cnpmjs/rapid');
 const {
   exitDaemon,
+  forceExitDaemon,
 } = require('@cnpmjs/rapid/lib/nydusd/nydusd_api');
 
 describe('test/tnpm-install-rapid.test.js', () => {
   let fixture;
   afterEach(async () => {
     await clean(fixture);
-    await exitDaemon();
+    if (process.platform === 'darwin') {
+      await forceExitDaemon();
+    } else {
+      await exitDaemon();
+    }
   });
 
   describe('--deps-tree-path args', () => {
@@ -48,6 +53,9 @@ describe('test/tnpm-install-rapid.test.js', () => {
           birthtime: '1970-01-01T00:00:00.000Z',
         };
       });
+    });
+    afterEach(() => {
+      mm.restore();
     });
 
     it('should generate deps tree', done => {

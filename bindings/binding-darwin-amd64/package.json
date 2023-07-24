@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:cnpm/rapid.git",
-    "directory": "bindings/binding-darwin-x64"
+    "directory": "bindings/binding-darwin-amd64"
   },
   "engines": {
     "node": ">=12.0.0"

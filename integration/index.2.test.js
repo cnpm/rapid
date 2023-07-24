@@ -12,6 +12,7 @@ const {
 } = require('@cnpmjs/rapid');
 const {
   exitDaemon,
+  forceExitDaemon,
 } = require('@cnpmjs/rapid/lib/nydusd/nydusd_api');
 
 describe('test/index.v2.test.js', () => {
@@ -19,12 +20,16 @@ describe('test/index.v2.test.js', () => {
 
   afterEach(async () => {
     await clean(cwd);
-    await exitDaemon();
+    if (process.platform === 'darwin') {
+      await forceExitDaemon();
+    } else {
+      await exitDaemon();
+    }
   });
 
   describe('update', () => {
-    const cwd = path.join(__dirname, './fixtures/update');
     it('should run postinstall successfully', async () => {
+      cwd = path.join(__dirname, './fixtures/update');
       await coffee.fork(rapid, [ '--update', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], {
         cwd,
       })
@@ -35,20 +40,22 @@ describe('test/index.v2.test.js', () => {
   });
 
   describe('binding.gyp', async () => {
-    const cwd = path.join(__dirname, './fixtures/node-crc');
-    it('should run postinstall successfully', async () => {
-      await coffee.fork(rapid, [ '--by=npm', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
-        .debug()
-        .expect('stdout', /execute 1 lifecycle script\(s\)/)
-        .expect('code', 0)
-        .end();
-      await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/node-crc/build/Release/crc.node')));
-    });
+    if (process.platform === 'linux') {
+      it('should run postinstall successfully', async () => {
+        cwd = path.join(__dirname, './fixtures/node-crc');
+        await coffee.fork(rapid, [ '--by=npm', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
+          .debug()
+          .expect('stdout', /execute 1 lifecycle script\(s\)/)
+          .expect('code', 0)
+          .end();
+        await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/node-crc/build/Release/crc.node')));
+      });
+    }
   });
 
   describe('INIT_CWD', async () => {
-    const cwd = path.join(__dirname, './fixtures/init-cwd');
     it('should set INIT_CWD', async () => {
+      cwd = path.join(__dirname, './fixtures/init-cwd');
       await coffee.fork(rapid, [ '--by=npminstall', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
         .debug()
         .expect('stdout', new RegExp(`INIT_CWD=${process.cwd()}`))
@@ -58,8 +65,8 @@ describe('test/index.v2.test.js', () => {
   });
 
   describe('production mode', async () => {
-    const cwd = path.join(__dirname, './fixtures/prod-deps');
     it('should install production deps', async () => {
+      cwd = path.join(__dirname, './fixtures/prod-deps');
       await coffee.fork(rapid, [
         '--by=npminstall', '--production', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
         .debug()
@@ -70,7 +77,7 @@ describe('test/index.v2.test.js', () => {
     });
   });
   // 在 node@20 上跑不起来
-  if (semver.parse(process.version).major < 20) {
+  if (semver.parse(process.version).major < 20 && process.platform === 'linux') {
     it('should install node-canvas successfully', async () => {
       cwd = path.join(__dirname, './fixtures/canvas');
       await coffee

@@ -92,9 +92,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # arch: [amd64, arm64]
-        # nydusd arm64 release is not ready
-        arch: [amd64]
+        arch: [amd64, arm64]
 
 
     runs-on: macos-11

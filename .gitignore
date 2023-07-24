@@ -106,6 +106,7 @@ dist
 
 target
 bindings/*/nydusd
+bindings/*/unionfs
 bindings/*/nydusd-bootstrap
 bindings/*/index.node
 

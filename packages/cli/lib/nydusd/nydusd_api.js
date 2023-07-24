@@ -151,6 +151,19 @@ async function exitDaemon() {
   }
 }
 
+// macos fuse-t 中暂未实现 fuse 的优雅退出只能 umount 之后
+// 强制杀掉进程
+async function forceExitDaemon() {
+  try {
+    await execa.command(`umount -f ${nydusdMnt}`);
+    await execa.command('killall -9 nydusd');
+  } catch (e) {
+    // ignore, nydusd quits with error, but it's ok
+    e.message = 'exit nydusd faield: ' + e.message;
+    console.warn(e);
+  }
+}
+
 async function mount(mountpoint, cwd, bootstrap = '') {
   const workDir = await getWorkdir(cwd);
   const result = await urllib.request(`${mountUrl}?mountpoint=${mountpoint}`, {
@@ -198,3 +211,4 @@ exports.remount = remount;
 exports.umount = umount;
 exports.initDaemon = initDaemon;
 exports.exitDaemon = exitDaemon;
+exports.forceExitDaemon = forceExitDaemon;

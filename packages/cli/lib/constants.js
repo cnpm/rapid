@@ -4,18 +4,7 @@ const path = require('node:path');
 const os = require('node:os');
 
 const homedir = () => process.env.HOME || os.homedir();
-const platform = process.platform;
-const arch = process.arch;
-let rsBindingPath;
-try {
-  rsBindingPath = path.dirname(require.resolve(`@cnpmjs/binding-${platform}-${arch}`, {
-    paths: [
-      require.resolve('@cnpmjs/binding'),
-    ],
-  }));
-} catch (_) {
-  // ...
-}
+const { rsBindingPath } = require('@cnpmjs/binding');
 
 const baseRapidModeDir = () => path.join(homedir(), '.rapid', 'cache');
 // 依赖 tar 文件目录
