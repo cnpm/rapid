@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.1](https://github.com/cnpm/rapid/compare/v0.1.0...v0.1.1) (2023-07-24)
+
+**Note:** Version bump only for package @cnpmjs/binding-linux-x64
+
+
+
+
+
 # 0.1.0 (2023-07-24)
 
 
