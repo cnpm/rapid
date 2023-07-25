@@ -3,16 +3,33 @@ use futures::future::join_all;
 use sha2::{Digest, Sha256};
 use std::cmp::min;
 use std::collections::VecDeque;
-use std::io::Error as IoError;
+use std::io::{BufRead, Error as IoError};
 use std::io::{IoSlice, Result as IoResult};
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use std::time::Duration;
-use tokio::io::{AsyncWrite, AsyncWriteExt};
+use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt, ReadBuf};
 
 use crate::store::digest::{DigestHasher, RafsDigest};
 
 pub struct BlackHole;
+
+pub struct AsyncReadVec {
+    pub inner: Vec<u8>,
+}
+
+impl AsyncRead for AsyncReadVec {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        _cx: &mut Context<'_>,
+        buf: &mut ReadBuf<'_>,
+    ) -> Poll<IoResult<()>> {
+        let amt = std::cmp::min(self.inner.len(), buf.remaining());
+        let write: Vec<u8> = self.inner.drain(0..amt).collect();
+        buf.put_slice(&write[..]);
+        Poll::Ready(Ok(()))
+    }
+}
 
 impl AsyncWrite for BlackHole {
     fn poll_write(

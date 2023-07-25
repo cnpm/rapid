@@ -8,6 +8,7 @@
 use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
+use std::ops::Range;
 
 use std::path::PathBuf;
 
@@ -103,6 +104,15 @@ pub struct TocEntry {
 pub struct TocIndex {
     pub version: u32,
     pub entries: Vec<TocEntry>,
+}
+
+impl TocIndex {
+    pub fn partition_clone(&self, range: Range<usize>) -> TocIndex {
+        TocIndex {
+            version: self.version,
+            entries: self.entries[range.start..range.end].to_vec(),
+        }
+    }
 }
 
 impl TocIndex {
