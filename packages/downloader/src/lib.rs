@@ -52,7 +52,7 @@ pub struct DownloadOptions {
 pub async fn download(
     pkg_requests: Vec<PackageRequest>,
     opts: DownloadOptions,
-) -> Result<HashMap<String, TocIndex>> {
+) -> Result<HashMap<String, TocIndex<'static>>> {
     let DownloadOptions {
         http_concurrent_count,
         bucket_count,
