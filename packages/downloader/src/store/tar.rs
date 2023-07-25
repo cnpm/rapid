@@ -35,23 +35,26 @@ impl TryInto<TocEntry<'_>> for &Header {
                 } // todo!("not supoort type: {:?}", self.entry_type()),
             }),
             size: self.size().unwrap(),
-            link_name: Cow::Owned(self
-                .link_name()
-                .unwrap()
-                .map_or_else(|| PathBuf::from(""), PathBuf::from)),
+            link_name: Cow::Owned(
+                self.link_name()
+                    .unwrap()
+                    .map_or_else(|| PathBuf::from(""), PathBuf::from),
+            ),
             mode: self.mode().unwrap(),
             // FIXME: tokio-tar 读 uid 时会失败
             // Custom { kind: Other, error: "numeric field was not a number:  when getting uid for package/LICENSE" }
             uid: 0, // header.uid().unwrap() as u32,
             gid: 0, // header.gid().unwrap() as u32,
-            uname: Cow::Owned(self
-                .username()
-                .unwrap()
-                .map_or_else(|| String::from(""), String::from)),
-            gname: Cow::Owned(self
-                .groupname()
-                .unwrap()
-                .map_or_else(|| String::from(""), String::from)),
+            uname: Cow::Owned(
+                self.username()
+                    .unwrap()
+                    .map_or_else(|| String::from(""), String::from),
+            ),
+            gname: Cow::Owned(
+                self.groupname()
+                    .unwrap()
+                    .map_or_else(|| String::from(""), String::from),
+            ),
             offset: 0,
             dev_major: 0,
             dev_minor: 0,

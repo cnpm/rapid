@@ -5,8 +5,8 @@
 //
 // Stargz support.
 
-use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 use std::collections::HashMap;
 use std::ops::Range;
@@ -136,7 +136,8 @@ impl TocIndex<'_> {
     pub fn partition_clone(toc_index: &TocIndex, range: Range<usize>) -> TocIndex<'static> {
         TocIndex {
             version: toc_index.version,
-            entries: toc_index.entries[range.start..range.end].iter()
+            entries: toc_index.entries[range.start..range.end]
+                .iter()
                 .map(|f| f.to_owned())
                 .collect(),
         }
@@ -145,7 +146,9 @@ impl TocIndex<'_> {
     pub fn clone(toc_index: &TocIndex) -> TocIndex<'static> {
         TocIndex {
             version: toc_index.version,
-            entries: toc_index.entries.iter()
+            entries: toc_index
+                .entries
+                .iter()
                 .map(|f| TocEntry::to_owned(f))
                 .collect(),
         }

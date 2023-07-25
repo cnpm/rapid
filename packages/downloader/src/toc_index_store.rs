@@ -49,7 +49,10 @@ impl<'a> TocIndexStoreInner<'a> {
 }
 
 impl TocIndexStoreInner<'_> {
-    fn restore(mut inner_toc_map_string: String, mut inner_toc_index_string: String) -> Result<TocIndexStoreInner<'static>> {
+    fn restore(
+        mut inner_toc_map_string: String,
+        mut inner_toc_index_string: String,
+    ) -> Result<TocIndexStoreInner<'static>> {
         let holder = TocIndexStoreInnerHolder {
             inner_toc_map_string,
             inner_toc_index_string,
@@ -66,8 +69,9 @@ impl TocIndexStoreInner<'_> {
         unsafe {
             let toc_map: TocMap = serde_json::from_str(&(*holder_ptr).inner_toc_map_string)
                 .map_err(|e| Error::FormatError(String::from("parse toc map file failed")))?;
-            let indices: TocIndicesMap = serde_json::from_str(&(*holder_ptr).inner_toc_index_string)
-                .map_err(|e| Error::FormatError(String::from("parse toc index file failed")))?;
+            let indices: TocIndicesMap =
+                serde_json::from_str(&(*holder_ptr).inner_toc_index_string)
+                    .map_err(|e| Error::FormatError(String::from("parse toc index file failed")))?;
             inner.toc_map = toc_map;
             inner.indices = indices;
         }
@@ -123,7 +127,13 @@ impl TocIndexStore {
             })
     }
 
-    pub fn add_package(&self, name: &str, version: &str, blob_id: &str, mut toc_index: TocIndex<'static>) {
+    pub fn add_package(
+        &self,
+        name: &str,
+        version: &str,
+        blob_id: &str,
+        mut toc_index: TocIndex<'static>,
+    ) {
         let pkg_entry_count = toc_index.entries.len();
         let index_start = self.add_package_toc(blob_id, toc_index);
         self.add_package_index(
@@ -173,30 +183,35 @@ impl TocIndexStore {
 
 #[cfg(test)]
 mod test {
+    use crate::store::TocEntry;
+    use crate::toc_index_store::TocIndexStore;
+    use crate::TocIndex;
     use std::borrow::Cow;
     use std::collections::HashMap;
     use std::path::{Path, PathBuf};
     use std::time::SystemTime;
-    use crate::store::TocEntry;
-    use crate::toc_index_store::TocIndexStore;
-    use crate::TocIndex;
 
     #[test]
     fn test_restore_from_package() {
         let start = SystemTime::now();
         TocIndexStore::restore_from_file(
             Path::new("/Users/killa/.rapid/cache/tar_buckets/npm.config.json"),
-            Path::new("/Users/killa/.rapid/cache/tar_buckets/npm.index.json")).unwrap();
+            Path::new("/Users/killa/.rapid/cache/tar_buckets/npm.index.json"),
+        )
+        .unwrap();
         println!("cost {:?}", start.elapsed());
     }
 
     #[test]
     fn test_get_package() {
         let store = TocIndexStore::new();
-        store.add_package("uuid", "8.3.2", "bucket_0.stgz", TocIndex {
-            version: 1,
-            entries: vec![
-                TocEntry {
+        store.add_package(
+            "uuid",
+            "8.3.2",
+            "bucket_0.stgz",
+            TocIndex {
+                version: 1,
+                entries: vec![TocEntry {
                     name: Cow::Owned(PathBuf::from("uuid@8.3.2/dist/bin/uuid")),
                     toc_type: Cow::Owned(String::from("reg")),
                     size: 44,
@@ -210,16 +225,21 @@ mod test {
                     dev_major: 0,
                     dev_minor: 0,
                     xattrs: HashMap::new(),
-                    digest: Cow::Owned(String::from("sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7")),
-                    chunk_offset:0,
-                    chunk_size:0
-                }
-            ],
-        });
-        store.add_package("uuid", "9.0.0", "bucket_0.stgz", TocIndex {
-            version: 1,
-            entries: vec![
-                TocEntry {
+                    digest: Cow::Owned(String::from(
+                        "sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7",
+                    )),
+                    chunk_offset: 0,
+                    chunk_size: 0,
+                }],
+            },
+        );
+        store.add_package(
+            "uuid",
+            "9.0.0",
+            "bucket_0.stgz",
+            TocIndex {
+                version: 1,
+                entries: vec![TocEntry {
                     name: Cow::Owned(PathBuf::from("uuid@9.0.0/dist/bin/uuid")),
                     toc_type: Cow::Owned(String::from("reg")),
                     size: 44,
@@ -233,12 +253,14 @@ mod test {
                     dev_major: 0,
                     dev_minor: 0,
                     xattrs: HashMap::new(),
-                    digest: Cow::Owned(String::from("sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7")),
-                    chunk_offset:0,
-                    chunk_size:0
-                }
-            ],
-        });
+                    digest: Cow::Owned(String::from(
+                        "sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7",
+                    )),
+                    chunk_offset: 0,
+                    chunk_size: 0,
+                }],
+            },
+        );
         let res = store.get_package("uuid", "8.3.2");
         assert!(res.is_some());
         let res = res.unwrap();
