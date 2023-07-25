@@ -2,9 +2,7 @@ use super::error::{Error, Result};
 use crate::TocIndex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fmt::format;
 use std::fs::File;
-use std::io::Read;
 use std::ops::Range;
 use std::path::Path;
 use std::sync::Mutex;
@@ -69,6 +67,21 @@ impl TocIndexStore {
         inner.indices.contains_key(&id)
     }
 
+    pub fn get_package(&self, name: &str, version: &str) -> Option<(String, TocIndex)> {
+        let mut inner = self.inner.lock().expect("toc index store lock failed");
+        let id = TocIndexStore::package_id(name, version);
+        inner
+            .indices
+            .get(&id)
+            .and_then(|index_map| index_map.iter().next())
+            .and_then(|(key, range)| {
+                inner
+                    .toc_map
+                    .get(key)
+                    .map(|toc| (key.clone(), toc.partition_clone(range.clone())))
+            })
+    }
+
     pub fn add_package(&self, name: &str, version: &str, blob_id: &str, mut toc_index: TocIndex) {
         let pkg_entry_count = toc_index.entries.len();
         let index_start = self.add_package_toc(blob_id, toc_index);
@@ -114,5 +127,82 @@ impl TocIndexStore {
 
     fn package_id(name: &str, version: &str) -> String {
         format!("{}@{}", name, version)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::store::TocEntry;
+    use crate::toc_index_store::TocIndexStore;
+    use crate::TocIndex;
+    use std::collections::HashMap;
+    use std::path::PathBuf;
+    use std::time::SystemTime;
+
+    #[test]
+    fn test_get_package() {
+        let store = TocIndexStore::new();
+        store.add_package(
+            "uuid",
+            "8.3.2",
+            "bucket_0.stgz",
+            TocIndex {
+                version: 1,
+                entries: vec![TocEntry {
+                    name: PathBuf::from("uuid@8.3.2/dist/bin/uuid"),
+                    toc_type: String::from("reg"),
+                    size: 44,
+                    link_name: PathBuf::from(""),
+                    mode: 493,
+                    uid: 0,
+                    gid: 0,
+                    uname: String::from(""),
+                    gname: String::from(""),
+                    offset: 512,
+                    dev_major: 0,
+                    dev_minor: 0,
+                    xattrs: HashMap::new(),
+                    digest: String::from(
+                        "sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7",
+                    ),
+                    chunk_offset: 0,
+                    chunk_size: 0,
+                }],
+            },
+        );
+        store.add_package(
+            "uuid",
+            "9.0.0",
+            "bucket_0.stgz",
+            TocIndex {
+                version: 1,
+                entries: vec![TocEntry {
+                    name: PathBuf::from("uuid@9.0.0/dist/bin/uuid"),
+                    toc_type: String::from("reg"),
+                    size: 44,
+                    link_name: PathBuf::from(""),
+                    mode: 493,
+                    uid: 0,
+                    gid: 0,
+                    uname: String::from(""),
+                    gname: String::from(""),
+                    offset: 1536,
+                    dev_major: 0,
+                    dev_minor: 0,
+                    xattrs: HashMap::new(),
+                    digest: String::from(
+                        "sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7",
+                    ),
+                    chunk_offset: 0,
+                    chunk_size: 0,
+                }],
+            },
+        );
+        let res = store.get_package("uuid", "8.3.2");
+        assert!(res.is_some());
+        let res = res.unwrap();
+        assert_eq!(res.0, "bucket_0.stgz");
+        assert_eq!(res.1.version, 1);
+        assert_eq!(res.1.entries.len(), 1);
     }
 }

@@ -42,11 +42,16 @@ async function download(options) {
 
   const blobManager = new NpmBlobManager();
   const entryListener = entryListenerFactory(blobManager);
+
+  console.time('[rapid] downloader new');
   const downloader = new Downloader({
     entryListener,
     productionMode: options.productionMode,
   });
+  console.timeEnd('[rapid] downloader new');
+  console.time('[rapid] downloader init');
   await downloader.init();
+  console.timeEnd('[rapid] downloader init');
   options.downloader = downloader;
   const depsTree = options.depsTree;
 

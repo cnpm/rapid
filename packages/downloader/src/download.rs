@@ -1,21 +1,17 @@
-use crate::http::{HTTPReqwester, ResponseStreamReader};
+use crate::http::ResponseStreamReader;
 use crate::meta::PackageRequest;
-use std::collections::HashMap;
 use std::fmt::{Debug, Display};
-use std::io::Error as IoError;
 use std::sync::Arc;
-use std::time::SystemTime;
 
 use crate::error::Error;
 use crate::pool::{Pool, PoolError, PoolExecutorError};
 use crate::store::{NpmBucketStoreExecuteCommand, NpmBucketStoreExecuteResult};
 use crate::toc_index_store::TocIndexStore;
-use crate::{HTTPPool, NpmStore, TocIndex};
+use crate::{HTTPPool, NpmStore};
 use derivative::Derivative;
-use futures_util::future::try_join_all;
 use log::{info, warn};
 use tokio::io::AsyncRead;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 
 #[derive(Derivative)]
@@ -117,8 +113,36 @@ impl Downloader {
             mpsc::channel(self.store.bucket_size as usize * 2);
         let (store_sender, mut store_receiver) = mpsc::channel(self.store.bucket_size as usize);
         let http_pool = self.http_pool.clone();
+        let (reuse_requests, download_requests): (Vec<PackageRequest>, Vec<PackageRequest>) =
+            requests
+                .into_iter()
+                .partition(|r| self.toc_index_store.has_package(r.name(), r.version()));
+
+        let toc_index_store = self.toc_index_store.clone();
+        let store = self.store.clone();
+        let reuse_handler: JoinHandle<Result<(), Error>> = tokio::spawn(async move {
+            for request in reuse_requests.into_iter() {
+                if let Some((bucket_name, toc_index)) =
+                    toc_index_store.get_package(request.name(), request.version())
+                {
+                    store
+                        .notify_package(&bucket_name, request.name(), toc_index)
+                        .await?;
+                } else {
+                    return Err(Error::FormatError(format!(
+                        "not found package {}@{} cache",
+                        request.name(),
+                        request.version()
+                    )));
+                }
+            }
+            Ok(())
+        });
+
         let request_handler: JoinHandle<Result<(), Error>> = tokio::spawn(async move {
-            http_pool.batch_execute(requests, response_sender).await?;
+            http_pool
+                .batch_execute(download_requests, response_sender)
+                .await?;
             Ok(())
         });
         let map_handler: JoinHandle<Result<(), Error>> = tokio::spawn(async move {
@@ -171,6 +195,8 @@ impl Downloader {
         info!("all store done");
         toc_store_handler.await??;
         info!("all toc store done");
+        reuse_handler.await??;
+        info!("all reuse package done");
         Ok(())
     }
 
@@ -205,6 +231,7 @@ impl Downloader {
 mod test {
     use crate::download::Downloader;
     use crate::http::HTTPPool;
+    use crate::store::listener::EntryListener;
     use crate::toc_index_store::TocIndexStore;
     use crate::{NpmStore, PackageRequest};
     use std::fs::File;
@@ -212,14 +239,20 @@ mod test {
     use std::path::Path;
     use std::sync::Arc;
     use std::time::Duration;
+    use tokio::io::AsyncReadExt;
+    use tokio::sync::mpsc;
 
-    async fn create_downloader(toc_index_store: Arc<TocIndexStore>) -> Downloader {
+    async fn create_downloader(
+        toc_index_store: Arc<TocIndexStore>,
+        bucket_path: &str,
+        entry_listener: Option<EntryListener>,
+    ) -> Downloader {
         let http_pool = HTTPPool::new(1).expect("create http pool failed");
         let store = NpmStore::new(
             1,
-            Path::new("/tmp/should_not_download_exists_pkg.stgz"),
+            Path::new(bucket_path),
             Duration::from_secs(5),
-            None,
+            entry_listener,
         )
         .await
         .expect("create store failed");
@@ -228,8 +261,14 @@ mod test {
 
     #[tokio::test]
     async fn should_not_download_exists_pkg() {
+        // setup_logger();
         let toc_index_store = Arc::new(TocIndexStore::new());
-        let downloader = create_downloader(toc_index_store.clone()).await;
+        let downloader = create_downloader(
+            toc_index_store.clone(),
+            "/tmp/should_not_download_exists_pkg.stgz",
+            None,
+        )
+        .await;
         // first download
         downloader
             .download_pkg(PackageRequest {
@@ -258,7 +297,12 @@ mod test {
         drop(bucket_file);
 
         // second download
-        let downloader = create_downloader(toc_index_store.clone()).await;
+        let downloader = create_downloader(
+            toc_index_store.clone(),
+            "/tmp/should_not_download_exists_pkg.stgz",
+            None,
+        )
+        .await;
         downloader
             .download_pkg(PackageRequest {
                 name: String::from("umi"),
@@ -283,5 +327,98 @@ mod test {
         assert_eq!(bucket_size, new_metadata.len());
         // not modify file
         assert_eq!(modify_time, new_metadata.mtime());
+    }
+
+    #[tokio::test]
+    async fn should_not_download_batch_exists_pkg() {
+        // setup_logger();
+        let toc_index_store = Arc::new(TocIndexStore::new());
+
+        let downloader = create_downloader(
+            toc_index_store.clone(),
+            "/tmp/should_not_download_batch_exists_pkg.stgz",
+            None,
+        )
+        .await;
+        // first download
+        downloader
+            .batch_download(vec![PackageRequest {
+                name: String::from("umi"),
+                version: String::from("4.0.7"),
+                sha: String::from("mock_sha"),
+                url: String::from("http://127.0.0.1:8000/umi-4.0.7.tgz"),
+            }])
+            .await
+            .expect("download pkg failed");
+        downloader.shutdown().await.expect("shutdown failed");
+
+        let bucket_file = File::open("/tmp/should_not_download_exists_pkg.stgz")
+            .expect("open bucket file failed");
+        let metadata = bucket_file
+            .metadata()
+            .expect("get bucket file metadata failed");
+        let inode = metadata.ino();
+        let modify_time = metadata.mtime();
+        let bucket_size = metadata.len();
+
+        let bucket_size = bucket_file
+            .metadata()
+            .expect("get bucket file metadata failed")
+            .len();
+        drop(bucket_file);
+
+        // second download
+        let (sx, mut rx) = mpsc::channel(10);
+        let listener = EntryListener::new(vec![String::from("*/package.json")], Arc::new(sx));
+        let receive_handler = tokio::spawn(async move {
+            let mut msgs = Vec::new();
+            while let Some(msg) = rx.recv().await {
+                if let Some(msg) = msg {
+                    msgs.push(msg);
+                } else {
+                    break;
+                }
+            }
+            msgs
+        });
+        let downloader = create_downloader(
+            toc_index_store.clone(),
+            "/tmp/should_not_download_batch_exists_pkg.stgz",
+            Some(listener),
+        )
+        .await;
+        downloader
+            .batch_download(vec![PackageRequest {
+                name: String::from("umi"),
+                version: String::from("4.0.7"),
+                sha: String::from("mock_sha"),
+                url: String::from("http://127.0.0.1:8000/umi-4.0.7.tgz"),
+            }])
+            .await
+            .expect("download pkg failed");
+        downloader.shutdown().await.expect("shutdown failed");
+
+        let bucket_file = File::open("/tmp/should_not_download_exists_pkg.stgz")
+            .expect("open bucket file failed");
+        let new_metadata = bucket_file
+            .metadata()
+            .expect("get bucket file metadata failed");
+        drop(bucket_file);
+
+        // same file
+        assert_eq!(inode, new_metadata.ino());
+        // same size
+        assert_eq!(bucket_size, new_metadata.len());
+        // not modify file
+        assert_eq!(modify_time, new_metadata.mtime());
+        let mut msgs = receive_handler.await.unwrap();
+        assert_eq!(msgs.len(), 1);
+        let msg = &mut msgs[0];
+        assert_eq!(msg.pkg_name, "umi");
+        assert_eq!(msg.entry_name, "umi@4.0.7/package.json");
+        let mut buf = Vec::new();
+        msg.reader.read_to_end(&mut buf).await.unwrap();
+        let mut content = String::from_utf8(buf).unwrap();
+        assert_eq!(content.len(), 1492);
     }
 }

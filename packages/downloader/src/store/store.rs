@@ -1,5 +1,6 @@
 use crate::channel::subscriber;
 use std::fmt::{Debug, Display, Formatter};
+use std::io::SeekFrom;
 
 use crate::error::{Error, Result};
 use crate::meta::PackageRequest;
@@ -13,12 +14,14 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::store::listener::EntryListener;
-use crate::util::MultiWriter;
+use crate::store::listener::{EntryListener, PackageEntry};
+use crate::store::TocEntry;
+use crate::util::{AsyncReadVec, MultiWriter};
 use async_trait::async_trait;
+use bytes::Buf;
 use futures_util::future::try_join_all;
 use tokio::fs::{DirBuilder, OpenOptions};
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeekExt, AsyncWrite};
 use tokio::sync::mpsc::Sender as TokioSender;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::sync::Mutex;
@@ -176,6 +179,41 @@ impl NpmStore {
                 reader: Box::new(reader),
             })
             .await
+    }
+
+    pub async fn notify_package(
+        &self,
+        bucket_name: &str,
+        pkg_name: &str,
+        toc_index: TocIndex,
+    ) -> Result<()> {
+        if let Some(entry_listener) = &self.entry_listener {
+            let file_path = self.bucket_dir.join(&bucket_name);
+            let mut bucket_file = OpenOptions::new()
+                .create(false)
+                .append(false)
+                .read(true)
+                .open(file_path)
+                .await?;
+            for entry in &toc_index.entries {
+                if entry_listener.should_send_entry(&entry.name) {
+                    bucket_file.seek(SeekFrom::Start(entry.offset)).await?;
+                    let size = entry.size as usize;
+                    let mut buf: Vec<u8> = Vec::with_capacity(size);
+                    buf.resize(size, 0);
+                    bucket_file.read_exact(&mut buf).await?;
+                    let reader = AsyncReadVec { inner: buf };
+                    entry_listener
+                        .send_entry(PackageEntry {
+                            pkg_name: String::from(pkg_name),
+                            entry_name: String::from(entry.name.to_str().unwrap()),
+                            reader: Box::new(reader),
+                        })
+                        .await;
+                }
+            }
+        }
+        Ok(())
     }
 
     pub async fn add_package<R: AsyncRead + Send + Sync + Unpin + 'static>(
