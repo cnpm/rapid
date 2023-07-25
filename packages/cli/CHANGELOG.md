@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/cnpm/rapid/compare/v0.1.2...v0.2.0) (2023-07-25)
+
+
+### Bug Fixes
+
+* fix restore from toc map/index ([#27](https://github.com/cnpm/rapid/issues/27)) ([9cd6b8b](https://github.com/cnpm/rapid/commit/9cd6b8bff7d53ff0f010278086bea671570501ff))
+
+
+
+
+
 ## [0.1.2](https://github.com/cnpm/rapid/compare/v0.1.1...v0.1.2) (2023-07-24)
 
 **Note:** Version bump only for package @cnpmjs/rapid
