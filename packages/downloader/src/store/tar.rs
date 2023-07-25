@@ -7,7 +7,7 @@ use std::convert::TryInto;
 use std::path::{Path, PathBuf};
 
 use crate::store::listener::{EntryListener, PackageEntry};
-use std::borrow::Borrow;
+use std::borrow::{Borrow, Cow};
 use std::sync::Arc;
 use tokio::io::{self, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, Result as IoResult};
 use tokio::sync::mpsc::Sender;
@@ -15,14 +15,14 @@ use tokio_tar::{Archive, Entry, EntryType, Header};
 
 pub struct TarConcater {}
 
-impl TryInto<TocEntry> for &Header {
+impl TryInto<TocEntry<'_>> for &Header {
     type Error = Error;
 
-    fn try_into(self) -> Result<TocEntry, Self::Error> {
+    fn try_into(self) -> Result<TocEntry<'static>, Self::Error> {
         let entry = TocEntry {
             // FIXME: 需要支持 long name 的情况，要从 entry 里取
-            name: PathBuf::from(self.path().unwrap()),
-            toc_type: match self.entry_type() {
+            name: Cow::Owned(PathBuf::from(self.path().unwrap())),
+            toc_type: Cow::Owned(match self.entry_type() {
                 EntryType::Regular => String::from("reg"),
                 EntryType::Link => String::from("hardlink"),
                 EntryType::Symlink => String::from("symlink"),
@@ -33,30 +33,30 @@ impl TryInto<TocEntry> for &Header {
                 _ => {
                     return Err(Error::FormatError(String::from("not supoort type")));
                 } // todo!("not supoort type: {:?}", self.entry_type()),
-            },
+            }),
             size: self.size().unwrap(),
-            link_name: self
+            link_name: Cow::Owned(self
                 .link_name()
                 .unwrap()
-                .map_or_else(|| PathBuf::from(""), PathBuf::from),
+                .map_or_else(|| PathBuf::from(""), PathBuf::from)),
             mode: self.mode().unwrap(),
             // FIXME: tokio-tar 读 uid 时会失败
             // Custom { kind: Other, error: "numeric field was not a number:  when getting uid for package/LICENSE" }
             uid: 0, // header.uid().unwrap() as u32,
             gid: 0, // header.gid().unwrap() as u32,
-            uname: self
+            uname: Cow::Owned(self
                 .username()
                 .unwrap()
-                .map_or_else(|| String::from(""), String::from),
-            gname: self
+                .map_or_else(|| String::from(""), String::from)),
+            gname: Cow::Owned(self
                 .groupname()
                 .unwrap()
-                .map_or_else(|| String::from(""), String::from),
+                .map_or_else(|| String::from(""), String::from)),
             offset: 0,
             dev_major: 0,
             dev_minor: 0,
             xattrs: Default::default(),
-            digest: "".to_string(),
+            digest: Cow::Owned(String::from("")),
             chunk_offset: 0,
             chunk_size: 0,
         };
@@ -81,7 +81,7 @@ impl TarConcater {
         tar_prefix: &str,
         reader: R,
         entry_listener: Option<&EntryListener>,
-    ) -> IoResult<TocIndex> {
+    ) -> IoResult<TocIndex<'static>> {
         let mut read_archive = Archive::new(reader);
         let mut entries = read_archive.entries()?;
         let mut index = TocIndex::new();
@@ -133,7 +133,7 @@ impl TarConcater {
             // let count_writer = writer.into_inner();
             let entry: Result<TocEntry, Error> = (&header).try_into();
             if let Ok(mut entry) = entry {
-                entry.digest = format!("sha256:{}", digest.to_string());
+                entry.digest = Cow::Owned(format!("sha256:{}", digest.to_string()));
                 entry.offset = offset;
                 index.entries.push(entry);
             }

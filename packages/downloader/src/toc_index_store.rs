@@ -1,40 +1,83 @@
 use super::error::{Error, Result};
 use crate::TocIndex;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
+use std::io::Read;
+use std::marker::PhantomPinned;
+use std::mem::ManuallyDrop;
 use std::ops::Range;
 use std::path::Path;
-use std::sync::Mutex;
+use std::pin::Pin;
+use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
-pub type TocMap = HashMap<String /* tarName */, TocIndex>;
+pub type TocMap<'a> = HashMap<String /* tarName */, TocIndex<'a>>;
 pub type TocIndicesMap =
     HashMap<String /* packageName */, HashMap<String /* tarName */, Range<usize>>>;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TocIndexStoreData {
-    pub toc_map: TocMap,
+pub struct TocIndexStoreData<'a> {
+    #[serde(borrow)]
+    pub toc_map: TocMap<'a>,
     pub indices: TocIndicesMap,
 }
 
 #[derive(Clone)]
-struct TocIndexStoreInner {
-    toc_map: TocMap,
+struct TocIndexStoreInnerHolder {
+    inner_toc_map_string: String,
+    inner_toc_index_string: String,
+    _pinned: PhantomPinned,
+}
+
+#[derive(Clone)]
+struct TocIndexStoreInner<'a> {
+    holder: Option<Pin<Box<TocIndexStoreInnerHolder>>>,
+    toc_map: TocMap<'a>,
     indices: TocIndicesMap,
 }
 
-impl TocIndexStoreInner {
+impl<'a> TocIndexStoreInner<'a> {
     fn new() -> Self {
         TocIndexStoreInner {
+            holder: None,
             toc_map: HashMap::new(),
             indices: HashMap::new(),
         }
     }
 }
 
+impl TocIndexStoreInner<'_> {
+    fn restore(mut inner_toc_map_string: String, mut inner_toc_index_string: String) -> Result<TocIndexStoreInner<'static>> {
+        let holder = TocIndexStoreInnerHolder {
+            inner_toc_map_string,
+            inner_toc_index_string,
+            _pinned: PhantomPinned,
+        };
+        let mut holder = Box::pin(holder);
+        let holder_ptr: *mut _ = unsafe { holder.as_mut().get_unchecked_mut() };
+        let mut inner = TocIndexStoreInner {
+            holder: Some(holder),
+            toc_map: HashMap::new(),
+            indices: HashMap::new(),
+        };
+
+        unsafe {
+            let toc_map: TocMap = serde_json::from_str(&(*holder_ptr).inner_toc_map_string)
+                .map_err(|e| Error::FormatError(String::from("parse toc map file failed")))?;
+            let indices: TocIndicesMap = serde_json::from_str(&(*holder_ptr).inner_toc_index_string)
+                .map_err(|e| Error::FormatError(String::from("parse toc index file failed")))?;
+            inner.toc_map = toc_map;
+            inner.indices = indices;
+        }
+
+        Ok(inner)
+    }
+}
+
 pub struct TocIndexStore {
-    inner: Mutex<TocIndexStoreInner>,
+    inner: Mutex<TocIndexStoreInner<'static>>,
 }
 
 impl TocIndexStore {
@@ -45,20 +88,18 @@ impl TocIndexStore {
     }
 
     pub fn restore_from_file<P: AsRef<Path>>(map_path: P, index_path: P) -> Result<Self> {
-        let map_file = File::open(map_path)?;
-        let map: TocMap = serde_json::from_reader(map_file)
-            .map_err(|e| Error::FormatError(String::from("parse toc map file failed")))?;
+        let mut map_file = File::open(map_path)?;
+        let mut map_file_str = String::new();
+        map_file.read_to_string(&mut map_file_str)?;
 
-        let index_file = File::open(index_path)?;
-        let index = serde_json::from_reader(index_file)
-            .map_err(|e| Error::FormatError(String::from("parse toc index file failed")))?;
-        Ok(TocIndexStore::restore(map, index))
-    }
+        let mut index_file = File::open(index_path)?;
+        let mut index_file_str = String::new();
+        index_file.read_to_string(&mut index_file_str)?;
 
-    pub fn restore(toc_map: TocMap, indices: TocIndicesMap) -> Self {
-        TocIndexStore {
-            inner: Mutex::new(TocIndexStoreInner { toc_map, indices }),
-        }
+        let inner = TocIndexStoreInner::restore(map_file_str, index_file_str)?;
+        Ok(TocIndexStore {
+            inner: Mutex::new(inner),
+        })
     }
 
     pub fn has_package(&self, name: &str, version: &str) -> bool {
@@ -67,7 +108,7 @@ impl TocIndexStore {
         inner.indices.contains_key(&id)
     }
 
-    pub fn get_package(&self, name: &str, version: &str) -> Option<(String, TocIndex)> {
+    pub fn get_package(&self, name: &str, version: &str) -> Option<(String, TocIndex<'static>)> {
         let mut inner = self.inner.lock().expect("toc index store lock failed");
         let id = TocIndexStore::package_id(name, version);
         inner
@@ -78,11 +119,11 @@ impl TocIndexStore {
                 inner
                     .toc_map
                     .get(key)
-                    .map(|toc| (key.clone(), toc.partition_clone(range.clone())))
+                    .map(|toc| (key.clone(), TocIndex::partition_clone(toc, range.clone())))
             })
     }
 
-    pub fn add_package(&self, name: &str, version: &str, blob_id: &str, mut toc_index: TocIndex) {
+    pub fn add_package(&self, name: &str, version: &str, blob_id: &str, mut toc_index: TocIndex<'static>) {
         let pkg_entry_count = toc_index.entries.len();
         let index_start = self.add_package_toc(blob_id, toc_index);
         self.add_package_index(
@@ -93,7 +134,7 @@ impl TocIndexStore {
         );
     }
 
-    pub fn dump(&self) -> TocIndexStoreData {
+    pub fn dump(&self) -> TocIndexStoreData<'static> {
         let inner = self.inner.lock().expect("toc index store lock failed");
         TocIndexStoreData {
             toc_map: inner.toc_map.clone(),
@@ -101,7 +142,7 @@ impl TocIndexStore {
         }
     }
 
-    fn add_package_toc(&self, blob_id: &str, mut toc_index: TocIndex) -> usize {
+    fn add_package_toc(&self, blob_id: &str, mut toc_index: TocIndex<'static>) -> usize {
         let mut inner = self.inner.lock().expect("toc index store lock failed");
         if let Some(exits_toc_index) = inner.toc_map.get_mut(blob_id) {
             let cur_len = exits_toc_index.entries.len();
@@ -132,72 +173,72 @@ impl TocIndexStore {
 
 #[cfg(test)]
 mod test {
+    use std::borrow::Cow;
+    use std::collections::HashMap;
+    use std::path::{Path, PathBuf};
+    use std::time::SystemTime;
     use crate::store::TocEntry;
     use crate::toc_index_store::TocIndexStore;
     use crate::TocIndex;
-    use std::collections::HashMap;
-    use std::path::PathBuf;
-    use std::time::SystemTime;
+
+    #[test]
+    fn test_restore_from_package() {
+        let start = SystemTime::now();
+        TocIndexStore::restore_from_file(
+            Path::new("/Users/killa/.rapid/cache/tar_buckets/npm.config.json"),
+            Path::new("/Users/killa/.rapid/cache/tar_buckets/npm.index.json")).unwrap();
+        println!("cost {:?}", start.elapsed());
+    }
 
     #[test]
     fn test_get_package() {
         let store = TocIndexStore::new();
-        store.add_package(
-            "uuid",
-            "8.3.2",
-            "bucket_0.stgz",
-            TocIndex {
-                version: 1,
-                entries: vec![TocEntry {
-                    name: PathBuf::from("uuid@8.3.2/dist/bin/uuid"),
-                    toc_type: String::from("reg"),
+        store.add_package("uuid", "8.3.2", "bucket_0.stgz", TocIndex {
+            version: 1,
+            entries: vec![
+                TocEntry {
+                    name: Cow::Owned(PathBuf::from("uuid@8.3.2/dist/bin/uuid")),
+                    toc_type: Cow::Owned(String::from("reg")),
                     size: 44,
-                    link_name: PathBuf::from(""),
+                    link_name: Cow::Owned(PathBuf::from("")),
                     mode: 493,
                     uid: 0,
                     gid: 0,
-                    uname: String::from(""),
-                    gname: String::from(""),
+                    uname: Cow::Owned(String::from("")),
+                    gname: Cow::Owned(String::from("")),
                     offset: 512,
                     dev_major: 0,
                     dev_minor: 0,
                     xattrs: HashMap::new(),
-                    digest: String::from(
-                        "sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7",
-                    ),
-                    chunk_offset: 0,
-                    chunk_size: 0,
-                }],
-            },
-        );
-        store.add_package(
-            "uuid",
-            "9.0.0",
-            "bucket_0.stgz",
-            TocIndex {
-                version: 1,
-                entries: vec![TocEntry {
-                    name: PathBuf::from("uuid@9.0.0/dist/bin/uuid"),
-                    toc_type: String::from("reg"),
+                    digest: Cow::Owned(String::from("sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7")),
+                    chunk_offset:0,
+                    chunk_size:0
+                }
+            ],
+        });
+        store.add_package("uuid", "9.0.0", "bucket_0.stgz", TocIndex {
+            version: 1,
+            entries: vec![
+                TocEntry {
+                    name: Cow::Owned(PathBuf::from("uuid@9.0.0/dist/bin/uuid")),
+                    toc_type: Cow::Owned(String::from("reg")),
                     size: 44,
-                    link_name: PathBuf::from(""),
+                    link_name: Cow::Owned(PathBuf::from("")),
                     mode: 493,
                     uid: 0,
                     gid: 0,
-                    uname: String::from(""),
-                    gname: String::from(""),
+                    uname: Cow::Owned(String::from("")),
+                    gname: Cow::Owned(String::from("")),
                     offset: 1536,
                     dev_major: 0,
                     dev_minor: 0,
                     xattrs: HashMap::new(),
-                    digest: String::from(
-                        "sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7",
-                    ),
-                    chunk_offset: 0,
-                    chunk_size: 0,
-                }],
-            },
-        );
+                    digest: Cow::Owned(String::from("sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7")),
+                    chunk_offset:0,
+                    chunk_size:0
+                }
+            ],
+        });
         let res = store.get_package("uuid", "8.3.2");
         assert!(res.is_some());
         let res = res.unwrap();

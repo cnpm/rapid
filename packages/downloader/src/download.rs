@@ -7,7 +7,7 @@ use crate::error::Error;
 use crate::pool::{Pool, PoolError, PoolExecutorError};
 use crate::store::{NpmBucketStoreExecuteCommand, NpmBucketStoreExecuteResult};
 use crate::toc_index_store::TocIndexStore;
-use crate::{HTTPPool, NpmStore};
+use crate::{HTTPPool, NpmStore, TocIndex};
 use derivative::Derivative;
 use log::{info, warn};
 use tokio::io::AsyncRead;

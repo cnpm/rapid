@@ -61,7 +61,7 @@ impl<R: AsyncRead + Send + Sync + Unpin> Command for NpmBucketStoreExecuteComman
 pub struct NpmBucketStoreExecuteResult {
     pub pkg_request: PackageRequest,
     pub pkg_size: usize,
-    pub toc_index: TocIndex,
+    pub toc_index: TocIndex<'static>,
     pub tar_name: String,
 }
 
@@ -75,11 +75,12 @@ impl Executor for NpmBucketStore {
         &mut self,
         command: Self::Command,
     ) -> std::result::Result<NpmBucketStoreExecuteResult, Error> {
+        let name = self.name.clone();
         let (size, index) = self.add_package(&command.request, command.reader).await?;
         Ok(NpmBucketStoreExecuteResult {
             pkg_size: size,
             toc_index: index,
-            tar_name: String::from(&self.name),
+            tar_name: name,
             pkg_request: command.request,
         })
     }
@@ -185,7 +186,7 @@ impl NpmStore {
         &self,
         bucket_name: &str,
         pkg_name: &str,
-        toc_index: TocIndex,
+        toc_index: TocIndex<'static>,
     ) -> Result<()> {
         if let Some(entry_listener) = &self.entry_listener {
             let file_path = self.bucket_dir.join(&bucket_name);
