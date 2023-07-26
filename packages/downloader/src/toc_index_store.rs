@@ -194,9 +194,11 @@ mod test {
     #[test]
     fn test_restore_from_package() {
         let start = SystemTime::now();
+        let current_dir = std::env::current_dir().unwrap();
+
         TocIndexStore::restore_from_file(
-            Path::new("/Users/killa/.rapid/cache/tar_buckets/npm.config.json"),
-            Path::new("/Users/killa/.rapid/cache/tar_buckets/npm.index.json"),
+            current_dir.join("test/fixtures/meta/large_file/npm.config.json"),
+            current_dir.join("test/fixtures/meta/large_file/npm.index.json"),
         )
         .unwrap();
         println!("cost {:?}", start.elapsed());
