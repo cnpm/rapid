@@ -8,7 +8,7 @@ use downloader::download::Downloader;
 use downloader::error::Error as TnpmError;
 use downloader::http::{HTTPPool, HTTPReqwester};
 use downloader::store::listener::{EntryListener, PackageEntry};
-use downloader::toc_index_store::{TocIndexStore};
+use downloader::toc_index_store::TocIndexStore;
 use downloader::{
     download as batch_download, DownloadOptions, NpmStore, PackageRequest, PackageRequestBuilder,
     TocIndex, TocPath,
