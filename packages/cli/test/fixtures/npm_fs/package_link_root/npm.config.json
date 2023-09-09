@@ -1,0 +1,102 @@
+{
+  "bucket_1.stgz": {
+    "version": 1,
+    "entries": [
+      {
+        "name": "@alipay_tnpm-scripts-test@1.0.4/a",
+        "type": "reg",
+        "size": 11,
+        "linkName": "",
+        "mode": 493,
+        "uid": 0,
+        "gid": 0,
+        "uname": "",
+        "gname": "",
+        "offset": 512,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:0282f76a4dc18a92bd8961e754874bc456191edfd08455f4cef50dba1cadaa50",
+        "chunkOffset": 0,
+        "chunkSize": 0
+      },
+      {
+        "name": "@alipay_tnpm-scripts-test@1.0.4/package.json",
+        "type": "reg",
+        "size": 327,
+        "linkName": "",
+        "mode": 420,
+        "uid": 0,
+        "gid": 0,
+        "uname": "",
+        "gname": "",
+        "offset": 1536,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:9c48eda3d378812c177d3226879fcbd9e6889452e88f87a3017fefb57d225ca1",
+        "chunkOffset": 0,
+        "chunkSize": 0
+      }
+    ]
+  },
+  "bucket_0.stgz": {
+    "version": 1,
+    "entries": [
+      {
+        "name": "uuid@9.0.0/dist/bin/uuid",
+        "type": "reg",
+        "size": 44,
+        "linkName": "",
+        "mode": 493,
+        "uid": 0,
+        "gid": 0,
+        "uname": "",
+        "gname": "",
+        "offset": 512,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7",
+        "chunkOffset": 0,
+        "chunkSize": 0
+      },
+      {
+        "name": "uuid@3.4.0/dist/bin/uuid",
+        "type": "reg",
+        "size": 44,
+        "linkName": "",
+        "mode": 493,
+        "uid": 0,
+        "gid": 0,
+        "uname": "",
+        "gname": "",
+        "offset": 512,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7",
+        "chunkOffset": 0,
+        "chunkSize": 0
+      },
+      {
+        "name": "uuid@8.3.2/dist/bin/uuid",
+        "type": "reg",
+        "size": 44,
+        "linkName": "",
+        "mode": 493,
+        "uid": 0,
+        "gid": 0,
+        "uname": "",
+        "gname": "",
+        "offset": 512,
+        "devMajor": 0,
+        "devMinor": 0,
+        "xattrs": {},
+        "digest": "sha256:30b5422b6c95ccdc402effd7d3354ca6a6bce621cf21d0379749ddf1f96c1ad7",
+        "chunkOffset": 0,
+        "chunkSize": 0
+      }
+    ]
+  }
+}

@@ -117,3 +117,4 @@ package-lock.json
 
 # napi-rs generate wrong type ignore for tmp
 packages/binding/index.d.ts
+.DS_Store
