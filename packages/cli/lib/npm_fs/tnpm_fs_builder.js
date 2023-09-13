@@ -125,8 +125,21 @@ class TnpmFsBuilder {
   }
 
   // 创建打平到 node_modules 依赖信息
+  // 优先取项目依赖中的版本
   createFlattenDepLinks(name, version, originName, blobId) {
-    if (this.latestVersions.get(name) !== version) return;
+    const projectVersion = this.projectVersions.get(name);
+    // 如果在项目中已声明了依赖
+    // 则只 link 项目中声明的版本
+    if (projectVersion && projectVersion !== version) {
+      return;
+    }
+
+    // 对于间接依赖
+    // 才创建最新版的软链
+    if (!projectVersion && this.latestVersions.get(name) !== version) {
+      return;
+    }
+
     const displayName = Util.getDisplayName({ name: originName, version }, this.mode);
     const linkPath = path.relative(path.dirname(path.join('node_modules', name)), path.join('node_modules', displayName));
     this.fsMeta.addEntry(blobId, Util.generateSymbolLink(name, linkPath, this.uid, this.gid, true));

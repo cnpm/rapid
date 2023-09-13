@@ -436,6 +436,26 @@ describe('test/npm_fs.test.js', () => {
       });
     });
 
+    describe('link hoist', () => {
+      beforeEach(async () => {
+        fixtureDir = 'npm_fs/package_link_root';
+        depPkgs = await Promise.all([
+          TestUtil.readFixtureJson(fixtureDir, 'uuid@3.4.0.package.json'),
+          TestUtil.readFixtureJson(fixtureDir, 'uuid@9.0.0.package.json'),
+        ]);
+        await prepareBlobManager();
+      });
+
+      it('should work', async () => {
+        const npm = new NpmFs(blobManager, defaultOptions);
+        const fsMeta = await npm.getFsMeta(pkgLockJson);
+        const link = fsMeta.entries.find(
+          ({ entry }) => entry.name === 'uuid' && entry.type === 'symlink'
+        ).entry.linkName;
+        assert(link === '_uuid@3.4.0@uuid');
+      });
+    });
+
     describe('multi blob', () => {
       beforeEach(async () => {
         fixtureDir = 'npm_fs/multi_blob';
