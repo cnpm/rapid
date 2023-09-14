@@ -1,6 +1,6 @@
 {
   "name": "@cnpmjs/binding",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "downloader binding",
   "main": "index.js",
   "files": [
