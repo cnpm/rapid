@@ -1,6 +1,6 @@
 {
   "name": "@cnpmjs/binding-linux-x64",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "downloader linux x64 binding",
   "main": "index.node",
   "homepage": "https://github.com/cnpm/rapid",
