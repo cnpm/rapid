@@ -38,7 +38,7 @@ exports.startNydusFs = async function(mode, cwd, pkg) {
 };
 
 exports.endNydusFs = async function(mode, cwd, pkg) {
-  if (mode === NYDUS_TYPE.NATIVE) {
+  if (!mode || mode === NYDUS_TYPE.NATIVE) {
     console.log('[rapid] nydusd is not running, skip clean');
     return;
   }

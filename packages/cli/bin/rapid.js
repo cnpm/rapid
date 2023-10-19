@@ -17,14 +17,14 @@ yargs
           describe: 'Skip running scripts during install',
           type: 'boolean',
         })
-        .option('mode', {
+        .option('by', {
           describe: 'Set the installation mode, support npm or npminstall',
           type: 'string',
         });
     },
     handler: async argv => {
       const ignoreScripts = argv['ignore-scripts'];
-      const mode = argv.mode || NpmFsMode.NPM;
+      const mode = argv.by || NpmFsMode.NPM;
 
       const cwd = process.cwd();
       const pkgRes = await util.readPkgJSON();
@@ -38,6 +38,8 @@ yargs
       });
 
       console.log('[rapid] install finished');
+      // 首次执行 nydusd 后台服务可能会 hang 住输入
+      process.exit(0);
     },
   })
   .command({
