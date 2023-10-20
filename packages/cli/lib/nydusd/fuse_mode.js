@@ -42,17 +42,19 @@ async function generateBootstrapFile(cwd, pkg) {
 
 async function mountNydus(cwd, pkg) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
-  await Promise.all(allPkgs.map(async pkgPath => {
+
+  // 需要串行 mount，并发创建时 nydusd 会出现问题
+  for (const pkgPath of allPkgs) {
     const { dirname, bootstrap } = await getWorkdir(cwd, pkgPath);
     console.time(`[rapid] mount '/${dirname}' to nydusd daemon using socket api`);
     await nydusdApi.mount(`/${dirname}`, cwd, bootstrap);
     console.timeEnd(`[rapid] mount '/${dirname}' to nydusd daemon using socket api`);
-  }));
+  }
 }
 
 async function mountOverlay(cwd, pkg) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
-  await Promise.all(allPkgs.map(async pkgPath => {
+  for (const pkgPath of allPkgs) {
 
     const {
       upper,
@@ -90,15 +92,15 @@ ${upper}=RW:${mnt}=RO \
 ${nodeModulesDir}`;
     }
     console.info('[rapid] mountOverlay: `%s`', shScript);
+    console.time('[rapid] overlay mounted.');
     await execa.command(shScript);
-    console.info('[rapid] overlay mounted.');
-  }));
+    console.timeEnd('[rapid] overlay mounted.');
+  }
 }
 
 async function endNydusFs(cwd, pkg) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
-  await Promise.all(allPkgs.map(async pkgPath => {
-
+  for (const pkgPath of allPkgs) {
     const {
       dirname,
       overlay,
@@ -117,7 +119,7 @@ async function endNydusFs(cwd, pkg) {
     await nydusdApi.umount(`/${dirname}`);
     // 清除 nydus 相关目录
     await fs.rm(baseDir, { recursive: true, force: true });
-  }));
+  }
 }
 
 module.exports = {
