@@ -2,84 +2,63 @@
 
 'use strict';
 
-
-const { clean, install } = require('../lib/index.js');
-const parser = require('yargs-parser');
+const { clean, install, list } = require('../lib/index.js');
+const yargs = require('yargs');
 const { NpmFsMode } = require('../lib/constants.js');
-const httpclient = require('../lib/httpclient');
 const util = require('../lib/util');
 
-async function runner() {
-  const params = parser(process.argv.slice(2), {
-    alias: {
-      'save-dev': [ 'D' ],
-      save: [ 'save-prod', 'S', 'P' ],
-      'save-optional': [ 'O' ],
-      'save-bundle': [ 'B' ],
-      'save-exact': [ 'E' ],
-      version: [ 'v' ],
-      usage: [ 'H', 'h', 'help', '?' ],
-      global: [ 'g' ],
-      detail: [ 'd' ],
-      mode: [ 'by' ],
-      prefix: [ 'C' ],
-      registry: [ 'reg' ],
+yargs
+  .command({
+    command: 'install',
+    describe: 'Install dependencies',
+    builder: yargs => {
+      return yargs
+        .option('ignore-scripts', {
+          describe: 'Skip running scripts during install',
+          type: 'boolean',
+        })
+        .option('by', {
+          describe: 'Set the installation mode, support npm or npminstall',
+          type: 'string',
+        });
     },
-    boolean: [
-      'clean',
-      'save',
-      'save-dev',
-      'save-optional',
-      'save-bundle',
-      'save-peer',
-      'save-exact',
-      'version',
-      'usage',
-      'global',
-      'detail',
-      'update',
-      'package-lock-only',
-      'ignore-scripts',
-      'experimental-local-resolver',
-      'legacy-peer-deps',
-      'force',
-      'strict-peer-deps',
-      'update-lockfile',
-    ],
-    string: [
-      'registry',
-      'prefix',
-      'deps-tree-path',
-      'lock-id',
-      'mode',
-      'omit',
-      'cache-dir',
-    ],
-  });
+    handler: async argv => {
+      const ignoreScripts = argv['ignore-scripts'];
+      const mode = argv.by || NpmFsMode.NPM;
 
-  const cwd = params.prefix || process.cwd();
-  if (params.clean) {
-    await clean(cwd);
-  } else {
-    const pkgRes = await util.readPkgJSON();
-    const pkg = pkgRes?.pkg || {};
-    await install({
-      ...params,
-      cwd,
-      pkg,
-      registry: params.registry || 'https://registry.npmjs.org',
-      mode: params.mode || NpmFsMode.NPM,
-      env: process.env,
-      httpclient,
-    });
-  }
-}
+      const cwd = process.cwd();
+      const pkgRes = await util.readPkgJSON();
+      const pkg = pkgRes?.pkg || {};
 
-runner()
-  .then(() => {
-    process.exit(0);
+      await install({
+        cwd,
+        pkg,
+        mode,
+        ignoreScripts,
+      });
+
+      console.log('[rapid] install finished');
+      // 首次执行 nydusd 后台服务可能会 hang 住输入
+      process.exit(0);
+    },
   })
-  .catch(e => {
-    console.error(e);
-    process.exit(1);
-  });
+  .command({
+    command: 'clean',
+    describe: 'Clean up the project',
+    handler: async () => {
+      const cwd = process.cwd();
+      await clean(cwd);
+
+      console.log('[rapid] clean finished');
+    },
+  })
+  .command({
+    command: 'list',
+    describe: 'List rapid mount info',
+    handler: async () => {
+      const cwd = process.cwd();
+      await list(cwd);
+    },
+  })
+  .help()
+  .parse();

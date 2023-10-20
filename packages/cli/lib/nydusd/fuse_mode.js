@@ -106,6 +106,7 @@ async function endNydusFs(cwd, pkg) {
       nodeModulesDir,
     } = await getWorkdir(cwd, pkgPath);
     if (os.type() === 'Darwin') {
+      console.log(`[rapid] umount ${nodeModulesDir}`);
       await execa.command(`umount ${nodeModulesDir}`);
       // hdiutil detach
       await execa.command(`hdiutil detach ${overlay}`);

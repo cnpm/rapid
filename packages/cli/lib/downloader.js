@@ -58,6 +58,7 @@ class Downloader {
 
   async download(pkgLockJson) {
     const tasks = this.createDownloadTask(pkgLockJson);
+    console.log('[rapid] downloads %d packages', tasks.length);
     await this.rapidDownloader.batchDownloads(tasks);
   }
 

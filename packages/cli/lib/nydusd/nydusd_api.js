@@ -206,9 +206,24 @@ async function umount(mountpoint) {
   debug('umount result: %j', result);
 }
 
+// 查询当前挂载信息
+async function list() {
+  const result = await urllib.request(`${daemonUrl}`, {
+    method: 'GET',
+    socketPath,
+    dataType: 'json',
+  });
+
+  if (result.status === 200 && result.data.state === 'RUNNING') {
+    return Object.values(result.data.backend_collection);
+  }
+}
+
 exports.mount = mount;
 exports.remount = remount;
 exports.umount = umount;
 exports.initDaemon = initDaemon;
 exports.exitDaemon = exitDaemon;
 exports.forceExitDaemon = forceExitDaemon;
+exports.isDaemonRunning = isDaemonRunning;
+exports.list = list;

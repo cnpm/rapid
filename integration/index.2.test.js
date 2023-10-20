@@ -21,7 +21,11 @@ describe('test/index.v2.test.js', () => {
   afterEach(async () => {
     await clean(cwd);
     if (process.platform === 'darwin') {
-      await forceExitDaemon();
+      try {
+        await forceExitDaemon();
+      } catch (err) {
+        console.warn('force exit daemon error: %s', err.message);
+      }
     } else {
       await exitDaemon();
     }
@@ -43,7 +47,7 @@ describe('test/index.v2.test.js', () => {
     if (process.platform === 'linux') {
       it('should run postinstall successfully', async () => {
         cwd = path.join(__dirname, './fixtures/node-crc');
-        await coffee.fork(rapid, [ '--by=npm', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
+        await coffee.fork(rapid, [ 'install', '--by=npm', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
           .debug()
           .expect('stdout', /execute 1 lifecycle script\(s\)/)
           .expect('code', 0)
@@ -56,7 +60,7 @@ describe('test/index.v2.test.js', () => {
   describe('INIT_CWD', async () => {
     it('should set INIT_CWD', async () => {
       cwd = path.join(__dirname, './fixtures/init-cwd');
-      await coffee.fork(rapid, [ '--by=npminstall', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
+      await coffee.fork(rapid, [ 'install', '--by=npminstall', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
         .debug()
         .expect('stdout', new RegExp(`INIT_CWD=${process.cwd()}`))
         .expect('code', 0)
@@ -67,8 +71,17 @@ describe('test/index.v2.test.js', () => {
   describe('production mode', async () => {
     it('should install production deps', async () => {
       cwd = path.join(__dirname, './fixtures/prod-deps');
-      await coffee.fork(rapid, [
-        '--by=npminstall', '--production', `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
+      await coffee
+        .fork(
+          rapid,
+          [
+            'install',
+            '--by=npminstall',
+            '--production',
+            `--deps-tree-path=${path.join(cwd, 'package-lock.json')}`,
+          ],
+          { cwd }
+        )
         .debug()
         .expect('code', 0)
         .end();
@@ -81,7 +94,7 @@ describe('test/index.v2.test.js', () => {
     it('should install node-canvas successfully', async () => {
       cwd = path.join(__dirname, './fixtures/canvas');
       await coffee
-        .fork(rapid, [ `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], { cwd })
+        .fork(rapid, [ 'install' ], { cwd })
         .debug()
         .expect('code', 0)
         .end();
@@ -100,8 +113,9 @@ describe('test/index.v2.test.js', () => {
         delete process.env[k];
       }
     }
+
     await coffee
-      .fork(rapid, [ `--deps-tree-path=${path.join(cwd, 'package-lock.json')}` ], {
+      .fork(rapid, [ 'install', '--ignore-scripts' ], {
         cwd,
       })
       .debug()
@@ -118,8 +132,8 @@ describe('test/index.v2.test.js', () => {
     cwd = path.join(__dirname, './fixtures/esbuild');
     await coffee
       .fork(rapid, [
-        '--by=npm',
-        `--deps-tree-path=${path.join(cwd, 'package-lock.json')}`,
+        'install',
+        '--ignore-scripts',
       ], {
         cwd,
       })
@@ -137,8 +151,9 @@ describe('test/index.v2.test.js', () => {
     cwd = path.join(__dirname, './fixtures/esbuild');
     await coffee
       .fork(rapid, [
+        'install',
         '--by=npminstall',
-        `--deps-tree-path=${path.join(cwd, 'package-lock.json')}`,
+        '--ignore-scripts',
       ], {
         cwd,
       })

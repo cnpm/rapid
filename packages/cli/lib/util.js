@@ -92,9 +92,8 @@ async function shouldFuseSupport() {
   if (os.type() === 'Darwin') {
     try {
       await fs.stat('/usr/local/bin/go-nfsv4');
-      console.warn('[rapid] rapid mode is supported on macOS **experimentally**.');
     } catch (error) {
-      throw new NotSupportedError('install macFUSE first.');
+      throw new NotSupportedError('install fuse-t first.');
     }
   }
 
@@ -532,6 +531,34 @@ exports.readPkgJSON = async function readPkgJSON(cwd) {
     pkg = null;
   }
   return { pkg, pkgPath };
+};
+
+exports.readPackageLock = async function readPackageLock(cwd) {
+  const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
+  const packageLock = JSON.parse(await fs.readFile(lockPath, 'utf8'));
+  return { packageLock, lockPath };
+};
+
+// 列出当前 mount 的 fuse endpoint
+// 目前只支持 fuse-t
+exports.listMountInfo = async function listMountInfo() {
+
+  const { stdout } = await execa('mount');
+  // 拆分输出为每行
+  const mountLines = stdout.split('\n');
+
+  return mountLines.filter(_ => {
+    if (_.includes(nydusdMnt)) {
+      return false;
+    }
+    return _.includes(baseRapidModeDir()) || _.startsWith('fuse');
+  }).map(line => {
+    const parts = line.split(' ');
+    const device = parts[0];
+    const mountPoint = parts[2];
+    // const options = parts.slice(3).join(' ');
+    return { device, mountPoint };
+  }).sort((a, b) => a.device.localeCompare(b.device));
 };
 
 exports.getWorkdir = getWorkdir;

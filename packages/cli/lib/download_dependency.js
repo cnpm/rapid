@@ -57,6 +57,7 @@ async function download(options) {
 
   console.time('[rapid] parallel download time');
   await downloader.download(depsTree);
+  console.log('[rapid] download finished');
   const { tocMap, indices } = downloader.dumpdata;
   await downloader.shutdown();
 

@@ -5,7 +5,6 @@ const assert = require('node:assert');
 const path = require('node:path');
 const downloadDependency = require('./download_dependency');
 const Scripts = require('./scripts').Scripts;
-const DepResolver = require('./dep');
 const {
   nydusdConfigFile,
   tarBucketsDir,
@@ -13,33 +12,37 @@ const {
 } = require('./constants');
 const util = require('./util');
 const nydusd = require('./nydusd');
+const nydusdApi = require('./nydusd/nydusd_api');
 const { MirrorConfig } = require('binary-mirror-config');
 
 // 有依赖树（package-lock.json）走 npm / npminstall 极速安装
 exports.install = async options => {
-  if (options.update) {
-    await exports.clean(options.cwd);
-  }
-  // set args to npm_config_xx env
   options.env = util.getEnv(options.env, options.args);
   const nydusMode = await nydusd.getNydusMode();
   if (!nydusMode || nydusMode === NYDUS_TYPE.NATIVE) {
     await util.shouldFuseSupport();
   }
 
-  const resolver = new DepResolver(options);
-  const depsJSON = await resolver.resolve();
-  if (options.packageLockOnly) {
-    await util.saveLockFile(options.cwd, depsJSON, resolver.ctx.lockId);
-    return;
-  }
+  const { packageLock } = options.packageLock || (await util.readPackageLock(options.cwd));
+
+  const currentMountInfo = await util.listMountInfo();
 
   const allPkgs = await util.getAllPkgPaths(options.cwd, options.pkg);
-  await Promise.all(allPkgs.map(pkgPath => async () => {
-    const { baseDir, tarIndex } = await util.getWorkdir(options.cwd, pkgPath);
+
+  await Promise.all(allPkgs.map(async pkgPath => {
+    const { baseDir, tarIndex, nodeModulesDir } = await util.getWorkdir(options.cwd, pkgPath);
+
+    const mountedInfo = currentMountInfo.find(item => item.mountPoint === nodeModulesDir);
+
+    if (mountedInfo) {
+      console.log(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
+      await exports.clean(path.join(options.cwd, pkgPath));
+    }
+
     await fs.mkdir(baseDir, { recursive: true });
     await fs.mkdir(path.dirname(tarIndex), { recursive: true });
   }));
+
   await fs.mkdir(tarBucketsDir, { recursive: true });
   await util.createNydusdConfigFile(nydusdConfigFile);
   const mirrorConfig = new MirrorConfig({
@@ -49,24 +52,38 @@ exports.install = async options => {
   mirrorConfig.setEnvs(options);
 
   options.scripts = new Scripts(options);
-  options.depsTree = depsJSON;
+  options.depsTree = packageLock;
   await downloadDependency.download(options);
 
-  assert(Object.keys(depsJSON).length, '[rapid] depsJSON invalid.');
+  assert(Object.keys(packageLock).length, '[rapid] depsJSON invalid.');
   await nydusd.startNydusFs(nydusMode, options.cwd, options.pkg);
 
   // 执行 lifecycle scripts
   console.time('[rapid] run lifecycle scripts');
   await options.scripts.runLifecycleScripts(mirrorConfig);
   console.timeEnd('[rapid] run lifecycle scripts');
-  // 写入依赖树缓存
-  const { depsJSONPath } = await util.getWorkdir(options.cwd);
-  await fs.writeFile(depsJSONPath, JSON.stringify(depsJSON), 'utf8');
 };
 
 exports.clean = async function clean(cwd) {
   const mode = await nydusd.getNydusInstallMode(cwd);
-  if (!mode) return;
+  if (!mode) {
+    console.log(`[rapid] invalid mode ${mode} ignore`);
+  }
   const { pkg } = await util.readPkgJSON(cwd);
   await nydusd.endNydusFs(mode, cwd, pkg);
+};
+
+exports.list = async () => {
+  const running = await nydusdApi.isDaemonRunning();
+  if (!running) {
+    console.error('[rapid] nydusd is not running, please run `rapid install` first.');
+    return;
+  }
+  const listInfo = await util.listMountInfo();
+  if (!listInfo.length) {
+    console.log('[rapid] no mount info found.');
+    return;
+  }
+  // 不展示 overlay 信息
+  console.table(listInfo.filter(_ => _.mountPoint.endsWith('node_modules')));
 };
