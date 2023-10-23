@@ -396,6 +396,43 @@ function validDep(pkg, productionMode, arch, platform) {
 
 }
 
+exports.ensureAccess = async function ensureAccess(cwd, packageLock) {
+  let access = false;
+  let targetPath;
+
+  for (const [ pkgPath, pkgItem ] of Object.entries(packageLock)) {
+    if (pkgPath.startsWith('node_modules') && !pkgItem.optional) {
+      targetPath = pkgPath;
+      break;
+    }
+  }
+
+  // 如果没有找到合适的检测点，直接返回
+  if (!targetPath) {
+    return;
+  }
+
+  let retry = 0;
+
+  // 如果找到了检测点，但是检测点不存在，等待检测点创建
+  while (!access) {
+    try {
+      await fs.access(targetPath);
+      access = true;
+    } catch (e) {
+      retry++;
+      console.log(
+        `[rapid] still waiting for access ${targetPath} retry after 50ms, retry count: ${retry}`
+      );
+      if (retry > 40) {
+        console.error(`[rapid] wait for access ${targetPath} timeout`);
+        throw e;
+      }
+      await this.sleep(50);
+    }
+  }
+};
+
 exports.getAllPkgPaths = async function getAllPkgPaths(cwd, pkg) {
   const workspaces = await exports.getWorkspaces(cwd, pkg);
   const allPkgs = Object.values(workspaces);

@@ -29,19 +29,19 @@ exports.install = async options => {
 
   const allPkgs = await util.getAllPkgPaths(options.cwd, options.pkg);
 
-  await Promise.all(allPkgs.map(async pkgPath => {
+  for (const pkgPath of allPkgs) {
     const { baseDir, tarIndex, nodeModulesDir } = await util.getWorkdir(options.cwd, pkgPath);
 
     const mountedInfo = currentMountInfo.find(item => item.mountPoint === nodeModulesDir);
 
     if (mountedInfo) {
       console.log(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
-      await exports.clean(path.join(options.cwd, pkgPath));
+      await exports.clean(path.join(options.cwd, pkgPath), true);
     }
 
     await fs.mkdir(baseDir, { recursive: true });
     await fs.mkdir(path.dirname(tarIndex), { recursive: true });
-  }));
+  }
 
   await fs.mkdir(tarBucketsDir, { recursive: true });
   await util.createNydusdConfigFile(nydusdConfigFile);
@@ -58,7 +58,10 @@ exports.install = async options => {
   assert(Object.keys(packageLock).length, '[rapid] depsJSON invalid.');
   await nydusd.startNydusFs(nydusMode, options.cwd, options.pkg);
 
-  // 执行 lifecycle scripts
+  console.time('[rapid] wait for access');
+  await util.ensureAccess(options.cwd, packageLock);
+  console.timeEnd('[rapid] wait for access');
+
   console.time('[rapid] run lifecycle scripts');
   await options.scripts.runLifecycleScripts(mirrorConfig);
   console.timeEnd('[rapid] run lifecycle scripts');
