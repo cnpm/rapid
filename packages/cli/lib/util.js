@@ -8,6 +8,7 @@ const os = require('node:os');
 const url = require('node:url');
 const crypto = require('node:crypto');
 const mapWorkspaces = require('@npmcli/map-workspaces');
+const fuse_t = require('./fuse_t');
 
 const parser = require('yargs-parser');
 const { NpmFsMode } = require('./constants');
@@ -23,6 +24,7 @@ const {
   nydusdBootstrapFile,
   nydusdMnt,
 } = require('./constants');
+let confirmed = false;
 
 // node_modules/a -> a
 // node_mdoules/@scope/b -> @scope/b
@@ -103,9 +105,23 @@ async function shouldFuseSupport() {
   }
 
   if (os.type() === 'Darwin') {
+    const fuseTInstalled = await fuse_t.checkFuseT();
+    if (fuseTInstalled) {
+      return;
+    }
+    if (confirmed) {
+      throw new NotSupportedError('install fuse-t first.');
+    }
+    const confirmInstallFuseT = await fuse_t.confirmInstallFuseT();
+    confirmed = true;
+    if (!confirmInstallFuseT) {
+      throw new NotSupportedError('install fuse-t first.');
+    }
     try {
-      await fs.stat('/usr/local/bin/go-nfsv4');
+      await fuse_t.installFuseT();
     } catch (error) {
+      error.message = '[rapid] install fuse-t failed: ' + error.message;
+      console.warn(error);
       throw new NotSupportedError('install fuse-t first.');
     }
   }
