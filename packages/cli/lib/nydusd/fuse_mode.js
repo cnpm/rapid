@@ -109,7 +109,7 @@ async function endNydusFs(cwd, pkg, force = false) {
     if (os.type() === 'Darwin') {
       console.log(`[rapid] ${umountCmd} ${nodeModulesDir}`);
       await execa.command(`${umountCmd} ${nodeModulesDir}`);
-      await execa.command(`${umountCmd} ${overlay}`);
+      await execa.command(`hdiutil detach -force ${overlay}`);
     } else {
       await execa.command(wrapSudo(`${umountCmd} ${nodeModulesDir}`));
       await execa.command(wrapSudo(`${umountCmd} ${overlay}`));

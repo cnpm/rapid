@@ -4,12 +4,13 @@
 
 const { clean, install, list } = require('../lib/index.js');
 const yargs = require('yargs');
-const { NpmFsMode } = require('../lib/constants.js');
+const { NpmFsMode, NYDUS_TYPE } = require('../lib/constants.js');
 const util = require('../lib/util');
 
 yargs
   .command({
     command: 'install',
+    aliases: [ 'i', 'ii' ],
     describe: 'Install dependencies',
     builder: yargs => {
       return yargs
@@ -30,10 +31,12 @@ yargs
       const pkgRes = await util.readPkgJSON();
       const pkg = pkgRes?.pkg || {};
 
+      await util.shouldFuseSupport();
       await install({
         cwd,
         pkg,
         mode,
+        nydusMode: NYDUS_TYPE.FUSE,
         ignoreScripts,
       });
 
@@ -44,16 +47,17 @@ yargs
   })
   .command({
     command: 'clean',
+    aliases: [ 'c', 'unmount', 'uninstall' ],
     describe: 'Clean up the project',
     handler: async () => {
       const cwd = process.cwd();
-      await clean(cwd);
-
+      await clean({ nydusMode: NYDUS_TYPE.FUSE, cwd, force: false });
       console.log('[rapid] clean finished');
     },
   })
   .command({
     command: 'list',
+    aliases: 'l',
     describe: 'List rapid mount info',
     handler: async () => {
       const cwd = process.cwd();

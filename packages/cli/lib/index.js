@@ -18,11 +18,6 @@ const { MirrorConfig } = require('binary-mirror-config');
 // 有依赖树（package-lock.json）走 npm / npminstall 极速安装
 exports.install = async options => {
   options.env = util.getEnv(options.env, options.args);
-  const nydusMode = await nydusd.getNydusMode();
-  if (!nydusMode || nydusMode === NYDUS_TYPE.NATIVE) {
-    await util.shouldFuseSupport();
-  }
-
   const { packageLock } = options.packageLock || (await util.readPackageLock(options.cwd));
 
   const currentMountInfo = await util.listMountInfo();
@@ -36,7 +31,11 @@ exports.install = async options => {
 
     if (mountedInfo) {
       console.time(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
-      await exports.clean(path.join(options.cwd, pkgPath), true);
+      await exports.clean({
+        nydusMode: options.nydusMode,
+        cwd: options.cwd,
+        force: true,
+      });
       console.timeEnd(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
     }
 
@@ -57,7 +56,7 @@ exports.install = async options => {
   await downloadDependency.download(options);
 
   assert(Object.keys(packageLock).length, '[rapid] depsJSON invalid.');
-  await nydusd.startNydusFs(nydusMode, options.cwd, options.pkg);
+  await nydusd.startNydusFs(options.nydusMode, options.cwd, options.pkg);
 
   console.time('[rapid] wait for access');
   await util.ensureAccess(options.cwd, packageLock);
@@ -68,14 +67,14 @@ exports.install = async options => {
   console.timeEnd('[rapid] run lifecycle scripts');
 };
 
-exports.clean = async function clean(cwd, force = false) {
+exports.clean = async function clean({ nydusMode, cwd, force }) {
   const listInfo = await util.listMountInfo();
   if (!listInfo.length) {
     console.log('[rapid] no mount info found.');
     return;
   }
   const { pkg } = await util.readPkgJSON(cwd);
-  await nydusd.endNydusFs('FUSE', cwd, pkg, force);
+  await nydusd.endNydusFs(nydusMode, cwd, pkg, force);
 };
 
 exports.list = async () => {
