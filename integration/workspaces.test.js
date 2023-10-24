@@ -19,6 +19,7 @@ describe('test/workspaces.test.js', () => {
     cwd = path.join(__dirname, './fixtures/workspaces');
     await clean(cwd);
     await install({
+      nydusMode: 'FUSE',
       cwd,
       pkg: require(path.join(cwd, 'package.json')),
       depsTreePath: path.join(cwd, 'package-lock.json'),

@@ -8,7 +8,6 @@ const Scripts = require('./scripts').Scripts;
 const {
   nydusdConfigFile,
   tarBucketsDir,
-  NYDUS_TYPE,
 } = require('./constants');
 const util = require('./util');
 const nydusd = require('./nydusd');
