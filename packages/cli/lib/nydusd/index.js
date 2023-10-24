@@ -37,14 +37,14 @@ exports.startNydusFs = async function(mode, cwd, pkg) {
   await impl.start(cwd, pkg);
 };
 
-exports.endNydusFs = async function(mode, cwd, pkg) {
+exports.endNydusFs = async function(mode, cwd, pkg, force) {
   if (!mode || mode === NYDUS_TYPE.NATIVE) {
     console.log('[rapid] nydusd is not running, skip clean');
     return;
   }
   const impl = fsImplMap[mode];
   assert(impl, `can not find fs impl for mode: ${mode}`);
-  await impl.end(cwd, pkg);
+  await impl.end(cwd, pkg, force);
 };
 
 exports.getNydusMode = async function(cwd) {

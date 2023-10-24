@@ -98,23 +98,21 @@ ${nodeModulesDir}`;
   }
 }
 
-async function endNydusFs(cwd, pkg) {
+async function endNydusFs(cwd, pkg, force = false) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
+  const umountCmd = force ? 'umount -f' : 'umount';
   for (const pkgPath of allPkgs) {
-    const {
-      dirname,
-      overlay,
-      baseDir,
-      nodeModulesDir,
-    } = await getWorkdir(cwd, pkgPath);
+    const { dirname, overlay, baseDir, nodeModulesDir } = await getWorkdir(
+      cwd,
+      pkgPath
+    );
     if (os.type() === 'Darwin') {
-      console.log(`[rapid] umount ${nodeModulesDir}`);
-      await execa.command(`umount ${nodeModulesDir}`);
-      // hdiutil detach
-      await execa.command(`hdiutil detach ${overlay}`);
+      console.log(`[rapid] ${umountCmd} ${nodeModulesDir}`);
+      await execa.command(`${umountCmd} ${nodeModulesDir}`);
+      await execa.command(`${umountCmd} ${overlay}`);
     } else {
-      await execa.command(wrapSudo(`umount ${nodeModulesDir}`));
-      await execa.command(wrapSudo(`umount ${overlay}`));
+      await execa.command(wrapSudo(`${umountCmd} ${nodeModulesDir}`));
+      await execa.command(wrapSudo(`${umountCmd} ${overlay}`));
     }
     await nydusdApi.umount(`/${dirname}`);
     // 清除 nydus 相关目录

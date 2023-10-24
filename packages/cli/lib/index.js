@@ -35,8 +35,9 @@ exports.install = async options => {
     const mountedInfo = currentMountInfo.find(item => item.mountPoint === nodeModulesDir);
 
     if (mountedInfo) {
-      console.log(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
+      console.time(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
       await exports.clean(path.join(options.cwd, pkgPath), true);
+      console.timeEnd(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
     }
 
     await fs.mkdir(baseDir, { recursive: true });
@@ -67,20 +68,20 @@ exports.install = async options => {
   console.timeEnd('[rapid] run lifecycle scripts');
 };
 
-exports.clean = async function clean(cwd) {
-  const mode = await nydusd.getNydusInstallMode(cwd);
-  if (!mode) {
-    console.log(`[rapid] invalid mode ${mode} ignore`);
+exports.clean = async function clean(cwd, force = false) {
+  const listInfo = await util.listMountInfo();
+  if (!listInfo.length) {
+    console.log('[rapid] no mount info found.');
+    return;
   }
   const { pkg } = await util.readPkgJSON(cwd);
-  await nydusd.endNydusFs(mode, cwd, pkg);
+  await nydusd.endNydusFs('FUSE', cwd, pkg, force);
 };
 
 exports.list = async () => {
   const running = await nydusdApi.isDaemonRunning();
   if (!running) {
-    console.error('[rapid] nydusd is not running, please run `rapid install` first.');
-    return;
+    console.warn('[rapid] nydusd is not running, please run `rapid install` first.');
   }
   const listInfo = await util.listMountInfo();
   if (!listInfo.length) {
