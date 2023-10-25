@@ -30,6 +30,8 @@ exports.installFuseT = async function installFuseT() {
 };
 
 exports.confirmInstallFuseT = async function confirmInstallFuseT() {
+  if (process.env.INSTALL_FUSE_T === 'true') return true;
+  if (!process.stdout.isTTY) return false;
   const answers = await inquirer.prompt([{
     type: 'confirm',
     name: 'installFuseT',

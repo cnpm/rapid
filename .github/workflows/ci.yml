@@ -181,11 +181,6 @@ jobs:
       - name: Change directory ownership
         run: chown -R $(id -un):$(id -gn) .
 
-      - name: Install macfuse
-        run: |
-          wget https://github.com/macos-fuse-t/fuse-t/releases/download/1.0.24/fuse-t-macos-installer-1.0.24.pkg
-          sudo installer -pkg fuse-t-macos-installer-1.0.24.pkg -target /
-
       - name: Rust Cache
         uses: actions/cache@v3
         with:
@@ -205,6 +200,6 @@ jobs:
           CARGO_BUILD_TARGET=x86_64-apple-darwin BUILD_OS=macos BUILD_ARCH=amd64 npm run init:ci
 
       - name: Run CI
-        run: npm run test:integration
+        run: INSTALL_FUSE_T=true npm run test:integration
         env:
           NODE_OPTIONS: --max_old_space_size=6144
