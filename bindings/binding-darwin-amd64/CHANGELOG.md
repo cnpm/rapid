@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.1](https://github.com/cnpm/rapid/compare/v0.2.1...v0.3.1) (2023-10-25)
+
+**Note:** Version bump only for package @cnpmjs/binding-darwin-x64
+
+
+
+
+
 ## [0.2.3](https://github.com/cnpm/rapid/compare/v0.2.1...v0.2.3) (2023-09-14)
 
 **Note:** Version bump only for package @cnpmjs/binding-darwin-x64

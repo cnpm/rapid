@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.1](https://github.com/cnpm/rapid/compare/v0.2.1...v0.3.1) (2023-10-25)
+
+
+### Features
+
+* auto install fuse-t ([#40](https://github.com/cnpm/rapid/issues/40)) ([4a1f7c8](https://github.com/cnpm/rapid/commit/4a1f7c8bf61fd8ad9e727c3403c738343063e580))
+* force clean ([#41](https://github.com/cnpm/rapid/issues/41)) ([918c6e2](https://github.com/cnpm/rapid/commit/918c6e2ee57b205192ca84fabff5092be5b4d4ab))
+* fs access ([#39](https://github.com/cnpm/rapid/issues/39)) ([1a77921](https://github.com/cnpm/rapid/commit/1a77921c057120dc9b92bf6c54e341e406eb8bc0))
+* mac rapid ([#34](https://github.com/cnpm/rapid/issues/34)) ([fa88553](https://github.com/cnpm/rapid/commit/fa88553fe67ed53594a36b0e1035f3f6b76c3c5c))
+
+
+
+
+
 ## [0.2.3](https://github.com/cnpm/rapid/compare/v0.2.1...v0.2.3) (2023-09-14)
 
 **Note:** Version bump only for package cnpm-rapid-monorepo
