@@ -8,3 +8,6 @@ The fastest way to install npm packages.
 const rapid = require('@cnpmjs/rapid');
 await rapid({});
 ```
+
+# 🎁 Acknowledgements
+- [fuse-t](https://github.com/macos-fuse-t/fuse-t) Thanks fuse-t for kext-less implementation of FUSE.
