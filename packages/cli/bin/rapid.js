@@ -7,6 +7,7 @@ const yargs = require('yargs');
 const { NpmFsMode, NYDUS_TYPE } = require('../lib/constants.js');
 const util = require('../lib/util');
 const path = require('node:path');
+const fuse_t = require('../lib/fuse_t');
 
 yargs
   .command({
@@ -31,6 +32,11 @@ yargs
       const cwd = process.cwd();
       const pkgRes = await util.readPkgJSON();
       const pkg = pkgRes?.pkg || {};
+      if (!(await fuse_t.checkFuseT())) {
+        if (await fuse_t.confirmInstallFuseT()) {
+          await fuse_t.installFuseT();
+        }
+      }
 
       await util.shouldFuseSupport();
       await install({
