@@ -18,11 +18,6 @@ const { MirrorConfig } = require('binary-mirror-config');
 // 有依赖树（package-lock.json）走 npm / npminstall 极速安装
 exports.install = async options => {
   options.env = util.getEnv(options.env, options.args);
-  const nydusMode = await nydusd.getNydusMode();
-  if (!nydusMode || nydusMode === NYDUS_TYPE.NATIVE) {
-    await util.shouldFuseSupport();
-  }
-
   const { packageLock } = options.packageLock || (await util.readPackageLock(options.cwd));
 
   const currentMountInfo = await util.listMountInfo();
@@ -35,8 +30,13 @@ exports.install = async options => {
     const mountedInfo = currentMountInfo.find(item => item.mountPoint === nodeModulesDir);
 
     if (mountedInfo) {
-      console.log(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
-      await exports.clean(path.join(options.cwd, pkgPath), true);
+      console.time(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
+      await exports.clean({
+        nydusMode: options.nydusMode,
+        cwd: options.cwd,
+        force: true,
+      });
+      console.timeEnd(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
     }
 
     await fs.mkdir(baseDir, { recursive: true });
@@ -56,7 +56,7 @@ exports.install = async options => {
   await downloadDependency.download(options);
 
   assert(Object.keys(packageLock).length, '[rapid] depsJSON invalid.');
-  await nydusd.startNydusFs(nydusMode, options.cwd, options.pkg);
+  await nydusd.startNydusFs(options.nydusMode, options.cwd, options.pkg);
 
   console.time('[rapid] wait for access');
   await util.ensureAccess(options.cwd, packageLock);
@@ -67,20 +67,20 @@ exports.install = async options => {
   console.timeEnd('[rapid] run lifecycle scripts');
 };
 
-exports.clean = async function clean(cwd) {
-  const mode = await nydusd.getNydusInstallMode(cwd);
-  if (!mode) {
-    console.log(`[rapid] invalid mode ${mode} ignore`);
+exports.clean = async function clean({ nydusMode = NYDUS_TYPE.FUSE, cwd, force }) {
+  const listInfo = await util.listMountInfo();
+  if (!listInfo.length) {
+    console.log('[rapid] no mount info found.');
+    return;
   }
   const { pkg } = await util.readPkgJSON(cwd);
-  await nydusd.endNydusFs(mode, cwd, pkg);
+  await nydusd.endNydusFs(nydusMode, cwd, pkg, force);
 };
 
 exports.list = async () => {
   const running = await nydusdApi.isDaemonRunning();
   if (!running) {
-    console.error('[rapid] nydusd is not running, please run `rapid install` first.');
-    return;
+    console.warn('[rapid] nydusd is not running, please run `rapid install` first.');
   }
   const listInfo = await util.listMountInfo();
   if (!listInfo.length) {
