@@ -19,7 +19,7 @@ describe('test/index.v2.test.js', () => {
   let cwd;
 
   afterEach(async () => {
-    await clean(cwd);
+    await clean({ cwd });
     if (process.platform === 'darwin') {
       try {
         await forceExitDaemon();

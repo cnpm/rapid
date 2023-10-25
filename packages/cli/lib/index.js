@@ -8,6 +8,7 @@ const Scripts = require('./scripts').Scripts;
 const {
   nydusdConfigFile,
   tarBucketsDir,
+  NYDUS_TYPE,
 } = require('./constants');
 const util = require('./util');
 const nydusd = require('./nydusd');
@@ -66,7 +67,7 @@ exports.install = async options => {
   console.timeEnd('[rapid] run lifecycle scripts');
 };
 
-exports.clean = async function clean({ nydusMode, cwd, force }) {
+exports.clean = async function clean({ nydusMode = NYDUS_TYPE.FUSE, cwd, force }) {
   const listInfo = await util.listMountInfo();
   if (!listInfo.length) {
     console.log('[rapid] no mount info found.');

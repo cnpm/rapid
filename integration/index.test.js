@@ -16,7 +16,9 @@ const {
 describe('test/tnpm-install-rapid.test.js', () => {
   let fixture;
   afterEach(async () => {
-    await clean(fixture);
+    await clean({
+      cwd: fixture,
+    });
     if (process.platform === 'darwin') {
       await forceExitDaemon();
     } else {

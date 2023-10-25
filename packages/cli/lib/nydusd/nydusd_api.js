@@ -159,7 +159,15 @@ async function forceExitDaemon() {
     await execa.command('killall -9 nydusd');
   } catch (e) {
     // ignore, nydusd quits with error, but it's ok
-    e.message = 'exit nydusd faield: ' + e.message;
+    e.message = 'umount nydusd mnt failed: ' + e.message;
+    console.warn(e);
+  }
+
+  try {
+    await execa.command('killall -9 nydusd');
+  } catch (e) {
+    // ignore, nydusd quits with error, but it's ok
+    e.message = 'exit nydusd failed: ' + e.message;
     console.warn(e);
   }
 }

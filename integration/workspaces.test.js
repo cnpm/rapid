@@ -17,7 +17,10 @@ describe('test/workspaces.test.js', () => {
 
   it('should install lodash successfully', async () => {
     cwd = path.join(__dirname, './fixtures/workspaces');
-    await clean(cwd);
+    await clean({
+      cwd,
+      force: true,
+    });
     await install({
       nydusMode: 'FUSE',
       cwd,
@@ -35,7 +38,10 @@ describe('test/workspaces.test.js', () => {
       assert(lodash1.version.startsWith('1.'));
       assert(lodash2.version.startsWith('2.'));
     } finally {
-      await clean(cwd);
+      await clean({
+        cwd,
+        force: true,
+      });
       if (process.platform === 'darwin') {
         await forceExitDaemon();
       } else {

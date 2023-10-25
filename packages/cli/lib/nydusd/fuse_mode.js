@@ -13,6 +13,7 @@ const {
   wrapSudo,
   getWorkdir,
   getAllPkgPaths,
+  safeExeca,
 } = require('../util');
 const nydusdApi = require('./nydusd_api');
 
@@ -108,8 +109,8 @@ async function endNydusFs(cwd, pkg, force = false) {
     );
     if (os.type() === 'Darwin') {
       console.log(`[rapid] ${umountCmd} ${nodeModulesDir}`);
-      await execa.command(`${umountCmd} ${nodeModulesDir}`);
-      await execa.command(`hdiutil detach -force ${overlay}`);
+      await safeExeca(`umount ${nodeModulesDir}`, force ? `umount -f ${nodeModulesDir}` : '');
+      await safeExeca(`hdiutil detach ${overlay}`, force ? `hdiutil detach -force ${overlay}` : '');
     } else {
       await execa.command(wrapSudo(`${umountCmd} ${nodeModulesDir}`));
       await execa.command(wrapSudo(`${umountCmd} ${overlay}`));

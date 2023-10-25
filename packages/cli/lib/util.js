@@ -54,6 +54,19 @@ function wrapSudo(shScript) {
   return `sudo ${shScript}`;
 }
 
+async function safeExeca(command, fallback) {
+  try {
+    await execa.command(command);
+  } catch (e) {
+    console.warn(`[rapid] ${command} error: `, e);
+    try {
+      fallback && (await execa.command(fallback));
+    } catch (e) {
+      // ignore
+    }
+  }
+}
+
 // 需要手动写入，保证 path 路径符合预期
 async function createNydusdConfigFile(path) {
   await fs.writeFile(path, JSON.stringify({
@@ -617,3 +630,4 @@ exports.isFlattenPackage = isFlattenPackage;
 exports.resolveBinMap = resolveBinMap;
 exports.getFileEntryMode = getFileEntryMode;
 exports.getEnv = getEnv;
+exports.safeExeca = safeExeca;
