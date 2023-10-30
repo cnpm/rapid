@@ -75,6 +75,9 @@ async function download(options) {
     if (!packagePath.startsWith('node_modules') || link === true || inBundle === true || (optional && !resolved)) {
       continue;
     }
+    if (!resolved) {
+      console.error(`[rapid] can not resolve ${packagePath}`);
+    }
     const pkgName = util.getPkgNameFromTarballUrl(resolved);
     const pkg = blobManager.getPackage(pkgName, version);
     // optionalDependencies or devDependencies in production mode

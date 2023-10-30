@@ -33,7 +33,8 @@ exports.install = async options => {
       console.time(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
       await exports.clean({
         nydusMode: options.nydusMode,
-        cwd: options.cwd,
+        cwd: mountedInfo.mountPoint,
+        pkg: options.pkg,
         force: true,
       });
       console.timeEnd(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
@@ -67,13 +68,15 @@ exports.install = async options => {
   console.timeEnd('[rapid] run lifecycle scripts');
 };
 
-exports.clean = async function clean({ nydusMode = NYDUS_TYPE.FUSE, cwd, force }) {
+exports.clean = async function clean({ nydusMode = NYDUS_TYPE.FUSE, cwd, force, pkg }) {
   const listInfo = await util.listMountInfo();
   if (!listInfo.length) {
     console.log('[rapid] no mount info found.');
     return;
   }
-  const { pkg } = await util.readPkgJSON(cwd);
+  if (!pkg) {
+    pkg = await util.readPkgJSON(cwd);
+  }
   await nydusd.endNydusFs(nydusMode, cwd, pkg, force);
 };
 

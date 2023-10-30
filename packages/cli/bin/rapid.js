@@ -61,7 +61,7 @@ yargs
       if (cwd.endsWith('node_modules') || cwd.endsWith('node_modules/')) {
         cwd = path.dirname(cwd);
       }
-      await clean({ nydusMode: NYDUS_TYPE.FUSE, cwd, force: false });
+      await clean({ nydusMode: NYDUS_TYPE.FUSE, cwd, force: true });
       console.log('[rapid] clean finished');
     },
   })
