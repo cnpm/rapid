@@ -29,7 +29,6 @@
     "version": "lerna version --conventional-commits --sign-git-commit --sign-git-tag --no-push --no-private"
   },
   "devDependencies": {
-    "lerna": "^7.1.4",
     "@eggjs/tsconfig": "^1.0.0",
     "@types/mocha": "^8.2.0",
     "@types/node": "^18.16.3",
@@ -38,6 +37,7 @@
     "eslint-config-egg": "^12.0.0",
     "espower-typescript": "^9.0.2",
     "intelli-espower-loader": "^1.0.1",
+    "lerna": "^7.1.4",
     "mm": "^2.2.0",
     "mocha": "^8.2.1",
     "nock": "^13.0.9",
@@ -52,5 +52,8 @@
   },
   "engines": {
     "node": ">=14.19.1"
+  },
+  "dependencies": {
+    "cli-progress": "^3.12.0"
   }
 }

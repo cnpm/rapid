@@ -19,6 +19,7 @@ class NpmFsMetaBuilder {
     this.uid = options.uid;
     this.gid = options.gid;
     this.cwd = options.cwd;
+    this.entryListener = options.entryListener;
     this.productionMode = options.productionMode;
     // 项目直接依赖的 bin
     this.pkgBinSet = new Set();
@@ -29,6 +30,7 @@ class NpmFsMetaBuilder {
     await packageLock.load();
     const packages = packageLock.packages;
     for (const [ pkgPath, pkgItem ] of Object.entries(packages)) {
+      this.entryListener?.(pkgPath);
       if (!pkgPath || !Util.validDep(pkgItem, this.productionMode)) continue;
       // npm alias or normal npm package
       const name = Util.getAliasPackageNameFromPackagePath(pkgPath, packages);

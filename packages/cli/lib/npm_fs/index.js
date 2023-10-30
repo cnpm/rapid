@@ -4,6 +4,7 @@ const assert = require('node:assert');
 const NpmFsBuilder = require('./npm_fs_builder');
 const TnpmFsBuilder = require('./tnpm_fs_builder');
 const { NpmFsMode } = require('../constants');
+const { Bar } = require('../logger');
 
 class NpmFs {
   /**
@@ -15,10 +16,18 @@ class NpmFs {
    */
   constructor(blobManager, options) {
     this.blobManager = blobManager;
+    this.bar = new Bar({
+      type: 'FsMeta',
+      total: Object.keys(options.depsTree.packages).length,
+    });
+
     this.options = Object.assign({
       uid: process.getuid(),
       gid: process.getgid(),
       mode: NpmFsMode.NPM,
+      entryListener: entry => {
+        this.bar.update(entry);
+      },
     }, options);
   }
 

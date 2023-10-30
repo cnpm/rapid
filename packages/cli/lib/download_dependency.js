@@ -43,23 +43,19 @@ async function download(options) {
   const blobManager = new NpmBlobManager();
   const entryListener = entryListenerFactory(blobManager);
 
-  console.time('[rapid] downloader new');
   const downloader = new Downloader({
     entryListener,
     productionMode: options.productionMode,
   });
-  console.timeEnd('[rapid] downloader new');
-  console.time('[rapid] downloader init');
   await downloader.init();
-  console.timeEnd('[rapid] downloader init');
+
   options.downloader = downloader;
   const depsTree = options.depsTree;
 
-  console.time('[rapid] parallel download time');
   await downloader.download(depsTree);
-  console.log('[rapid] download finished');
   const { tocMap, indices } = downloader.dumpdata;
   await downloader.shutdown();
+  console.log('[rapid] download finished');
 
   for (const [ blobId, tocIndex ] of Object.entries(tocMap)) {
     blobManager.addBlob(blobId, tocIndex);
@@ -98,16 +94,19 @@ async function download(options) {
       }
     }
   }
-  console.timeEnd('[rapid] parallel download time');
   console.time('[rapid] generate fs meta');
+
+
   const npmFs = new NpmFs(blobManager, options);
   const allPkgs = await util.getAllPkgPaths(options.cwd, options.pkg);
+
   await Promise.all(allPkgs.map(async pkgPath => {
     const { tarIndex } = await util.getWorkdir(options.cwd, pkgPath);
     const fsMeta = await npmFs.getFsMeta(depsTree, pkgPath);
     await fs.mkdir(path.dirname(tarIndex), { recursive: true });
     await fs.writeFile(tarIndex, JSON.stringify(fsMeta), 'utf8');
   }));
+
   // FIXME atomic write
   await fs.writeFile(npmCacheConfigPath, JSON.stringify(tocMap), 'utf8');
   await fs.writeFile(npmIndexConfigPath, JSON.stringify(indices), 'utf8');

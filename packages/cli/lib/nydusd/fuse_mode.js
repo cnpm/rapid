@@ -17,6 +17,7 @@ const {
   listMountInfo,
 } = require('../util');
 const nydusdApi = require('./nydusd_api');
+const { Bar } = require('../logger');
 
 async function startNydusFs(cwd, pkg) {
   await Promise.all([
@@ -34,11 +35,14 @@ async function startNydusFs(cwd, pkg) {
 async function generateBootstrapFile(cwd, pkg) {
   console.time('[rapid] generate bootstrap');
   const allPkgs = await getAllPkgPaths(cwd, pkg);
+  const bar = new Bar({ type: 'bootstrap', total: allPkgs.length });
   await Promise.all(allPkgs.map(async pkgPath => {
-    const { bootstrap, tarIndex } = await getWorkdir(cwd, pkgPath);
+    const { bootstrap, tarIndex, nodeModulesDir } = await getWorkdir(cwd, pkgPath);
     await fs.mkdir(path.dirname(bootstrap), { recursive: true });
     await execa.command(`${BOOTSTRAP_BIN} --stargz-config-path=${tarIndex} --stargz-dir=${tarBucketsDir} --bootstrap=${bootstrap}`);
+    bar.update(nodeModulesDir);
   }));
+  console.log('\n');
   console.timeEnd('[rapid] generate bootstrap');
 }
 

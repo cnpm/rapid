@@ -15,7 +15,7 @@ class TnpmFsBuilder {
    */
   constructor(blobManager, options) {
     this.blobManager = blobManager;
-    this.fsMeta = new FsMeta();
+    this.fsMeta = new FsMeta(options.entryListener);
     this.uid = options.uid;
     this.gid = options.gid;
     this.productionMode = options.productionMode;
@@ -25,7 +25,7 @@ class TnpmFsBuilder {
     this.projectVersions = new Map();
   }
 
-  generateFsMeta(packageLockJson) {
+  generateFsMeta(packageLockJson, _, entryListener) {
     this.getProjectVersions(packageLockJson);
     this.getLatestVersions(packageLockJson);
     this.createRealPkgs(packageLockJson);
@@ -34,6 +34,7 @@ class TnpmFsBuilder {
     const blobId = this.fsMeta.blobIds[0];
     const packages = packageLockJson.packages;
     for (const [ pkgPath, pkgItem ] of Object.entries(packages)) {
+      entryListener?.(pkgItem);
       if (this.shouldSkipGenerate(pkgPath, pkgItem)) continue;
       const name = Util.getPackageNameFromPackagePath(pkgPath, packages);
       const version = pkgItem.version;

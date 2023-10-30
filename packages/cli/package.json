@@ -17,6 +17,7 @@
     "await-event": "^2.1.0",
     "binary-mirror-config": "^2.5.0",
     "chalk": "^4.0.0",
+    "cli-progress": "^3.12.0",
     "execa": "^5.1.1",
     "inquirer": "^8.2.6",
     "ms": "^0.7.1",

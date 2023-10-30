@@ -3,6 +3,7 @@
 const Util = require('./util');
 const { tarBucketsDir, npmCacheConfigPath, npmIndexConfigPath } = require('./constants');
 const os = require('node:os');
+const { Bar } = require('./logger');
 
 const platform = os.platform();
 const arch = os.arch();
@@ -47,7 +48,10 @@ class Downloader {
       httpConcurrentCount: this.httpConcurrentCount,
       downloadDir: tarBucketsDir,
       entryWhitelist: [ '*/package.json', '*/binding.gyp' ],
-      entryListener: this.entryListener,
+      entryListener: entry => {
+        this.bar.update(entry?.pkgName);
+        this.entryListener(entry);
+      },
       downloadTimeout: this.downloadTimeout,
       tocPath: {
         map: npmCacheConfigPath,
@@ -59,6 +63,10 @@ class Downloader {
   async download(pkgLockJson) {
     const tasks = this.createDownloadTask(pkgLockJson);
     console.log('[rapid] downloads %d packages', tasks.length);
+    this.bar = new Bar({
+      type: 'download',
+      total: tasks.length,
+    });
     await this.rapidDownloader.batchDownloads(tasks);
   }
 
