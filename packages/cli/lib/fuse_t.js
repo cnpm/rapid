@@ -4,13 +4,17 @@ const crypto = require('node:crypto');
 const path = require('node:path');
 const urllib = require('urllib');
 const execa = require('execa');
+const os = require('node:os');
 const inquirer = require('inquirer');
+
 
 const FUSE_T_INSTALL_PATH = '/usr/local/bin/go-nfsv4';
 const FUSE_T_VERSION = '1.0.28';
 const FUSE_T_DOWNLOAD_URL = `https://registry.npmmirror.com/-/binary/fuse-t/${FUSE_T_VERSION}/fuse-t-macos-installer-${FUSE_T_VERSION}.pkg`;
 
 exports.checkFuseT = async function checkFuseT() {
+  // only check for darwin
+  if (os.platform() !== 'darwin') return true;
   try {
     await fs.stat(FUSE_T_INSTALL_PATH);
     return true;

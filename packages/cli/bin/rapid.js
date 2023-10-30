@@ -23,11 +23,21 @@ yargs
         .option('by', {
           describe: 'Set the installation mode, support npm or npminstall',
           type: 'string',
+        })
+        .option('production', {
+          describe: 'Will not install modules listed in devDependencies',
+          type: 'boolean',
+        })
+        .option('omit', {
+          describe: 'Dependency types to omit from the installation tree on disk',
+          type: 'array',
+          default: [],
         });
     },
     handler: async argv => {
       const ignoreScripts = argv['ignore-scripts'];
       const mode = argv.by || NpmFsMode.NPM;
+      const productionMode = argv.production || argv.omit.includes('dev') || process.env.NODE_ENV === 'production';
 
       const cwd = process.cwd();
       const pkgRes = await util.readPkgJSON();
@@ -45,6 +55,7 @@ yargs
         mode,
         nydusMode: NYDUS_TYPE.FUSE,
         ignoreScripts,
+        productionMode,
       });
 
       console.log('[rapid] install finished');
