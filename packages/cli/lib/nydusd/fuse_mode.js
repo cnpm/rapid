@@ -13,7 +13,8 @@ const {
   wrapSudo,
   getWorkdir,
   getAllPkgPaths,
-  safeExeca,
+  wrapRetry,
+  listMountInfo,
 } = require('../util');
 const nydusdApi = require('./nydusd_api');
 
@@ -55,8 +56,7 @@ async function mountNydus(cwd, pkg) {
 
 async function mountOverlay(cwd, pkg) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
-  for (const pkgPath of allPkgs) {
-
+  await Promise.all(allPkgs.map(async pkgPath => {
     const {
       upper,
       workdir,
@@ -70,12 +70,22 @@ async function mountOverlay(cwd, pkg) {
     await fs.mkdir(overlay, { recursive: true });
     await fs.mkdir(mnt, { recursive: true });
     if (os.type() === 'Linux') {
-      await execa.command(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`));
+      await wrapRetry({
+        cmd: async () =>
+          await execa.command(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`)),
+      });
     } else if (os.type() === 'Darwin') {
       // hdiutil create -size 512m -fs "APFS" -volname "NewAPFSDisk" -type SPARSE -layout NONE -imagekey diskimage-class=CRawDiskImage loopfile.dmg
       await fs.rm(tmpDmg, { force: true });
-      await execa.command(`hdiutil create -size 512m -fs APFS -volname ${volumeName} -type SPARSE -layout NONE -imagekey diskimage-class=CRawDiskImage ${tmpDmg}`);
-      await execa.command(`hdiutil attach -mountpoint ${overlay} ${tmpDmg}`);
+      await wrapRetry({
+        cmd: async () =>
+          await execa.command(
+            `hdiutil create -size 512m -fs APFS -volname ${volumeName} -type SPARSE -layout NONE -imagekey diskimage-class=CRawDiskImage ${tmpDmg}`
+          ),
+      });
+      await wrapRetry({
+        cmd: async () => await execa.command(`hdiutil attach -mountpoint ${overlay} ${tmpDmg}`),
+      });
     }
     await fs.mkdir(upper, { recursive: true });
     await fs.mkdir(workdir, { recursive: true });
@@ -93,32 +103,72 @@ ${upper}=RW:${mnt}=RO \
 ${nodeModulesDir}`;
     }
     console.info('[rapid] mountOverlay: `%s`', shScript);
-    console.time('[rapid] overlay mounted.');
+    console.time(`[rapid] overlay ${overlay} mounted.`);
     await execa.command(shScript);
-    console.timeEnd('[rapid] overlay mounted.');
-  }
+    console.timeEnd(`[rapid] overlay ${overlay} mounted.`);
+  }));
 }
 
 async function endNydusFs(cwd, pkg, force = false) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const umountCmd = force ? 'umount -f' : 'umount';
-  for (const pkgPath of allPkgs) {
+  await Promise.all(allPkgs.map(async pkgPath => {
     const { dirname, overlay, baseDir, nodeModulesDir } = await getWorkdir(
       cwd,
       pkgPath
     );
     if (os.type() === 'Darwin') {
-      console.log(`[rapid] ${umountCmd} ${nodeModulesDir}`);
-      await safeExeca(`umount ${nodeModulesDir}`, force ? `umount -f ${nodeModulesDir}` : '');
-      await safeExeca(`hdiutil detach ${overlay}`, force ? `hdiutil detach -force ${overlay}` : '');
+      await wrapRetry({
+        cmd: async () => {
+          const currentMountInfo = await listMountInfo();
+          const mounted = currentMountInfo.find(
+            item => item.mountPoint === nodeModulesDir
+          );
+          if (!mounted) {
+            console.log(`[rapid] ${nodeModulesDir} is unmounted, skip`);
+            return;
+          }
+          await execa.command(`umount ${nodeModulesDir}`);
+        },
+        fallback: force
+          ? async () => {
+            // force 模式再次尝试
+            await execa.command(`umount -f ${nodeModulesDir}`);
+          }
+          : undefined,
+      });
+
+      await wrapRetry({
+        cmd: async () => {
+          const listInfo = await execa.command(
+            `hdiutil info | grep ${overlay} || echo ""`,
+            {
+              shell: true,
+            }
+          );
+          if (!listInfo.stdout) {
+            return;
+          }
+          await execa.command(`hdiutil detach ${overlay}`);
+        },
+        fallback: force
+          ? async () => {
+            await execa.command(`hdiutil detach -force ${overlay}`);
+          }
+          : undefined,
+      });
     } else {
-      await execa.command(wrapSudo(`${umountCmd} ${nodeModulesDir}`));
-      await execa.command(wrapSudo(`${umountCmd} ${overlay}`));
+      await wrapRetry({
+        cmd: () => execa.command(wrapSudo(`${umountCmd} ${nodeModulesDir}`)),
+      });
+      await wrapRetry({
+        cmd: () => execa.command(wrapSudo(`${umountCmd} ${overlay}`)),
+      });
     }
     await nydusdApi.umount(`/${dirname}`);
     // 清除 nydus 相关目录
     await fs.rm(baseDir, { recursive: true, force: true });
-  }
+  }));
 }
 
 module.exports = {

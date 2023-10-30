@@ -55,18 +55,32 @@ function wrapSudo(shScript) {
   return `sudo ${shScript}`;
 }
 
-async function safeExeca(command, fallback) {
-  try {
-    await execa.command(command);
-  } catch (e) {
-    console.warn(`[rapid] ${command} error: `, e);
+async function wrapRetry({ cmd, timeout = 3000, fallback }) {
+  // 最多等 3 秒
+  const startTime = Date.now();
+  let done = false;
+  while (!done) {
     try {
-      fallback && (await execa.command(fallback));
-    } catch (e) {
-      // ignore
+      await cmd();
+      done = true;
+    } catch (error) {
+      console.info(`[rapid] cmd failed: ${error}, retrying...`);
+      if (Date.now() - startTime <= timeout) {
+        await exports.sleep(300);
+      } else {
+        if (fallback) {
+          await fallback();
+          console.info('[rapid] cmd with fallback success');
+          return;
+        }
+        throw error;
+      }
     }
   }
+
+  return done;
 }
+
 
 // 需要手动写入，保证 path 路径符合预期
 async function createNydusdConfigFile(path) {
@@ -630,4 +644,4 @@ exports.isFlattenPackage = isFlattenPackage;
 exports.resolveBinMap = resolveBinMap;
 exports.getFileEntryMode = getFileEntryMode;
 exports.getEnv = getEnv;
-exports.safeExeca = safeExeca;
+exports.wrapRetry = wrapRetry;
