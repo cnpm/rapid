@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.3](https://github.com/cnpm/rapid/compare/v0.3.0...v0.3.3) (2023-10-30)
+
+
+### Bug Fixes
+
+* production mode ([#46](https://github.com/cnpm/rapid/issues/46)) ([3fb30b5](https://github.com/cnpm/rapid/commit/3fb30b518408342360fadf4e5ec93258dd588418))
+
+
+### Features
+
+* wrap retry for mount & detach ([#45](https://github.com/cnpm/rapid/issues/45)) ([e8621b6](https://github.com/cnpm/rapid/commit/e8621b69f4cd7484bb4b81bd55d747066c2c02f0))
+
+
+
+
+
 ## [0.3.2](https://github.com/cnpm/rapid/compare/v0.3.0...v0.3.2) (2023-10-25)
 
 **Note:** Version bump only for package cnpm-rapid-monorepo
