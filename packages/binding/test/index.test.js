@@ -98,10 +98,14 @@ describe('test/index.test.js', () => {
     afterEach(async () => {
       await fs.rm(filepath, { force: true });
     });
+
+    // fcntl 锁
     it('should work', async () => {
       const fcntl = new Fcntl(filepath);
 
-      await assert.rejects(execa('node', [
+      fcntl.lock();
+
+      assert.rejects(execa('node', [
         path.join(__dirname, 'fixtures/fcntl/writer.js'),
       ], {
         stdio: 'pipe',
