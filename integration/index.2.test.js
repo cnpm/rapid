@@ -87,6 +87,7 @@ describe('test/index.v2.test.js', () => {
         .end();
 
       assert.strictEqual(require(path.join(cwd, 'node_modules/semver/package.json')).version, '7.3.8');
+      await assert.rejects(fs.stat(path.join(cwd, 'node_modules/@ampproject/remapping')));
     });
   });
   // 在 node@20 上跑不起来
