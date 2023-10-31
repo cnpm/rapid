@@ -1,5 +1,7 @@
 const cliProgress = require('cli-progress');
 
+const MAX_TITLE_LENGTH = 11;
+
 function padCenter(str, length, char = ' ') {
   const padLength = length - str.length;
   const padLeft = Math.floor(padLength / 2);
@@ -8,8 +10,8 @@ function padCenter(str, length, char = ' ') {
 }
 
 class Bar {
-  constructor({ type, total }) {
-    const title = padCenter(type, 11);
+  constructor({ type, total, autoFinish = true }) {
+    const title = padCenter(type, MAX_TITLE_LENGTH);
     this.multiBar = new cliProgress.MultiBar(
       {
         clearOnComplete: false,
@@ -20,6 +22,7 @@ class Bar {
     );
 
     this.startTime = Date.now();
+    this.autoFinish = autoFinish;
 
     // init
     this.bar = this.multiBar.create(total, 0, {
@@ -38,15 +41,20 @@ class Bar {
     }
 
     if (value >= total - 1) {
-      this.bar.update(total, {
-        status: 'Complete',
-        message: Date.now() - this.startTime + 'ms',
-      });
-      this.stop();
+      if (this.autoFinish) {
+        this.stop();
+      } else {
+        this.bar.update(total - 1, { status: 'Processing', message: 'Processing...' });
+      }
     }
   }
 
   stop() {
+    const { total } = this.bar;
+    this.bar.update(total, {
+      status: 'Complete',
+      message: Date.now() - this.startTime + 'ms',
+    });
     this.multiBar.stop();
   }
 }

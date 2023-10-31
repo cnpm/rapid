@@ -28,12 +28,11 @@ async function startNydusFs(cwd, pkg) {
   console.log('[rapid] mount nydusd');
   await mountNydus(cwd, pkg);
 
-  console.log('[rapid] mount overlay');
+  console.log('[rapid] mount overlay, it may take a few seconds');
   await mountOverlay(cwd, pkg);
 }
 
 async function generateBootstrapFile(cwd, pkg) {
-  // console.time('[rapid] generate bootstrap');
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const bar = new Bar({ type: 'bootstrap', total: allPkgs.length });
   await Promise.all(allPkgs.map(async pkgPath => {
@@ -42,7 +41,6 @@ async function generateBootstrapFile(cwd, pkg) {
     await execa.command(`${BOOTSTRAP_BIN} --stargz-config-path=${tarIndex} --stargz-dir=${tarBucketsDir} --bootstrap=${bootstrap}`);
     bar.update(nodeModulesDir);
   }));
-  // console.timeEnd('[rapid] generate bootstrap');
 }
 
 async function mountNydus(cwd, pkg) {
@@ -56,10 +54,8 @@ async function mountNydus(cwd, pkg) {
   // 需要串行 mount，并发创建时 nydusd 会出现问题
   for (const pkgPath of allPkgs) {
     const { dirname, bootstrap } = await getWorkdir(cwd, pkgPath);
-    // console.time(`[rapid] mount '/${dirname}' to nydusd daemon using socket api`);
     await nydusdApi.mount(`/${dirname}`, cwd, bootstrap);
     bar.update(dirname);
-    // console.timeEnd(`[rapid] mount '/${dirname}' to nydusd daemon using socket api`);
   }
 }
 
@@ -116,10 +112,8 @@ ${upper}=RW:${mnt}=RO \
 ${nodeModulesDir}`;
     }
     // console.info('[rapid] mountOverlay: `%s`', shScript);
-    // console.time(`[rapid] overlay ${overlay} mounted.`);
     await execa.command(shScript);
     bar.update(nodeModulesDir);
-    // console.timeEnd(`[rapid] overlay ${overlay} mounted.`);
   }));
 }
 

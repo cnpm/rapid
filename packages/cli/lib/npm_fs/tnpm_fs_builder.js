@@ -34,7 +34,7 @@ class TnpmFsBuilder {
     const blobId = this.fsMeta.blobIds[0];
     const packages = packageLockJson.packages;
     for (const [ pkgPath, pkgItem ] of Object.entries(packages)) {
-      entryListener?.(pkgItem);
+      entryListener?.(pkgPath);
       if (this.shouldSkipGenerate(pkgPath, pkgItem)) continue;
       const name = Util.getPackageNameFromPackagePath(pkgPath, packages);
       const version = pkgItem.version;

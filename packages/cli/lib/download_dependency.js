@@ -94,7 +94,6 @@ async function download(options) {
       }
     }
   }
-  // console.time('[rapid] generate fs meta');
 
   console.log('[rapid] generate fs meta');
 
@@ -112,7 +111,6 @@ async function download(options) {
   // FIXME atomic write
   await fs.writeFile(npmCacheConfigPath, JSON.stringify(tocMap), 'utf8');
   await fs.writeFile(npmIndexConfigPath, JSON.stringify(indices), 'utf8');
-  // console.timeEnd('[rapid] generate fs meta');
   return {
     depsTree,
   };

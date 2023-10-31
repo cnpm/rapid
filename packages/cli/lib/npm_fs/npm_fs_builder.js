@@ -25,12 +25,12 @@ class NpmFsMetaBuilder {
     this.pkgBinSet = new Set();
   }
 
-  async generateFsMeta(packageLockJson, currentPkgPath) {
+  async generateFsMeta(packageLockJson, currentPkgPath, entryListener) {
     const packageLock = new PackageLock({ cwd: this.cwd, packageLockJson });
     await packageLock.load();
     const packages = packageLock.packages;
     for (const [ pkgPath, pkgItem ] of Object.entries(packages)) {
-      this.entryListener?.(pkgPath);
+      entryListener?.(pkgPath);
       if (!pkgPath || !Util.validDep(pkgItem, this.productionMode)) continue;
       // npm alias or normal npm package
       const name = Util.getAliasPackageNameFromPackagePath(pkgPath, packages);

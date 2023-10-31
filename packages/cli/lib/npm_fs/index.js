@@ -16,18 +16,11 @@ class NpmFs {
    */
   constructor(blobManager, options) {
     this.blobManager = blobManager;
-    this.bar = new Bar({
-      type: 'FsMeta',
-      total: Object.keys(options.depsTree.packages).length,
-    });
 
     this.options = Object.assign({
       uid: process.getuid(),
       gid: process.getgid(),
       mode: NpmFsMode.NPM,
-      entryListener: entry => {
-        this.bar.update(entry);
-      },
     }, options);
   }
 
@@ -36,9 +29,15 @@ class NpmFs {
   }
 
   async getFsMeta(pkgLockJson, pkgPath = '') {
+    this.bar = new Bar({
+      type: 'fs meta',
+      total: Object.keys(pkgLockJson.packages).length,
+    });
     const builderClazz = this._getFsMetaBuilder();
     const builder = new builderClazz(this.blobManager, this.options);
-    return await builder.generateFsMeta(pkgLockJson, pkgPath);
+    return await builder.generateFsMeta(pkgLockJson, pkgPath, entryName => {
+      this.bar.update(entryName);
+    });
   }
 
   _getFsMetaBuilder() {

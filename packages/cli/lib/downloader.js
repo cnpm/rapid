@@ -39,6 +39,7 @@ class Downloader {
   async shutdown() {
     if (!this.rapidDownloader) return;
     await this.rapidDownloader.shutdown();
+    this.bar.stop();
   }
 
   createRapidDownloader() {
@@ -66,6 +67,7 @@ class Downloader {
     this.bar = new Bar({
       type: 'download',
       total: tasks.length,
+      autoFinish: false,
     });
     await this.rapidDownloader.batchDownloads(tasks);
   }
