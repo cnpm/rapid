@@ -10,8 +10,10 @@ function padCenter(str, length, char = ' ') {
 }
 
 class Bar {
-  constructor({ type, total, autoFinish = true }) {
+  constructor({ type, total }) {
     const title = padCenter(type, MAX_TITLE_LENGTH);
+    this.type = type;
+    this.total = total;
     this.multiBar = new cliProgress.MultiBar(
       {
         clearOnComplete: false,
@@ -22,40 +24,49 @@ class Bar {
     );
 
     this.startTime = Date.now();
-    this.autoFinish = autoFinish;
+    this.isTTY = process.stdout.isTTY;
 
     // init
-    this.bar = this.multiBar.create(total, 0, {
-      status: 'Waiting',
-      warning: '',
-      message: '',
-    });
+    if (this.isTTY) {
+      this.bar = this.multiBar.create(total, 1, {
+        status: 'Running',
+        warning: '',
+        message: '',
+      });
+    }
 
   }
 
   update(current = '') {
 
+    if (!this.isTTY) {
+      return;
+    }
+
     const { value, total } = this.bar;
     if (value < total) {
-      this.bar.update(value + 1, { status: 'Running', message: current });
+      this.isTTY && this.bar.update(value + 1, { status: 'Running', message: current });
     }
 
     if (value >= total - 1) {
-      if (this.autoFinish) {
-        this.stop();
-      } else {
-        this.bar.update(total - 1, { status: 'Processing', message: 'Processing...' });
-      }
+      this.isTTY && this.bar.update(total - 1, { status: 'Processing', message: 'Processing...' });
     }
   }
 
   stop() {
+    if (!this.isTTY) {
+      console.log('[rapid] %s complete, %dms', this.type, Date.now() - this.startTime);
+      return;
+    }
+
     const { total } = this.bar;
     this.bar.update(total, {
       status: 'Complete',
       message: Date.now() - this.startTime + 'ms',
     });
+
     this.multiBar.stop();
+
   }
 }
 

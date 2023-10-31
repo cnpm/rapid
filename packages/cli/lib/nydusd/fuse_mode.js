@@ -41,6 +41,7 @@ async function generateBootstrapFile(cwd, pkg) {
     await execa.command(`${BOOTSTRAP_BIN} --stargz-config-path=${tarIndex} --stargz-dir=${tarBucketsDir} --bootstrap=${bootstrap}`);
     bar.update(nodeModulesDir);
   }));
+  bar.stop();
 }
 
 async function mountNydus(cwd, pkg) {
@@ -57,6 +58,7 @@ async function mountNydus(cwd, pkg) {
     await nydusdApi.mount(`/${dirname}`, cwd, bootstrap);
     bar.update(dirname);
   }
+  bar.stop();
 }
 
 async function mountOverlay(cwd, pkg) {
@@ -115,6 +117,7 @@ ${nodeModulesDir}`;
     await execa.command(shScript);
     bar.update(nodeModulesDir);
   }));
+  bar.stop();
 }
 
 async function endNydusFs(cwd, pkg, force = true) {

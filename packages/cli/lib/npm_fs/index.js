@@ -35,9 +35,11 @@ class NpmFs {
     });
     const builderClazz = this._getFsMetaBuilder();
     const builder = new builderClazz(this.blobManager, this.options);
-    return await builder.generateFsMeta(pkgLockJson, pkgPath, entryName => {
+    const res = await builder.generateFsMeta(pkgLockJson, pkgPath, entryName => {
       this.bar.update(entryName);
     });
+    this.bar.stop();
+    return res;
   }
 
   _getFsMetaBuilder() {
