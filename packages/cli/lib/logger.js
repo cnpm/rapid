@@ -1,12 +1,20 @@
 const cliProgress = require('cli-progress');
 
+function padCenter(str, length, char = ' ') {
+  const padLength = length - str.length;
+  const padLeft = Math.floor(padLength / 2);
+  const padRight = padLength - padLeft;
+  return char.repeat(padLeft) + str + char.repeat(padRight);
+}
+
 class Bar {
   constructor({ type, total }) {
+    const title = padCenter(type, 11);
     this.multiBar = new cliProgress.MultiBar(
       {
         clearOnComplete: false,
         hideCursor: true,
-        format: `[rapid] [{bar}] {percentage}% | ${type} | {status} | {message}`,
+        format: `[rapid] [{bar}] {percentage}% |${title}| {status} | {message}`,
       },
       cliProgress.Presets.shades_grey
     );

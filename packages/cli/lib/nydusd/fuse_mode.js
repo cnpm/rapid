@@ -20,20 +20,20 @@ const nydusdApi = require('./nydusd_api');
 const { Bar } = require('../logger');
 
 async function startNydusFs(cwd, pkg) {
-  await Promise.all([
-    nydusdApi.initDaemon(),
-    generateBootstrapFile(cwd, pkg),
-  ]);
+  await nydusdApi.initDaemon();
 
+  console.log('[rapid] generate bootstrap');
+  await generateBootstrapFile(cwd, pkg);
+
+  console.log('[rapid] mount nydusd');
   await mountNydus(cwd, pkg);
 
-  console.time('[rapid] mount overlay');
+  console.log('[rapid] mount overlay');
   await mountOverlay(cwd, pkg);
-  console.timeEnd('[rapid] mount overlay');
 }
 
 async function generateBootstrapFile(cwd, pkg) {
-  console.time('[rapid] generate bootstrap');
+  // console.time('[rapid] generate bootstrap');
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const bar = new Bar({ type: 'bootstrap', total: allPkgs.length });
   await Promise.all(allPkgs.map(async pkgPath => {
@@ -42,24 +42,33 @@ async function generateBootstrapFile(cwd, pkg) {
     await execa.command(`${BOOTSTRAP_BIN} --stargz-config-path=${tarIndex} --stargz-dir=${tarBucketsDir} --bootstrap=${bootstrap}`);
     bar.update(nodeModulesDir);
   }));
-  console.log('\n');
-  console.timeEnd('[rapid] generate bootstrap');
+  // console.timeEnd('[rapid] generate bootstrap');
 }
 
 async function mountNydus(cwd, pkg) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
 
+  const bar = new Bar({
+    type: 'mount',
+    total: allPkgs.length,
+  });
+
   // 需要串行 mount，并发创建时 nydusd 会出现问题
   for (const pkgPath of allPkgs) {
     const { dirname, bootstrap } = await getWorkdir(cwd, pkgPath);
-    console.time(`[rapid] mount '/${dirname}' to nydusd daemon using socket api`);
+    // console.time(`[rapid] mount '/${dirname}' to nydusd daemon using socket api`);
     await nydusdApi.mount(`/${dirname}`, cwd, bootstrap);
-    console.timeEnd(`[rapid] mount '/${dirname}' to nydusd daemon using socket api`);
+    bar.update(dirname);
+    // console.timeEnd(`[rapid] mount '/${dirname}' to nydusd daemon using socket api`);
   }
 }
 
 async function mountOverlay(cwd, pkg) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
+  const bar = new Bar({
+    type: 'overlay',
+    total: allPkgs.length,
+  });
   await Promise.all(allPkgs.map(async pkgPath => {
     const {
       upper,
@@ -106,10 +115,11 @@ ${nodeModulesDir}`);
 ${upper}=RW:${mnt}=RO \
 ${nodeModulesDir}`;
     }
-    console.info('[rapid] mountOverlay: `%s`', shScript);
-    console.time(`[rapid] overlay ${overlay} mounted.`);
+    // console.info('[rapid] mountOverlay: `%s`', shScript);
+    // console.time(`[rapid] overlay ${overlay} mounted.`);
     await execa.command(shScript);
-    console.timeEnd(`[rapid] overlay ${overlay} mounted.`);
+    bar.update(nodeModulesDir);
+    // console.timeEnd(`[rapid] overlay ${overlay} mounted.`);
   }));
 }
 
