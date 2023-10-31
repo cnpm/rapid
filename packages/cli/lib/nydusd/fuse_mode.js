@@ -123,7 +123,7 @@ ${nodeModulesDir}`;
   }));
 }
 
-async function endNydusFs(cwd, pkg, force = false) {
+async function endNydusFs(cwd, pkg, force = true) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const umountCmd = force ? 'umount -f' : 'umount';
   await Promise.all(allPkgs.map(async pkgPath => {
@@ -167,7 +167,7 @@ async function endNydusFs(cwd, pkg, force = false) {
         },
         fallback: force
           ? async () => {
-            await execa.command(`hdiutil detach -force ${overlay}`);
+            await execa.command(`umount -f ${overlay}`);
           }
           : undefined,
       });
