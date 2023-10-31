@@ -75,7 +75,8 @@ exports.clean = async function clean({ nydusMode = NYDUS_TYPE.FUSE, cwd, force, 
     return;
   }
   if (!pkg) {
-    pkg = await util.readPkgJSON(cwd);
+    const pkgRes = await util.readPkgJSON(cwd);
+    pkg = pkgRes.pkg;
   }
   await nydusd.endNydusFs(nydusMode, cwd, pkg, force);
 };

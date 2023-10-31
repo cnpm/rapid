@@ -4,6 +4,7 @@ const assert = require('node:assert');
 const NpmFsBuilder = require('./npm_fs_builder');
 const TnpmFsBuilder = require('./tnpm_fs_builder');
 const { NpmFsMode } = require('../constants');
+const { Bar } = require('../logger');
 
 class NpmFs {
   /**
@@ -15,6 +16,7 @@ class NpmFs {
    */
   constructor(blobManager, options) {
     this.blobManager = blobManager;
+
     this.options = Object.assign({
       uid: process.getuid(),
       gid: process.getgid(),
@@ -27,9 +29,17 @@ class NpmFs {
   }
 
   async getFsMeta(pkgLockJson, pkgPath = '') {
+    this.bar = new Bar({
+      type: 'fs meta',
+      total: Object.keys(pkgLockJson.packages).length,
+    });
     const builderClazz = this._getFsMetaBuilder();
     const builder = new builderClazz(this.blobManager, this.options);
-    return await builder.generateFsMeta(pkgLockJson, pkgPath);
+    const res = await builder.generateFsMeta(pkgLockJson, pkgPath, entryName => {
+      this.bar.update(entryName);
+    });
+    this.bar.stop();
+    return res;
   }
 
   _getFsMetaBuilder() {
