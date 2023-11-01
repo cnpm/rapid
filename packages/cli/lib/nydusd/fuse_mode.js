@@ -113,7 +113,7 @@ ${nodeModulesDir}`);
 ${upper}=RW:${mnt}=RO \
 ${nodeModulesDir}`;
     }
-    // console.info('[rapid] mountOverlay: `%s`', shScript);
+    // console.log('[rapid] mountOverlay: `%s`', shScript);
     await execa.command(shScript);
     bar.update(nodeModulesDir);
   }));
@@ -121,7 +121,6 @@ ${nodeModulesDir}`;
 }
 
 async function endNydusFs(cwd, pkg, force = true) {
-  await nydusdApi.initDaemon();
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const umountCmd = force ? 'umount -f' : 'umount';
   await Promise.all(allPkgs.map(async pkgPath => {
