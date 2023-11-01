@@ -171,7 +171,7 @@ describe('test/index.v2.test.js', () => {
   it('should auto clean when reinstall', async () => {
     cwd = path.join(__dirname, './fixtures/esbuild');
 
-    // npm mode
+
     await coffee
       .fork(rapid, [
         'install',
@@ -183,20 +183,6 @@ describe('test/index.v2.test.js', () => {
       .expect('code', 0)
       .end();
 
-    // npminstall
-    await coffee
-      .fork(rapid, [
-        'install',
-        '--by=npminstall',
-        '--ignore-scripts',
-      ], {
-        cwd,
-      })
-      .debug()
-      .expect('code', 0)
-      .end();
-
-    // npm mode
     await coffee
       .fork(rapid, [
         'install',

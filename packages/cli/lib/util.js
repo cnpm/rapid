@@ -567,18 +567,19 @@ exports.readPackageLock = async function readPackageLock(cwd) {
 };
 
 // 列出当前 mount 的 fuse endpoint
-// 目前只支持 fuse-t
 exports.listMountInfo = async function listMountInfo() {
 
   const { stdout } = await execa('mount');
   // 拆分输出为每行
   const mountLines = stdout.split('\n');
 
+  // 只过滤 node_modules 相关挂载点
+  // mac 下为 fuse-t
+  // fuse-t:/ on /Users/elr/Desktop/rapid-test/node_modules (nfs, nodev, nosuid, mounted by elr)
+  // linux 下为 overlay
+  // overlay on /__w/rapid/rapid/integration/fixtures/esbuild/node_modules type overlay (rw,relatime,lowerdir=/github/home/.rapid/cache/mnt/esbuild_e50a1b13a3655a1355d2816f13a77e23/root_d41d8cd98f00b204e9800998ecf8427e,upperdir=/github/home/.rapid/cache/esbuild_e50a1b13a3655a1355d2816f13a77e23/root_d41d8cd98f00b204e9800998ecf8427e/overlay/upper,workdir=/github/home/.rapid/cache/esbuild_e50a1b13a3655a1355d2816f13a77e23/root_d41d8cd98f00b204e9800998ecf8427e/overlay/workdir)
   return mountLines.filter(_ => {
-    if (_.includes(nydusdMnt)) {
-      return false;
-    }
-    return _.includes(baseRapidModeDir()) || _.startsWith('fuse');
+    return _.includes('node_modules') && (_.startsWith('fuse-t:/') || _.startsWith('overlay'));
   }).map(line => {
     const parts = line.split(' ');
     const device = parts[0];
