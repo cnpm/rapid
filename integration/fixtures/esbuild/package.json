@@ -1,5 +1,6 @@
 {
   "dependencies": {
     "esbuild": "0.15.14"
-  }
+  },
+  "repository": "git@github.com:cnpm/rapid.git"
 }

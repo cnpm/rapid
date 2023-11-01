@@ -6,7 +6,6 @@ const { clean, install, list } = require('../lib/index.js');
 const yargs = require('yargs');
 const { NpmFsMode, NYDUS_TYPE } = require('../lib/constants.js');
 const util = require('../lib/util');
-const path = require('node:path');
 const fuse_t = require('../lib/fuse_t');
 
 yargs
@@ -68,10 +67,7 @@ yargs
     aliases: [ 'c', 'unmount', 'uninstall' ],
     describe: 'Clean up the project',
     handler: async argv => {
-      let cwd = argv.path || process.cwd();
-      if (cwd.endsWith('node_modules') || cwd.endsWith('node_modules/')) {
-        cwd = path.dirname(cwd);
-      }
+      const cwd = argv.path || process.cwd();
       await clean({ nydusMode: NYDUS_TYPE.FUSE, cwd, force: true });
       console.log('[rapid] clean finished');
     },

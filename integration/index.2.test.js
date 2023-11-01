@@ -167,4 +167,40 @@ describe('test/index.v2.test.js', () => {
     await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules', 'esbuild')));
     assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
   });
+
+  it('should auto clean when reinstall', async () => {
+    cwd = path.join(__dirname, './fixtures/esbuild');
+
+
+    await coffee
+      .fork(rapid, [
+        'install',
+        '--ignore-scripts',
+      ], {
+        cwd,
+      })
+      .debug()
+      .expect('code', 0)
+      .end();
+
+    await coffee
+      .fork(rapid, [
+        'install',
+        '--ignore-scripts',
+      ], {
+        cwd,
+      })
+      .debug()
+      .expect('code', 0)
+      .end();
+
+    // should use npm mode finally
+    const dirs = await fs.readdir(path.join(cwd, 'node_modules'));
+    assert.strictEqual(dirs.filter(dir => dir.includes('esbuild')).length, 2);
+    await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/esbuild')));
+    assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
+
+    const res = await execa.command('mount', { stdio: 'pipe' });
+    assert(res.stdout.indexOf('integration/fixtures/esbuild/node_modules') === res.stdout.lastIndexOf('integration/fixtures/esbuild/node_modules'));
+  });
 });

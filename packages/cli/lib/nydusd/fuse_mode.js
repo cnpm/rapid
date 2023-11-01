@@ -113,7 +113,7 @@ ${nodeModulesDir}`);
 ${upper}=RW:${mnt}=RO \
 ${nodeModulesDir}`;
     }
-    // console.info('[rapid] mountOverlay: `%s`', shScript);
+    // console.log('[rapid] mountOverlay: `%s`', shScript);
     await execa.command(shScript);
     bar.update(nodeModulesDir);
   }));
@@ -164,6 +164,7 @@ async function endNydusFs(cwd, pkg, force = true) {
         },
         fallback: force
           ? async () => {
+            console.log(`[rapid] use fallback umount -f ${overlay}`);
             await execa.command(`umount -f ${overlay}`);
           }
           : undefined,

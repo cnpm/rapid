@@ -59,10 +59,6 @@ exports.install = async options => {
   assert(Object.keys(packageLock).length, '[rapid] depsJSON invalid.');
   await nydusd.startNydusFs(options.nydusMode, options.cwd, options.pkg);
 
-  console.time('[rapid] wait for access');
-  await util.ensureAccess(options.cwd, packageLock);
-  console.timeEnd('[rapid] wait for access');
-
   console.time('[rapid] run lifecycle scripts');
   await options.scripts.runLifecycleScripts(mirrorConfig);
   console.timeEnd('[rapid] run lifecycle scripts');
@@ -74,10 +70,16 @@ exports.clean = async function clean({ nydusMode = NYDUS_TYPE.FUSE, cwd, force, 
     console.log('[rapid] no mount info found.');
     return;
   }
+
+  if (cwd.endsWith('node_modules') || cwd.endsWith('node_modules/')) {
+    cwd = path.dirname(cwd);
+  }
+
   if (!pkg) {
     const pkgRes = await util.readPkgJSON(cwd);
     pkg = pkgRes.pkg;
   }
+
   await nydusd.endNydusFs(nydusMode, cwd, pkg, force);
 };
 
