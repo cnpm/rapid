@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.5](https://github.com/cnpm/rapid/compare/v0.3.0...v0.3.5) (2023-11-01)
+
+
+### Bug Fixes
+
+* clean when install ([#50](https://github.com/cnpm/rapid/issues/50)) ([48d15f9](https://github.com/cnpm/rapid/commit/48d15f949265cc424a20b1474ace356d67cba590))
+* production mode ([#46](https://github.com/cnpm/rapid/issues/46)) ([3fb30b5](https://github.com/cnpm/rapid/commit/3fb30b518408342360fadf4e5ec93258dd588418))
+
+
+### Features
+
+* rapid bar ([#48](https://github.com/cnpm/rapid/issues/48)) ([bb52985](https://github.com/cnpm/rapid/commit/bb5298543ce510bf3a17699fc850e96e7cc15217))
+* wrap retry for mount & detach ([#45](https://github.com/cnpm/rapid/issues/45)) ([e8621b6](https://github.com/cnpm/rapid/commit/e8621b69f4cd7484bb4b81bd55d747066c2c02f0))
+
+
+
+
+
 ## [0.3.4](https://github.com/cnpm/rapid/compare/v0.3.0...v0.3.4) (2023-10-31)
 
 
