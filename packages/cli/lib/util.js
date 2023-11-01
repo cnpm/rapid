@@ -427,7 +427,7 @@ exports.ensureAccess = async function ensureAccess(cwd, packageLock) {
   let access = false;
   let targetPath;
 
-  for (const [ pkgPath, pkgItem ] of Object.entries(packageLock)) {
+  for (const [ pkgPath, pkgItem ] of Object.entries(packageLock?.packages || {})) {
     if (pkgPath.startsWith('node_modules') && !pkgItem.optional) {
       targetPath = pkgPath;
       break;

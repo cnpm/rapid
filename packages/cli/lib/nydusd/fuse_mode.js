@@ -121,6 +121,7 @@ ${nodeModulesDir}`;
 }
 
 async function endNydusFs(cwd, pkg, force = true) {
+  await nydusdApi.initDaemon();
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const umountCmd = force ? 'umount -f' : 'umount';
   await Promise.all(allPkgs.map(async pkgPath => {
@@ -164,6 +165,7 @@ async function endNydusFs(cwd, pkg, force = true) {
         },
         fallback: force
           ? async () => {
+            console.log(`[rapid] use fallback umount -f ${overlay}`);
             await execa.command(`umount -f ${overlay}`);
           }
           : undefined,

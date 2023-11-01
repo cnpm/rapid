@@ -6,7 +6,6 @@ const { clean, install, list } = require('../lib/index.js');
 const yargs = require('yargs');
 const { NpmFsMode, NYDUS_TYPE } = require('../lib/constants.js');
 const util = require('../lib/util');
-const path = require('node:path');
 const fuse_t = require('../lib/fuse_t');
 
 yargs
