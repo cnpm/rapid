@@ -108,5 +108,24 @@ class Alert {
   }
 }
 
+class Spin {
+  constructor({ title = 'processing', showDots = false }) {
+    const { createSpinner } = require('nanospinner');
+    this.spinner = createSpinner(title).start();
+    this.dots = 0;
+
+    if (showDots) {
+      this.interval = setInterval(() => {
+        this.dots = (this.dots + 1) % 4; // 循环点的数量从0到3
+        const dotsString = '.'.repeat(this.dots); // 创建一个字符串，包含对应数量的点
+        this.spinner.update({ text: `${title}${dotsString}` }); // 更新 spinner 文本
+      }, 200); // 每200毫秒更新一次
+    }
+    return this.spinner;
+  }
+}
+
+exports.Spin = Spin;
+
 exports.Bar = Bar;
 exports.Alert = Alert;
