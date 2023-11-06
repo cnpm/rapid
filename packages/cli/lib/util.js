@@ -9,6 +9,7 @@ const url = require('node:url');
 const crypto = require('node:crypto');
 const mapWorkspaces = require('@npmcli/map-workspaces');
 const fuse_t = require('./fuse_t');
+const { Spin } = require('./logger');
 
 const parser = require('yargs-parser');
 const { NpmFsMode } = require('./constants');
@@ -24,6 +25,7 @@ const {
   nydusdBootstrapFile,
   nydusdMnt,
 } = require('./constants');
+const { Alert } = require('./logger');
 
 // node_modules/a -> a
 // node_mdoules/@scope/b -> @scope/b
@@ -55,22 +57,31 @@ function wrapSudo(shScript) {
   return `sudo ${shScript}`;
 }
 
-async function wrapRetry({ cmd, timeout = 3000, fallback }) {
+async function wrapRetry({ cmd, timeout = 3000, fallback, title = 'shell cmd' }) {
   // 最多等 3 秒
+  // 只在第一次失败时才展示 spin
+  let spin;
   const startTime = Date.now();
   let done = false;
+  let count = 0;
   while (!done) {
     try {
       await cmd();
       done = true;
+      spin && spin.success(title);
     } catch (error) {
-      console.info(`[rapid] cmd failed: ${error}, retrying...`);
+      if (!spin) {
+        spin = new Spin({ title });
+      }
+      // spin.update(`${cmd} failed, ${error}, retrying...`);
       if (Date.now() - startTime <= timeout) {
         await exports.sleep(300);
+        count++;
+        spin.update(`${title} retrying ${count} times ...`);
       } else {
         if (fallback) {
           await fallback();
-          console.info('[rapid] cmd with fallback success');
+          spin.success('[rapid] fallback success');
           return;
         }
         throw error;
@@ -561,9 +572,17 @@ exports.readPkgJSON = async function readPkgJSON(cwd) {
 };
 
 exports.readPackageLock = async function readPackageLock(cwd) {
-  const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
-  const packageLock = JSON.parse(await fs.readFile(lockPath, 'utf8'));
-  return { packageLock, lockPath };
+  try {
+    const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
+    const packageLock = JSON.parse(await fs.readFile(lockPath, 'utf8'));
+    return { packageLock, lockPath };
+  } catch (e) {
+    Alert.error('Error', [
+      'Failed to parse package-lock.json.',
+      'We only support package-lock.json version 3.',
+      'Run `npm i --package-lock-only` to generate it.',
+    ]);
+  }
 };
 
 // 列出当前 mount 的 fuse endpoint

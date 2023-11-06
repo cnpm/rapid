@@ -7,8 +7,9 @@ const yargs = require('yargs');
 const { NpmFsMode, NYDUS_TYPE } = require('../lib/constants.js');
 const util = require('../lib/util');
 const fuse_t = require('../lib/fuse_t');
+const { Alert } = require('../lib/logger.js');
 
-yargs
+const argv = yargs
   .command({
     command: 'install',
     aliases: [ 'i', 'ii' ],
@@ -48,6 +49,7 @@ yargs
       }
 
       await util.shouldFuseSupport();
+
       await install({
         cwd,
         pkg,
@@ -57,7 +59,11 @@ yargs
         productionMode,
       });
 
-      console.log('[rapid] install finished');
+      Alert.success('🚀 Success', [
+        'All dependencies have been successfully installed.',
+        'Please refrain from using `rm -rf node_modules` directly.',
+        'Consider using `rapid clean` or `rapid update` as alternatives.',
+      ]);
       // 首次执行 nydusd 后台服务可能会 hang 住输入
       process.exit(0);
     },
@@ -81,5 +87,18 @@ yargs
       await list(cwd);
     },
   })
+  .fail((_, err) => {
+    Alert.error('🚨 Error', [
+      err,
+      'To enable debug mode, add the NODE_DEBUG=rapid before running the command.',
+      'If the problem continues, please provide feedback at:',
+      'https://github.com/cnpm/rapid/issues',
+    ]);
+  })
   .help()
   .parse();
+
+
+if (argv._?.length === 0) {
+  yargs.showHelp();
+}
