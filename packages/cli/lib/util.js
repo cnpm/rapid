@@ -9,6 +9,7 @@ const url = require('node:url');
 const crypto = require('node:crypto');
 const mapWorkspaces = require('@npmcli/map-workspaces');
 const fuse_t = require('./fuse_t');
+const { Spin } = require('./logger');
 
 const parser = require('yargs-parser');
 const { NpmFsMode } = require('./constants');
@@ -56,22 +57,31 @@ function wrapSudo(shScript) {
   return `sudo ${shScript}`;
 }
 
-async function wrapRetry({ cmd, timeout = 3000, fallback }) {
+async function wrapRetry({ cmd, timeout = 3000, fallback, title = 'shell cmd' }) {
   // 最多等 3 秒
+  // 只在第一次失败时才展示 spin
+  let spin;
   const startTime = Date.now();
   let done = false;
+  let count = 0;
   while (!done) {
     try {
       await cmd();
       done = true;
+      spin && spin.success(title);
     } catch (error) {
-      console.info(`[rapid] cmd failed: ${error}, retrying...`);
+      if (!spin) {
+        spin = new Spin({ title });
+      }
+      // spin.update(`${cmd} failed, ${error}, retrying...`);
       if (Date.now() - startTime <= timeout) {
         await exports.sleep(300);
+        count++;
+        spin.update(`${title} retrying ${count} times ...`);
       } else {
         if (fallback) {
           await fallback();
-          console.info('[rapid] cmd with fallback success');
+          spin.success('[rapid] fallback success');
           return;
         }
         throw error;

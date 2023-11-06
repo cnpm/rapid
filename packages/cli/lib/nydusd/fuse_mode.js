@@ -84,6 +84,7 @@ async function mountOverlay(cwd, pkg) {
       await wrapRetry({
         cmd: async () =>
           await execa.command(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`)),
+        title: 'mount tnpmfs',
       });
     } else if (os.type() === 'Darwin') {
       // hdiutil create -size 512m -fs "APFS" -volname "NewAPFSDisk" -type SPARSE -layout NONE -imagekey diskimage-class=CRawDiskImage loopfile.dmg
@@ -93,9 +94,11 @@ async function mountOverlay(cwd, pkg) {
           await execa.command(
             `hdiutil create -size 512m -fs APFS -volname ${volumeName} -type SPARSE -layout NONE -imagekey diskimage-class=CRawDiskImage ${tmpDmg}`
           ),
+        title: 'hdiutil create',
       });
       await wrapRetry({
         cmd: async () => await execa.command(`hdiutil attach -mountpoint ${overlay} ${tmpDmg}`),
+        title: 'hdiutil attach',
       });
     }
     await fs.mkdir(upper, { recursive: true });
@@ -141,6 +144,7 @@ async function endNydusFs(cwd, pkg, force = true) {
           }
           await execa.command(`umount ${nodeModulesDir}`);
         },
+        title: 'umount node_modules',
         fallback: force
           ? async () => {
             // force 模式再次尝试
@@ -162,6 +166,7 @@ async function endNydusFs(cwd, pkg, force = true) {
           }
           await execa.command(`hdiutil detach ${overlay}`);
         },
+        title: 'hdiutil detach',
         fallback: force
           ? async () => {
             console.log(`[rapid] use fallback umount -f ${overlay}`);
@@ -172,9 +177,11 @@ async function endNydusFs(cwd, pkg, force = true) {
     } else {
       await wrapRetry({
         cmd: () => execa.command(wrapSudo(`${umountCmd} ${nodeModulesDir}`)),
+        title: 'umount node_modules',
       });
       await wrapRetry({
         cmd: () => execa.command(wrapSudo(`${umountCmd} ${overlay}`)),
+        title: 'umount node_modules',
       });
     }
     await nydusdApi.umount(`/${dirname}`);

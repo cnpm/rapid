@@ -113,6 +113,7 @@ class Spin {
     const { createSpinner } = require('nanospinner');
     this.spinner = createSpinner(title).start();
     this.dots = 0;
+    this.start = Date.now();
 
     if (showDots) {
       this.interval = setInterval(() => {
@@ -121,7 +122,17 @@ class Spin {
         this.spinner.update({ text: `${title}${dotsString}` }); // 更新 spinner 文本
       }, 200); // 每200毫秒更新一次
     }
-    return this.spinner;
+  }
+
+  update(message) {
+    this.spinner.update({ text: message });
+  }
+
+  success(message) {
+    if (this.showDots) {
+      clearInterval(this.interval);
+    }
+    this.spinner.success({ text: `${message || this.title}: ${Date.now() - this.start}ms` });
   }
 }
 
