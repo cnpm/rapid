@@ -10,6 +10,8 @@ function padCenter(str, length, char = ' ') {
   return char.repeat(padLeft) + str + char.repeat(padRight);
 }
 
+const isTTY = process.stdout.isTTY;
+
 class Bar {
   constructor({ type, total }) {
     const title = padCenter(type, MAX_TITLE_LENGTH);
@@ -25,10 +27,9 @@ class Bar {
     );
 
     this.startTime = Date.now();
-    this.isTTY = process.stdout.isTTY;
 
     // init
-    if (this.isTTY) {
+    if (isTTY) {
       this.bar = this.multiBar.create(total, 1, {
         status: 'Running',
         warning: '',
@@ -40,22 +41,22 @@ class Bar {
 
   update(current = '') {
 
-    if (!this.isTTY) {
+    if (!isTTY) {
       return;
     }
 
     const { value, total } = this.bar;
     if (value < total) {
-      this.isTTY && this.bar.update(value + 1, { status: 'Running', message: current });
+      isTTY && this.bar.update(value + 1, { status: 'Running', message: current });
     }
 
     if (value >= total - 1) {
-      this.isTTY && this.bar.update(total - 1, { status: 'Processing', message: 'Processing...' });
+      isTTY && this.bar.update(total - 1, { status: 'Processing', message: 'Processing...' });
     }
   }
 
   stop() {
-    if (!this.isTTY) {
+    if (!isTTY) {
       console.log('[rapid] %s complete, %dms', this.type, Date.now() - this.startTime);
       return;
     }
@@ -81,6 +82,10 @@ class Alert {
 
   static error(title = 'Error', message = 'OOPS, something error') {
     message = this.formatMessage(message);
+    if (!isTTY) {
+      console.log(message);
+      process.exit(1);
+    }
     const boxedMessage = boxen(message, {
       padding: 1,
       margin: 1,
@@ -95,6 +100,9 @@ class Alert {
 
   static success(title = 'Success', message = [ 'Congratulations', 'The operation was successful' ]) {
     message = this.formatMessage(message);
+    if (!isTTY) {
+      console.log(message);
+    }
     const boxedMessage = boxen(message, {
       padding: 1,
       margin: 1,
@@ -104,13 +112,18 @@ class Alert {
       titleAlignment: 'center',
     });
     console.log(boxedMessage);
-    process.exit(1);
   }
 }
 
 class Spin {
   constructor({ title = 'processing', showDots = false }) {
     const { createSpinner } = require('nanospinner');
+
+    if (!isTTY) {
+      console.log(`[rapid] ${title}`);
+      return;
+    }
+
     this.spinner = createSpinner(title).start();
     this.dots = 0;
     this.start = Date.now();
@@ -125,18 +138,26 @@ class Spin {
   }
 
   update(message) {
+    if (!isTTY) {
+      console.log(`[rapid] ${message}`);
+      return;
+    }
     this.spinner.update({ text: message });
   }
 
   success(message) {
+    const text = `${message || this.title}: ${Date.now() - this.start}ms`;
+    if (!isTTY) {
+      console.log(`[rapid] ${text}`);
+      return;
+    }
     if (this.showDots) {
       clearInterval(this.interval);
     }
-    this.spinner.success({ text: `${message || this.title}: ${Date.now() - this.start}ms` });
+    this.spinner.success({ text });
   }
 }
 
 exports.Spin = Spin;
-
 exports.Bar = Bar;
 exports.Alert = Alert;

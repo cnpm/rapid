@@ -87,7 +87,7 @@ const argv = yargs
       await list(cwd);
     },
   })
-  .fail((_, err, __) => {
+  .fail((_, err) => {
     Alert.error('🚨 Error', [
       err,
       'To enable debug mode, add the NODE_DEBUG=rapid before running the command.',
