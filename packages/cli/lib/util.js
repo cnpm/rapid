@@ -24,6 +24,7 @@ const {
   nydusdBootstrapFile,
   nydusdMnt,
 } = require('./constants');
+const { Alert } = require('./logger');
 
 // node_modules/a -> a
 // node_mdoules/@scope/b -> @scope/b
@@ -561,9 +562,17 @@ exports.readPkgJSON = async function readPkgJSON(cwd) {
 };
 
 exports.readPackageLock = async function readPackageLock(cwd) {
-  const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
-  const packageLock = JSON.parse(await fs.readFile(lockPath, 'utf8'));
-  return { packageLock, lockPath };
+  try {
+    const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
+    const packageLock = JSON.parse(await fs.readFile(lockPath, 'utf8'));
+    return { packageLock, lockPath };
+  } catch (e) {
+    Alert.error('Error', [
+      'Failed to parse package-lock.json.',
+      'We only support package-lock.json version 3.',
+      'Run `npm i --package-lock-only` to generate it.',
+    ]);
+  }
 };
 
 // 列出当前 mount 的 fuse endpoint

@@ -1,4 +1,5 @@
 const cliProgress = require('cli-progress');
+const boxen = require('boxen');
 
 const MAX_TITLE_LENGTH = 11;
 
@@ -70,4 +71,42 @@ class Bar {
   }
 }
 
+class Alert {
+  static formatMessage(message) {
+    if (Array.isArray(message)) {
+      return message.map(_ => `* ${_}`).join('\n');
+    }
+    return message.trim();
+  }
+
+  static error(title = 'Error', message = 'OOPS, something error') {
+    message = this.formatMessage(message);
+    const boxedMessage = boxen(message, {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'round',
+      borderColor: 'red',
+      title,
+      titleAlignment: 'center',
+    });
+    console.log(boxedMessage);
+    process.exit(1);
+  }
+
+  static success(title = 'Success', message = [ 'Congratulations', 'The operation was successful' ]) {
+    message = this.formatMessage(message);
+    const boxedMessage = boxen(message, {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'round',
+      borderColor: 'green',
+      title,
+      titleAlignment: 'center',
+    });
+    console.log(boxedMessage);
+    process.exit(1);
+  }
+}
+
 exports.Bar = Bar;
+exports.Alert = Alert;
