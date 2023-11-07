@@ -13,7 +13,7 @@ const {
   forceExitDaemon,
 } = require('@cnpmjs/rapid/lib/nydusd/nydusd_api');
 
-describe('test/tnpm-install-rapid.test.js', () => {
+describe('test/index.test.js', () => {
   let fixture;
   afterEach(async () => {
     await clean({

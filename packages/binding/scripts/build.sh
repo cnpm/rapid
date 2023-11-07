@@ -2,9 +2,26 @@
 
 set -eux
 
-TARGET="${CARGO_BUILD_TARGET:-x86_64-apple-darwin}"
+# 检测系统架构并设置 ARCH 和 TARGET 变量
+case $(uname -m) in
+    "x86_64")
+        ARCH="amd64"
+        TARGET="x86_64-apple-darwin"
+        ;;
+    "arm64")
+        ARCH="aarch64"
+        TARGET="aarch64-apple-darwin"
+        ;;
+    *)
+        echo "Unsupported architecture: $(uname -m)"
+        exit 1
+        ;;
+esac
+
 OS="${BUILD_OS:-darwin}"
-ARCH="${BUILD_ARCH:-amd64}"
+# 使用检测到的架构和目标平台作为默认值
+ARCH="${BUILD_ARCH:-$ARCH}"
+TARGET="${CARGO_BUILD_TARGET:-$TARGET}"
 PWD=$(pwd)
 OPENSSL_DIR=${PWD}/openssl
 OPENSSL_LIB_DIR=${PWD}/openssl/lib

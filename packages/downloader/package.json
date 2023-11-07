@@ -12,5 +12,6 @@
     "p-map": "^4.0.0",
     "urllib": "^3.16.1"
   },
-  "version": "0.0.11"
+  "version": "0.0.11",
+  "repository": "git@github.com:cnpm/rapid.git"
 }
