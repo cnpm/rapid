@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.6](https://github.com/cnpm/rapid/compare/v0.3.0...v0.3.6) (2023-11-06)
+
+
+### Bug Fixes
+
+* production mode ([#46](https://github.com/cnpm/rapid/issues/46)) ([3fb30b5](https://github.com/cnpm/rapid/commit/3fb30b518408342360fadf4e5ec93258dd588418))
+
+
+
+
+
 ## [0.3.5](https://github.com/cnpm/rapid/compare/v0.3.0...v0.3.5) (2023-11-01)
 
 
