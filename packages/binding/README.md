@@ -1,10 +1,10 @@
-# tnpm-rs-binding
+# @cnpmjs/binding
 
 This project was bootstrapped by [create-neon](https://www.npmjs.com/package/create-neon).
 
-## Installing tnpm-rs-binding
+## Installing
 
-Installing tnpm-rs-binding requires a [supported version of Node and Rust](https://github.com/neon-bindings/neon#platform-support).
+Installing rapid binding requires a [supported version of Node and Rust](https://github.com/neon-bindings/neon#platform-support).
 
 You can install the project with npm. In the project directory, run:
 
@@ -14,7 +14,7 @@ $ npm install
 
 This fully installs the project, including installing any dependencies and running the build.
 
-## Building tnpm-rs-binding
+## Building
 
 If you have already installed the project and only want to run the build, run:
 
@@ -24,9 +24,9 @@ $ npm run build
 
 This command uses the [cargo-cp-artifact](https://github.com/neon-bindings/cargo-cp-artifact) utility to run the Rust build and copy the built library into `./index.node`.
 
-## Exploring tnpm-rs-binding
+## Exploring
 
-After building tnpm-rs-binding, you can explore its exports at the Node REPL:
+After building rapid binding, you can explore its exports at the Node REPL:
 
 ```sh
 $ npm install
@@ -70,7 +70,7 @@ Runs the unit tests by calling `cargo test`. You can learn more about [adding te
 The directory structure of this project is:
 
 ```
-tnpm-rs-binding/
+binding/
 ├── Cargo.toml
 ├── README.md
 ├── index.node
