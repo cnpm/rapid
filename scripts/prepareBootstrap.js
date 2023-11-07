@@ -4,11 +4,12 @@
  * enviroments.
  */
 const fs = require('node:fs/promises');
+const osInfo = require('node:os');
 const path = require('node:path');
 const process = require('node:process');
 const util = require('node:util');
-let os = process.env.BUILD_OS || 'darwin';
-const arch = process.env.BUILD_ARCH || 'amd64';
+let os = process.env.BUILD_OS || osInfo.platform().toLowerCase();
+const arch = process.env.BUILD_ARCH || osInfo.arch();
 
 if (os === 'macos') {
   os = 'darwin';
