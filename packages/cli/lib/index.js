@@ -59,6 +59,17 @@ exports.install = async options => {
   assert(Object.keys(packageLock).length, '[rapid] depsJSON invalid.');
   await nydusd.startNydusFs(options.nydusMode, options.cwd, options.pkg);
 
+
+  console.time('[rapid] wait for access');
+  await util.ensureAccess(options.cwd, packageLock);
+  console.timeEnd('[rapid] wait for access');
+
+  // 存放原始依赖树，用于 npm 二次更新依赖
+  await fs.writeFile(
+    path.join(options.cwd, 'node_modules', '.package-lock.json'),
+    JSON.stringify(packageLock, null, 2)
+  );
+
   console.time('[rapid] run lifecycle scripts');
   await options.scripts.runLifecycleScripts(mirrorConfig);
   console.timeEnd('[rapid] run lifecycle scripts');
