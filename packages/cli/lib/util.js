@@ -2,6 +2,7 @@
 
 const debug = require('node:util').debuglog('rapid');
 const path = require('node:path');
+const assert = require('node:assert');
 const fs = require('node:fs/promises');
 const { existsSync } = require('node:fs');
 const os = require('node:os');
@@ -434,6 +435,34 @@ function validDep(pkg, productionMode, arch, platform) {
 
 }
 
+exports.ensureAccess = async function ensureAccess(cwd, packageLock) {
+
+  let needAccess = false;
+
+  for (const [ pkgPath, pkgItem ] of Object.entries(packageLock.packages)) {
+    if (pkgPath.startsWith('node_modules') && !pkgItem.optional && !pkgItem.dev && !pkgItem.peer) {
+      needAccess = true;
+      break;
+    }
+  }
+
+  // 如果没有找到合适的检测点，直接返回
+  if (!needAccess) {
+    return;
+  }
+
+  await wrapRetry({
+    cmd: async () => {
+      const dirs = await fs.readdir(path.join(cwd, 'node_modules'));
+      assert(dirs.length > 0);
+    },
+    title: 'ensure node_modules access',
+    fallback: async () => {
+      console.warn('[rapid] ensure node_modules access failed');
+    },
+  });
+};
+
 exports.getAllPkgPaths = async function getAllPkgPaths(cwd, pkg) {
   const workspaces = await exports.getWorkspaces(cwd, pkg);
   const allPkgs = Object.values(workspaces);
@@ -608,6 +637,15 @@ exports.listMountInfo = async function listMountInfo() {
   }).sort((a, b) => a.device.localeCompare(b.device));
 };
 
+async function storePackageLock(cwd, packageLock) {
+  const lockPath = path.join(cwd, 'node_modules', '.package-lock.json');
+  await fs.mkdir(path.dirname(lockPath), { recursive: true });
+  await fs.writeFile(
+    lockPath,
+    JSON.stringify(packageLock, null, 2)
+  );
+}
+
 exports.getWorkdir = getWorkdir;
 exports.validDep = validDep;
 exports.getDisplayName = getDisplayName;
@@ -628,3 +666,4 @@ exports.resolveBinMap = resolveBinMap;
 exports.getFileEntryMode = getFileEntryMode;
 exports.getEnv = getEnv;
 exports.wrapRetry = wrapRetry;
+exports.storePackageLock = storePackageLock;
