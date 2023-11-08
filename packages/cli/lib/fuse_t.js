@@ -6,7 +6,6 @@ const urllib = require('urllib');
 const execa = require('execa');
 const os = require('node:os');
 const inquirer = require('inquirer');
-const { Spin } = require('./logger');
 
 
 const FUSE_T_INSTALL_PATH = '/usr/local/bin/go-nfsv4';
@@ -25,10 +24,6 @@ exports.checkFuseT = async function checkFuseT() {
 };
 
 exports.installFuseT = async function installFuseT() {
-  const spin = new Spin({
-    title: 'Installing fuse-t, it may take a few seconds',
-    showDots: true,
-  });
   const tmpPath = path.join('/tmp', `${crypto.randomUUID()}.pkg`);
   await urllib.request(FUSE_T_DOWNLOAD_URL, {
     method: 'GET',
@@ -36,7 +31,6 @@ exports.installFuseT = async function installFuseT() {
     followRedirect: true,
   });
   await execa.command(`sudo installer -pkg ${tmpPath}  -target /`);
-  spin.success('fuse-t installed successfully');
 };
 
 exports.confirmInstallFuseT = async function confirmInstallFuseT() {
@@ -45,7 +39,7 @@ exports.confirmInstallFuseT = async function confirmInstallFuseT() {
   const answers = await inquirer.prompt([{
     type: 'confirm',
     name: 'installFuseT',
-    message: 'Do you want install fuse-t?',
+    message: 'Do you want install fuse-t? It may take a few seconds',
     default: true,
   }]);
   return answers.installFuseT === true;
