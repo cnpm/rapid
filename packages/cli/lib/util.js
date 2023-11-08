@@ -2,6 +2,7 @@
 
 const debug = require('node:util').debuglog('rapid');
 const path = require('node:path');
+const assert = require('node:assert');
 const fs = require('node:fs/promises');
 const { existsSync } = require('node:fs');
 const os = require('node:os');
@@ -435,40 +436,31 @@ function validDep(pkg, productionMode, arch, platform) {
 }
 
 exports.ensureAccess = async function ensureAccess(cwd, packageLock) {
-  let access = false;
-  let targetPath;
+
+  let needAccess = false;
 
   for (const [ pkgPath, pkgItem ] of Object.entries(packageLock.packages)) {
-    if (pkgPath.startsWith('node_modules') && !pkgItem.optional) {
-      targetPath = pkgPath;
+    if (pkgPath.startsWith('node_modules') && !pkgItem.optional && !pkgItem.dev && !pkgItem.peer) {
+      needAccess = true;
       break;
     }
   }
 
   // 如果没有找到合适的检测点，直接返回
-  if (!targetPath) {
+  if (!needAccess) {
     return;
   }
 
-  let retry = 0;
-
-  // 如果找到了检测点，但是检测点不存在，等待检测点创建
-  while (!access) {
-    try {
-      await fs.access(path.join(cwd, targetPath));
-      access = true;
-    } catch (e) {
-      retry++;
-      console.log(
-        `[rapid] still waiting for access ${targetPath} retry after 50ms, retry count: ${retry}`
-      );
-      if (retry > 40) {
-        console.error(`[rapid] wait for access ${targetPath} timeout`);
-        throw e;
-      }
-      await this.sleep(50);
-    }
-  }
+  await wrapRetry({
+    cmd: async () => {
+      const dirs = await fs.readdir(path.join(cwd, 'node_modules'));
+      assert(dirs.length > 0);
+    },
+    title: 'ensure node_modules access',
+    fallback: async () => {
+      console.warn('[rapid] ensure node_modules access failed');
+    },
+  });
 };
 
 exports.getAllPkgPaths = async function getAllPkgPaths(cwd, pkg) {
@@ -645,6 +637,15 @@ exports.listMountInfo = async function listMountInfo() {
   }).sort((a, b) => a.device.localeCompare(b.device));
 };
 
+async function storePackageLock(cwd, packageLock) {
+  const lockPath = path.join(cwd, 'node_modules', '.package-lock.json');
+  await fs.mkdir(path.dirname(lockPath), { recursive: true });
+  await fs.writeFile(
+    lockPath,
+    JSON.stringify(packageLock, null, 2)
+  );
+}
+
 exports.getWorkdir = getWorkdir;
 exports.validDep = validDep;
 exports.getDisplayName = getDisplayName;
@@ -665,3 +666,4 @@ exports.resolveBinMap = resolveBinMap;
 exports.getFileEntryMode = getFileEntryMode;
 exports.getEnv = getEnv;
 exports.wrapRetry = wrapRetry;
+exports.storePackageLock = storePackageLock;
