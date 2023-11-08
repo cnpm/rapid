@@ -10,13 +10,14 @@ crate-type = ["cdylib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+downloader = { path = "../downloader" }
+fs_meta = { path = "../fs_meta" }
+fcntl = { path = "../fcntl" }
+nydus-bootstrap = { path = '../bootstrap' }
 tokio = { version = "1", features = ["full"] }
 futures = "0.3"
-downloader = { path = "../downloader" }
-fcntl = { path = "../fcntl" }
 serde = { version = "1.0", features = ["serde_derive", "rc"] }
 serde_json = "1.0"
-nydus-bootstrap = { path = '../bootstrap' }
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
 napi = { version = "2.0.3", default-features = false, features = ["napi5", "async", "compat-mode"] }
 napi-derive = { version = "2.0.7", features = ["compat-mode"] }

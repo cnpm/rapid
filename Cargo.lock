@@ -263,6 +263,7 @@ dependencies = [
  "ctor",
  "downloader",
  "fcntl",
+ "fs_meta",
  "futures",
  "log",
  "napi",
@@ -761,6 +762,13 @@ checksum = "9564fc758e15025b46aa6643b1b77d047d1a56a1aea6e01002ac0c7026876213"
 dependencies = [
  "libc",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "fs_meta"
+version = "0.1.0"
+dependencies = [
+ "neon",
 ]
 
 [[package]]

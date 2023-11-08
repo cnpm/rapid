@@ -1,7 +1,9 @@
+// binding 入口文件，通过 napi 暴露对应方法和结构体
+// 也许改为 resolver 更为合适
 #[macro_use]
 extern crate napi_derive;
 
-use napi::{CallContext, Callback, Env, Error, JsFunction, JsObject, NapiRaw, Status};
+use napi::{CallContext, Callback, Env, Error, JsFunction, JsObject, NapiRaw, Status };
 
 use ctor::ctor;
 use downloader::download::Downloader;
@@ -14,6 +16,7 @@ use downloader::{
     TocIndex, TocPath,
 };
 use fcntl::Fcntl;
+use fs_meta::{FsMeta, FsMetaOptions};
 use log::LevelFilter;
 use napi::sys::napi_value;
 use napi::threadsafe_function::ErrorStrategy;
@@ -402,5 +405,28 @@ fn setup_logger() {
         .init()
     {
         eprintln!("init logger failed {:?}", e);
+    }
+}
+
+
+#[napi(js_name = "FsMeta")]
+struct JsFsMeta {
+    inner: FsMeta,
+}
+
+#[napi]
+impl JsFsMeta {
+    #[napi(constructor)]
+    pub fn new() -> Result<Self, Error> {
+        // TODO 参数校验
+        Ok(JsFsMeta {
+            inner: FsMeta::new(),
+        })
+    }
+
+    #[napi]
+    pub fn generate(&mut self, mode: String) -> Result<(), Error> {
+        self.inner.generate(mode.to_string())?;
+        Ok(())
     }
 }
