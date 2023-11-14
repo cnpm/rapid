@@ -113,7 +113,6 @@ bindings/*/index.node
 .idea
 packages/cli/test/fixtures/project-scripts/apps/a/1
 packages/downloader/test/nginx.conf
-package-lock.json
 
 # napi-rs generate wrong type ignore for tmp
 packages/binding/index.d.ts
