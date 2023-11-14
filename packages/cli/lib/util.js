@@ -534,7 +534,7 @@ exports.runScript = async (pkgDir, script, options) => {
     // ignore error
   }
   env.PATH = [
-    path.join(__dirname, '../node-gyp-bin'),
+    path.join(__dirname, './node-gyp-bin'),
     path.join(options.cwd, 'node_modules', '.bin'),
     path.join(pkgDir, 'node_modules', '.bin'),
     process.env.PATH,

@@ -171,7 +171,6 @@ describe('test/index.v2.test.js', () => {
   it('should auto clean when reinstall', async () => {
     cwd = path.join(__dirname, './fixtures/esbuild');
 
-
     await coffee
       .fork(rapid, [
         'install',
@@ -203,4 +202,5 @@ describe('test/index.v2.test.js', () => {
     const res = await execa.command('mount', { stdio: 'pipe' });
     assert(res.stdout.indexOf('integration/fixtures/esbuild/node_modules') === res.stdout.lastIndexOf('integration/fixtures/esbuild/node_modules'));
   });
+
 });
