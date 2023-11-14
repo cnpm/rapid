@@ -1,0 +1,6 @@
+{
+  "repository": "git@github.com:cnpm/rapid.git",
+  "dependencies": {
+    "fsevents": "^1.2.13"
+  }
+}

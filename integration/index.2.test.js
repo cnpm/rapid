@@ -57,6 +57,32 @@ describe('test/index.v2.test.js', () => {
     }
   });
 
+  describe('node gyp', async () => {
+    it('should support node-gyp for npminstall', async () => {
+      cwd = path.join(__dirname, './fixtures/gyp');
+      await coffee
+        .fork(rapid, [ 'install', '--by=npminstall' ], {
+          cwd,
+        })
+        .debug()
+        .expect('code', 0)
+        .expect('stdout', /CXX\(target\) Release\/obj.target\/fse\/fsevents\.o/)
+        .end();
+    });
+
+    it('should support node-gyp for npm mode', async () => {
+      cwd = path.join(__dirname, './fixtures/gyp');
+      await coffee
+        .fork(rapid, [ 'install', '--by=npm' ], {
+          cwd,
+        })
+        .debug()
+        .expect('code', 0)
+        .expect('stdout', /CXX\(target\) Release\/obj.target\/fse\/fsevents\.o/)
+        .end();
+    });
+  });
+
   describe('INIT_CWD', async () => {
     it('should set INIT_CWD', async () => {
       cwd = path.join(__dirname, './fixtures/init-cwd');
@@ -171,7 +197,6 @@ describe('test/index.v2.test.js', () => {
   it('should auto clean when reinstall', async () => {
     cwd = path.join(__dirname, './fixtures/esbuild');
 
-
     await coffee
       .fork(rapid, [
         'install',
@@ -203,4 +228,6 @@ describe('test/index.v2.test.js', () => {
     const res = await execa.command('mount', { stdio: 'pipe' });
     assert(res.stdout.indexOf('integration/fixtures/esbuild/node_modules') === res.stdout.lastIndexOf('integration/fixtures/esbuild/node_modules'));
   });
+
+
 });

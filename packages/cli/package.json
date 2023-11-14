@@ -31,7 +31,8 @@
     "semver": "^7.3.8",
     "urllib": "^3.16.1",
     "yargs": "^17.7.2",
-    "yargs-parser": "^9.0.2"
+    "yargs-parser": "^9.0.2",
+    "node-gyp": "^9.0.0"
   },
   "homepage": "https://github.com/cnpm/rapid",
   "repository": {
