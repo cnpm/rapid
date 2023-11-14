@@ -1,6 +1,6 @@
 {
   "name": "@cnpmjs/rapid",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "The rapid npm installed cli built with Nydus",
   "main": "lib/index.js",
   "bin": {
@@ -11,7 +11,7 @@
     "lib"
   ],
   "dependencies": {
-    "@cnpmjs/binding": "^0.3.7",
+    "@cnpmjs/binding": "^0.3.8",
     "@npmcli/arborist": "^6.1.5",
     "@npmcli/map-workspaces": "^3.0.0",
     "await-event": "^2.1.0",
@@ -23,6 +23,7 @@
     "inquirer": "^8.2.6",
     "ms": "^0.7.1",
     "nanospinner": "^1.1.0",
+    "node-gyp": "^9.0.0",
     "npm-normalize-package-bin": "^3.0.1",
     "npm-package-arg": "^10.1.0",
     "p-map": "^4.0.0",
@@ -31,8 +32,7 @@
     "semver": "^7.3.8",
     "urllib": "^3.16.1",
     "yargs": "^17.7.2",
-    "yargs-parser": "^9.0.2",
-    "node-gyp": "^9.0.0"
+    "yargs-parser": "^9.0.2"
   },
   "homepage": "https://github.com/cnpm/rapid",
   "repository": {
