@@ -9,6 +9,7 @@ const os = require('node:os');
 const url = require('node:url');
 const crypto = require('node:crypto');
 const mapWorkspaces = require('@npmcli/map-workspaces');
+const Arborist = require('@npmcli/arborist');
 const fuse_t = require('./fuse_t');
 const { Spin } = require('./logger');
 
@@ -600,9 +601,17 @@ exports.readPkgJSON = async function readPkgJSON(cwd) {
   return { pkg, pkgPath };
 };
 
-exports.readPackageLock = async function readPackageLock(cwd) {
+exports.readPackageLock = async function readPackageLock(cwd, noPackageLock) {
   try {
     const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
+    if (!noPackageLock) {
+      try {
+        await fs.startTime(lockPath);
+      } catch {
+        const arb = new Arborist();
+        arb.reify({ save: true });
+      }
+    }
     const packageLock = JSON.parse(await fs.readFile(lockPath, 'utf8'));
     return { packageLock, lockPath };
   } catch (e) {

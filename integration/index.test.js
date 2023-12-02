@@ -87,4 +87,20 @@ describe('test/index.test.js', () => {
         .end(done);
     });
   });
+
+
+  describe('package-lock.json', done => {
+    beforeEach(() => {
+      fixture = path.join(fixtures, 'not-exist-lock-file');
+    });
+
+    it('should work', async () => {
+      coffee.fork(rapid, [], {
+        cwd: fixture,
+      })
+        .debug()
+        .expect('code', 0)
+        .end(done);
+    });
+  });
 });
