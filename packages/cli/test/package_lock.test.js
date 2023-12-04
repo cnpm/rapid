@@ -2,7 +2,16 @@
 
 const assert = require('node:assert');
 const path = require('node:path');
+const fs = require('node:fs/promises');
+const mm = require('mm');
 const PackageLock = require('../lib/package_lock').PackageLock;
+const { install } = require('../lib');
+const httpclient = require('../lib/httpclient');
+const {
+  NYDUS_CSI_ROOT_ENV,
+} = require('../lib/constants');
+const nydusd = require('../lib/nydusd');
+const downloadDependency = require('../lib/download_dependency');
 
 const fixture = path.join(__dirname, 'fixtures/lockfile');
 
@@ -42,5 +51,37 @@ describe('test/package_lock.test.js', () => {
     assert.strictEqual(packageLock.isWorkspacesPkg('node_modules/lodash.has'), false);
     assert.strictEqual(packageLock.isWorkspacesPkg('xxx/lodash.has'), false);
     assert.strictEqual(packageLock.isDepsPkg('node_modules/lodash.has'), true);
+  });
+
+  describe('not exist lock file', async () => {
+    let fixture;
+    beforeEach(async () => {
+      mm(process.env, NYDUS_CSI_ROOT_ENV, 'true');
+      mm(process, 'cwd', () => fixture);
+      mm(nydusd, 'startNydusFs', async () => { });
+      mm(downloadDependency, 'download', async () => {
+        return {
+          depsTree: [ 1 ],
+        };
+      });
+
+    });
+    afterEach(async () => {
+      await fs.rm(path.join(fixture, 'node_modules'), { recursive: true, force: true });
+      await fs.rm(path.join(fixture, 'package-lock.json'), { force: true });
+      mm.restore();
+    });
+
+    it('should run all project installation scripts', async () => {
+      fixture = path.join(__dirname, './fixtures/not-exist-lock-file');
+      const pkg = require(path.join(fixture, 'package.json'));
+      await install({
+        httpclient,
+        pkg,
+        cwd: fixture,
+        console: global.console,
+      });
+      await fs.stat(path.join(fixture, 'package-lock.json'));
+    });
   });
 });

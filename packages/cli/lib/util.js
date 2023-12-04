@@ -606,10 +606,18 @@ exports.readPackageLock = async function readPackageLock(cwd, noPackageLock) {
     const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
     if (!noPackageLock) {
       try {
-        await fs.startTime(lockPath);
+        await fs.stat(lockPath);
       } catch {
-        const arb = new Arborist();
-        arb.reify({ save: true });
+        const arb = new Arborist({
+          packageLockOnly: true,
+          ignoreScripts: true,
+          lockfileVersion: 3,
+          strictSSL: false,
+          allowSameVersion: false,
+          path: cwd,
+        });
+        console.log('[rapid] Calling npm generates package-lock.json by default');
+        await arb.reify({ save: true });
       }
     }
     const packageLock = JSON.parse(await fs.readFile(lockPath, 'utf8'));
