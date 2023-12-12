@@ -8,8 +8,8 @@ const { existsSync } = require('node:fs');
 const os = require('node:os');
 const url = require('node:url');
 const crypto = require('node:crypto');
+const { exec } = require('node:child_process');
 const mapWorkspaces = require('@npmcli/map-workspaces');
-const Arborist = require('@npmcli/arborist');
 const fuse_t = require('./fuse_t');
 const { Spin } = require('./logger');
 
@@ -601,25 +601,38 @@ exports.readPkgJSON = async function readPkgJSON(cwd) {
   return { pkg, pkgPath };
 };
 
-exports.readPackageLock = async function readPackageLock(cwd, noPackageLock) {
+exports.generatePackageLock = async cwd => {
   try {
     const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
-    if (!noPackageLock) {
-      try {
-        await fs.stat(lockPath);
-      } catch {
-        const arb = new Arborist({
-          packageLockOnly: true,
-          ignoreScripts: true,
-          lockfileVersion: 3,
-          strictSSL: false,
-          allowSameVersion: false,
-          path: cwd,
+    const isExist = await fs.stat(lockPath).then(() => true).catch(() => false);
+    if (!isExist) {
+      console.log('npm install --force --package-lock-only --ignore-scripts is running');
+      await new Promise((resolve, reject) => {
+        exec('npm install --force --package-lock-only --ignore-scripts', (error, stdout, stderr) => {
+          if (error) {
+            console.error(`exec error: ${stderr}`);
+            reject(new Error(`${error}`));
+            return;
+          }
+          console.log(`${stdout}`);
+          if (stderr) {
+            console.error(`${stderr}`);
+          }
+          resolve();
         });
-        console.log('[rapid] Calling npm generates package-lock.json by default');
-        await arb.reify({ save: true });
-      }
+      });
     }
+  } catch {
+    Alert.error('Error', [
+      'generate package-lock.json error.',
+      'Run `npm i --package-lock-only` to generate it.',
+    ]);
+  }
+};
+
+exports.readPackageLock = async function readPackageLock(cwd) {
+  try {
+    const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
     const packageLock = JSON.parse(await fs.readFile(lockPath, 'utf8'));
     return { packageLock, lockPath };
   } catch (e) {
