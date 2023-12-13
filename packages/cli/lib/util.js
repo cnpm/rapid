@@ -8,7 +8,8 @@ const { existsSync } = require('node:fs');
 const os = require('node:os');
 const url = require('node:url');
 const crypto = require('node:crypto');
-const { exec } = require('node:child_process');
+const util = require('node:util');
+const exec = util.promisify(require('node:child_process').exec);
 const mapWorkspaces = require('@npmcli/map-workspaces');
 const fuse_t = require('./fuse_t');
 const { Spin } = require('./logger');
@@ -607,22 +608,13 @@ exports.generatePackageLock = async cwd => {
     const isExist = await fs.stat(lockPath).then(() => true).catch(() => false);
     if (!isExist) {
       console.log('npm install --force --package-lock-only --ignore-scripts is running');
-      await new Promise((resolve, reject) => {
-        exec('npm install --force --package-lock-only --ignore-scripts', (error, stdout, stderr) => {
-          if (error) {
-            console.error(`exec error: ${stderr}`);
-            reject(new Error(`${error}`));
-            return;
-          }
-          console.log(`${stdout}`);
-          if (stderr) {
-            console.error(`${stderr}`);
-          }
-          resolve();
-        });
-      });
+      const { stdout, stderr } = await exec('npm install --force --package-lock-only --ignore-scripts', { cwd });
+      console.log(`${stdout}`);
+      if (stderr) {
+        console.warn(`${stderr}`);
+      }
     }
-  } catch {
+  } catch (e) {
     Alert.error('Error', [
       'generate package-lock.json error.',
       'Run `npm i --package-lock-only` to generate it.',

@@ -14,7 +14,6 @@
 ### Independent Client
 ```bash
 $ npm i @cnpmjs/rapid --registry=https://registry.npmmirror.com
-$ npm i --package-lock-only --registry=https://registry.npmmirror.com
 $ rapid install
 ```
 

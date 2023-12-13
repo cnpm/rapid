@@ -33,16 +33,17 @@ const argv = yargs
           type: 'array',
           default: [],
         })
-        .option('no-package-lock', {
-          describe: 'Disable package-lock.json',
+        .option('package-lock', {
+          describe: 'Whether to generate package-lock.json file',
           type: 'boolean',
+          default: true,
         });
     },
     handler: async argv => {
       const ignoreScripts = argv['ignore-scripts'];
       const mode = argv.by || NpmFsMode.NPM;
       const productionMode = argv.production || argv.omit.includes('dev') || process.env.NODE_ENV === 'production';
-      const noPackageLock = argv['no-package-lock'];
+      const noPackageLock = !argv['package-lock'];
 
       const cwd = process.cwd();
       const pkgRes = await util.readPkgJSON();
