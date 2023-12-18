@@ -7,9 +7,6 @@ const mm = require('mm');
 const PackageLock = require('../lib/package_lock').PackageLock;
 const { install } = require('../lib');
 const httpclient = require('../lib/httpclient');
-const {
-  NYDUS_CSI_ROOT_ENV,
-} = require('../lib/constants');
 const nydusd = require('../lib/nydusd');
 const downloadDependency = require('../lib/download_dependency');
 
@@ -56,7 +53,6 @@ describe('test/package_lock.test.js', () => {
   describe('not exist lock file', async () => {
     let fixture;
     beforeEach(async () => {
-      mm(process.env, NYDUS_CSI_ROOT_ENV, 'true');
       mm(process, 'cwd', () => fixture);
       mm(nydusd, 'startNydusFs', async () => { });
       mm(downloadDependency, 'download', async () => {
