@@ -112,7 +112,7 @@ ${nodeModulesDir}`);
     if (os.type() === 'Darwin') {
       shScript = `${unionfs} \
 -o cow,max_files=32768 \
--o allow_other,use_ino,suid,dev \
+-o allow_other,use_ino,suid,dev,nobrowse \
 ${upper}=RW:${mnt}=RO \
 ${nodeModulesDir}`;
     }
