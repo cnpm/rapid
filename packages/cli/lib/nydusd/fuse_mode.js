@@ -97,7 +97,7 @@ async function mountOverlay(cwd, pkg) {
         title: 'hdiutil create',
       });
       await wrapRetry({
-        cmd: async () => await execa.command(`hdiutil attach -mountpoint ${overlay} ${tmpDmg}`),
+        cmd: async () => await execa.command(`hdiutil attach -nobrowse -mountpoint ${overlay} ${tmpDmg}`),
         title: 'hdiutil attach',
       });
     }
