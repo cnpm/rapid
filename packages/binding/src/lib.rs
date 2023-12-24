@@ -45,6 +45,7 @@ struct JsDownloadOptions {
     pub entry_listener: Option<JsFunction>,
     pub retry_time: Option<u32>,
     pub toc_path: Option<JsTocPath>,
+    pub registries: Option<Vec<String>>,
 }
 
 #[napi(object)]
@@ -118,6 +119,12 @@ fn parse_download_options(
         None
     };
 
+    let registries = if let Some(registries) = options.registries.take() {
+        Some(registries)
+    } else {
+        None
+    };
+
     Ok(DownloadOptions {
         download_dir: options.download_dir,
         bucket_count: options.bucket_count as u8,
@@ -126,6 +133,7 @@ fn parse_download_options(
         entry_listener,
         retry_time: retry_time as u8,
         toc_path,
+        registries,
     })
 }
 
@@ -276,7 +284,11 @@ impl JsDownloader {
                 if self.inner.is_some() {
                     return Ok(());
                 }
-                let http_pool = HTTPPool::new(self.options.http_concurrent_count).map_err(|e| {
+                let http_pool = HTTPPool::new(
+                    self.options.http_concurrent_count,
+                    self.options.registries.clone(),
+                )
+                .map_err(|e| {
                     Error::new(
                         Status::FunctionExpected,
                         format!("create reqwester failed: {:?}", e),

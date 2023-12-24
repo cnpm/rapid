@@ -47,6 +47,7 @@ pub struct DownloadOptions {
     pub entry_listener: Option<EntryListener>,
     pub download_timeout: Duration,
     pub toc_path: Option<TocPath>,
+    pub registries: Option<Vec<String>>,
 }
 
 pub async fn download(
@@ -70,7 +71,7 @@ pub async fn download(
         entry_listener,
     )
     .await?;
-    let http_pool = HTTPPool::new(http_concurrent_count)?;
+    let http_pool = HTTPPool::new(http_concurrent_count, opts.registries)?;
     let toc_index_store = Arc::new(TocIndexStore::new());
     let mut downloader = Downloader::new(store, http_pool, toc_index_store.clone(), retry_time);
     downloader.batch_download(pkg_requests).await?;
@@ -110,6 +111,7 @@ mod test_downloader {
                 entry_listener: None,
                 retry_time: 1,
                 toc_path: None,
+                registries: None,
             },
         )
         .await

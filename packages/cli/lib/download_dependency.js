@@ -46,6 +46,7 @@ async function download(options) {
   const downloader = new Downloader({
     entryListener,
     productionMode: options.productionMode,
+    registries: options.registries,
   });
   await downloader.init();
 
