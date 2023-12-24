@@ -8,7 +8,6 @@ const { existsSync } = require('node:fs');
 const os = require('node:os');
 const url = require('node:url');
 const crypto = require('node:crypto');
-const { execSync } = require('node:child_process');
 const mapWorkspaces = require('@npmcli/map-workspaces');
 const fuse_t = require('./fuse_t');
 const { Spin } = require('./logger');
@@ -602,14 +601,28 @@ exports.readPkgJSON = async function readPkgJSON(cwd) {
 };
 
 exports.generatePackageLock = async cwd => {
+  let isExist = true;
   try {
     const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
-    const isExist = await fs.stat(lockPath).then(() => true).catch(() => false);
+    await await fs.stat(lockPath);
+  } catch {
+    isExist = false;
+  }
+  try {
     if (!isExist) {
       console.log('npm install --force --package-lock-only --ignore-scripts is running');
-      execSync('npm install --force --package-lock-only --ignore-scripts', {
+
+      const childProcess = execa('npm', [ 'install', '--force', '--package-lock-only', '--ignore-scripts' ], {
         cwd,
         stdio: 'inherit',
+      });
+
+      await new Promise((resolve, reject) => {
+        childProcess.then(resolve).catch(reject);
+
+        process.on('exit', () => {
+          childProcess.kill();
+        });
       });
     }
   } catch (e) {
