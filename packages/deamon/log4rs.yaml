@@ -1,0 +1,13 @@
+refresh_rate: 86400 seconds
+
+appenders:
+  file:
+    kind: file
+    path: "logs/rapid-deamon-output.log"
+    encoder:
+      pattern: "{d} - {l} - {m}{n}"
+
+root:
+  level: info
+  appenders:
+    - file
