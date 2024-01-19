@@ -1,5 +1,5 @@
 [package]
-name = "deamon"
+name = "rapid_deamon"
 version = "0.1.0"
 edition = "2021"
 
@@ -20,3 +20,4 @@ log = "0.4"
 log4rs = "1"
 axum = "0.4"
 hyper = "0.14"
+daemonize = "0.5"

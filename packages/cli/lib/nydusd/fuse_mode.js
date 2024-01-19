@@ -3,11 +3,13 @@
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const execa = require('execa');
 const {
   tarBucketsDir,
   unionfs,
   BOOTSTRAP_BIN,
+  socketPath,
 } = require('../constants');
 const {
   wrapSudo,
@@ -18,34 +20,62 @@ const {
 } = require('../util');
 const nydusdApi = require('./nydusd_api');
 const { Bar } = require('../logger');
+const { addProject, delProject, initDeamon } = require('../deamon');
+
+const getProjectName = cwd => {
+  const folderName = path.basename(cwd);
+  const hash = crypto.createHash('md5').update(folderName).digest('hex');
+  const hashedFolderName = `${folderName}_${hash}`;
+
+  return hashedFolderName;
+};
 
 async function startNydusFs(cwd, pkg) {
+  await initDeamon();
+
   await nydusdApi.initDaemon();
 
+  const deamonConfig = {
+    projectName: getProjectName(cwd),
+    projectPath: cwd,
+  };
+
   console.log('[rapid] generate bootstrap');
-  await generateBootstrapFile(cwd, pkg);
+  await generateBootstrapFile(cwd, pkg, deamonConfig);
 
   console.log('[rapid] mount nydusd');
-  await mountNydus(cwd, pkg);
+  await mountNydus(cwd, pkg, deamonConfig);
 
   console.log('[rapid] mount overlay, it may take a few seconds');
-  await mountOverlay(cwd, pkg);
+  await mountOverlay(cwd, pkg, deamonConfig);
+
+  await addProject(deamonConfig);
 }
 
-async function generateBootstrapFile(cwd, pkg) {
+async function generateBootstrapFile(cwd, pkg, config) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const bar = new Bar({ type: 'bootstrap', total: allPkgs.length });
+  const bootstraps = [];
   await Promise.all(allPkgs.map(async pkgPath => {
     const { bootstrap, tarIndex, nodeModulesDir } = await getWorkdir(cwd, pkgPath);
     await fs.mkdir(path.dirname(bootstrap), { recursive: true });
     await execa.command(`${BOOTSTRAP_BIN} --stargz-config-path=${tarIndex} --stargz-dir=${tarBucketsDir} --bootstrap=${bootstrap}`);
+    bootstraps.push({
+      bootstrapBin: BOOTSTRAP_BIN,
+      stargzConfigPath: tarIndex,
+      stargzDir: tarBucketsDir,
+      bootstrap,
+    });
     bar.update(nodeModulesDir);
   }));
   bar.stop();
+  config.bootstraps = bootstraps;
 }
 
-async function mountNydus(cwd, pkg) {
+async function mountNydus(cwd, pkg, config) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
+
+  const mounts = [];
 
   const bar = new Bar({
     type: 'mount',
@@ -56,17 +86,25 @@ async function mountNydus(cwd, pkg) {
   for (const pkgPath of allPkgs) {
     const { dirname, bootstrap } = await getWorkdir(cwd, pkgPath);
     await nydusdApi.mount(`/${dirname}`, cwd, bootstrap);
+    mounts.push({
+      mountpoint: dirname,
+      socketPath,
+      bootstrap,
+      nydusdConfig: nydusdApi.nydusdConfig,
+    });
     bar.update(dirname);
   }
   bar.stop();
+  config.nydusdApiMount = mounts;
 }
 
-async function mountOverlay(cwd, pkg) {
+async function mountOverlay(cwd, pkg, config) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const bar = new Bar({
     type: 'overlay',
     total: allPkgs.length,
   });
+  const overlays = [];
   await Promise.all(allPkgs.map(async pkgPath => {
     const {
       upper,
@@ -103,11 +141,17 @@ async function mountOverlay(cwd, pkg) {
     }
     await fs.mkdir(upper, { recursive: true });
     await fs.mkdir(workdir, { recursive: true });
-
+    let overlayConfig = {};
     let shScript = wrapSudo(`mount \
 -t overlay overlay \
 -o lowerdir=${mnt},upperdir=${upper},workdir=${workdir} \
 ${nodeModulesDir}`);
+    overlayConfig = {
+      workdir,
+      upper,
+      mnt,
+      nodeModulesDir,
+    };
 
     if (os.type() === 'Darwin') {
       shScript = `${unionfs} \
@@ -115,17 +159,26 @@ ${nodeModulesDir}`);
 -o allow_other,use_ino,suid,dev,nobrowse \
 ${upper}=RW:${mnt}=RO \
 ${nodeModulesDir}`;
+      overlayConfig = {
+        unionfs,
+        upper,
+        mnt,
+        nodeModulesDir,
+      };
     }
     // console.log('[rapid] mountOverlay: `%s`', shScript);
     await execa.command(shScript);
     bar.update(nodeModulesDir);
+    overlays.push(overlayConfig);
   }));
   bar.stop();
+  config.overlays = overlays;
 }
 
 async function endNydusFs(cwd, pkg, force = true) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const umountCmd = force ? 'umount -f' : 'umount';
+  await delProject(getProjectName(cwd));
   await Promise.all(allPkgs.map(async pkgPath => {
     const { dirname, overlay, baseDir, nodeModulesDir } = await getWorkdir(
       cwd,

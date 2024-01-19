@@ -27,6 +27,10 @@ console.log('root folder: ', rootFolder);
 const bootstrapBinPath = process.env.CARGO_BUILD_TARGET ? path.resolve(rootFolder, 'target', process.env.CARGO_BUILD_TARGET, 'release/bootstrap') : path.resolve(rootFolder, 'target/release/bootstrap');
 const targetBinPath = path.resolve(targetFolder, 'nydusd-bootstrap');
 
+
+const deamonBinPath = process.env.CARGO_BUILD_TARGET ? path.resolve(rootFolder, 'target', process.env.CARGO_BUILD_TARGET, 'release/rapid_deamon') : path.resolve(rootFolder, 'target/release/rapid_deamon');
+const targetDeamonBinPath = path.resolve(targetFolder, 'rapid_deamon');
+
 const nodeBindingPath = path.resolve(rootFolder, 'packages/binding/index.node');
 const targetNodeBindingPath = path.resolve(targetFolder, 'index.node');
 
@@ -34,6 +38,8 @@ const targetNodeBindingPath = path.resolve(targetFolder, 'index.node');
   try {
     console.log(`mv ${bootstrapBinPath} to ${targetBinPath}`);
     await fs.rename(bootstrapBinPath, targetBinPath);
+    console.log(`mv ${deamonBinPath} to ${targetDeamonBinPath}`);
+    await fs.rename(deamonBinPath, targetDeamonBinPath);
     console.log(`mv ${nodeBindingPath} to ${targetNodeBindingPath}`);
     await fs.rename(nodeBindingPath, targetNodeBindingPath);
   } catch (err) {

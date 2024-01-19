@@ -39,9 +39,9 @@ lazy_static! {
     static ref DAEMON_URL: String = format!("{}/daemon", END_POINT.to_string());
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "snake_case")]
-struct NydusdApiMount {
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct NydusdApiMount {
     mountpoint: String,
     socket_path: String,
     bootstrap: String,
@@ -85,9 +85,9 @@ impl NydusdApiMount {
     }
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "snake_case")]
-struct Overlay {
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct Overlay {
     unionfs: Option<String>,
     workdir: Option<String>,
     upper: String,
@@ -205,9 +205,9 @@ impl Overlay {
     }
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "snake_case")]
-struct Bootstrap {
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct Bootstrap {
     bootstrap_bin: String,
     stargz_config_path: String,
     stargz_dir: String,
@@ -245,27 +245,49 @@ impl Bootstrap {
     }
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct ProjectConfig {
     project_name: String,
     project_path: String,
-    bootstrap: Bootstrap,
+    bootstraps: Vec<Bootstrap>,
     nydusd_api_mount: Vec<NydusdApiMount>,
-    overlay: Overlay,
+    overlays: Vec<Overlay>,
 }
 
 impl ProjectConfig {
+    pub fn new(
+        project_path: String,
+        bootstraps: Vec<Bootstrap>,
+        nydusd_api_mount: Vec<NydusdApiMount>,
+        overlays: Vec<Overlay>,
+    ) -> Self {
+        Self {
+            project_name: project_path.clone(),
+            project_path,
+            bootstraps,
+            nydusd_api_mount,
+            overlays,
+        }
+    }
     pub fn get_project_path(&self) -> &str {
         return &self.project_path;
     }
 
     pub fn restart(&self) -> Result<Vec<u32>> {
-        self.bootstrap.restart()?;
+        for bootstrap in self.bootstraps.iter() {
+            bootstrap.restart()?;
+        }
         for mount in self.nydusd_api_mount.iter() {
             mount.restart()?;
         }
-        let pids = self.overlay.restart()?;
+
+        let mut pids = vec![];
+
+        for overlay in self.overlays.iter() {
+            let ps = overlay.restart()?;
+            pids.extend(ps);
+        }
 
         Ok(pids)
     }
@@ -309,7 +331,7 @@ async fn read_json_file(file_path: PathBuf) -> Result<ProjectConfig, Error> {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub struct NydusConfig {
     nydusd_bin: String,
     nydusd_config_file: String,

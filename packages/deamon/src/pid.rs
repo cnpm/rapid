@@ -11,7 +11,7 @@ use tokio::{
     time::{timeout, Duration},
 };
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ProjectInfo {
     pub config: ProjectConfig,
     pub pids: Vec<u32>,

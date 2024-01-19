@@ -589,6 +589,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "daemonize"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab8bfdaacb3c887a54d41bdf48d3af8873b3f5566469f8ba21b92057509f116e"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "darling"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -631,26 +640,6 @@ checksum = "e77a43b28d0668df09411cb0bc9a8c2adc40f9a048afe863e05fd43251e8e39c"
 dependencies = [
  "cfg-if 1.0.0",
  "num_cpus",
-]
-
-[[package]]
-name = "deamon"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "chrono",
- "futures",
- "homedir",
- "hyper 0.14.14",
- "lazy_static",
- "log",
- "log4rs",
- "nix 0.25.1",
- "regex",
- "serde",
- "serde_json",
- "tokio 1.29.1",
 ]
 
 [[package]]
@@ -2200,6 +2189,27 @@ dependencies = [
 [[package]]
 name = "rapid-rs"
 version = "0.1.0"
+
+[[package]]
+name = "rapid_deamon"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "chrono",
+ "daemonize",
+ "futures",
+ "homedir",
+ "hyper 0.14.14",
+ "lazy_static",
+ "log",
+ "log4rs",
+ "nix 0.25.1",
+ "regex",
+ "serde",
+ "serde_json",
+ "tokio 1.29.1",
+]
 
 [[package]]
 name = "redox_syscall"

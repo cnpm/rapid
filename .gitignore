@@ -117,3 +117,4 @@ packages/downloader/test/nginx.conf
 # napi-rs generate wrong type ignore for tmp
 packages/binding/index.d.ts
 .DS_Store
+package-lock.json

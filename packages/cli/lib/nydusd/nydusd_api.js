@@ -235,3 +235,4 @@ exports.exitDaemon = exitDaemon;
 exports.forceExitDaemon = forceExitDaemon;
 exports.isDaemonRunning = isDaemonRunning;
 exports.list = list;
+exports.nydusdConfig = nydusdConfig;

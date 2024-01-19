@@ -1,6 +1,7 @@
 use anyhow::Result;
 use log::info;
 use regex::Regex;
+use std::fs::File;
 use std::io;
 use std::process::{Command, Output};
 
@@ -48,6 +49,17 @@ pub fn start_command(comm: &str) -> io::Result<Output> {
         _ => (),
     };
     command.output()
+}
+
+pub fn check_and_create_file(file_path: &str) -> io::Result<File> {
+    if !std::path::Path::new(file_path).exists() {
+        let file = File::create(file_path)?;
+
+        return Ok(file);
+    } else {
+        let file = File::open(file_path)?;
+        return Ok(file);
+    }
 }
 
 #[cfg(test)]
