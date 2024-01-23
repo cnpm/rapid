@@ -32,12 +32,17 @@ const argv = yargs
           describe: 'Dependency types to omit from the installation tree on disk',
           type: 'array',
           default: [],
+        })
+        .option('ignore-deamon', {
+          describe: 'Will not run deamon',
+          type: 'boolean',
         });
     },
     handler: async argv => {
       const ignoreScripts = argv['ignore-scripts'];
       const mode = argv.by || NpmFsMode.NPM;
       const productionMode = argv.production || argv.omit.includes('dev') || process.env.NODE_ENV === 'production';
+      const ignoreDeamon = argv['ignore-deamon'];
 
       const cwd = process.cwd();
       const pkgRes = await util.readPkgJSON();
@@ -57,6 +62,7 @@ const argv = yargs
         nydusMode: NYDUS_TYPE.FUSE,
         ignoreScripts,
         productionMode,
+        ignoreDeamon,
       });
 
       Alert.success('🚀 Success', [
@@ -72,9 +78,17 @@ const argv = yargs
     command: 'clean [path]',
     aliases: [ 'c', 'unmount', 'uninstall' ],
     describe: 'Clean up the project',
+    builder: yargs => {
+      return yargs
+        .option('ignore-deamon', {
+          describe: 'Will not run deamon',
+          type: 'boolean',
+        });
+    },
     handler: async argv => {
       const cwd = argv.path || process.cwd();
-      await clean({ nydusMode: NYDUS_TYPE.FUSE, cwd, force: true });
+      const ignoreDeamon = argv['ignore-deamon'];
+      await clean({ nydusMode: NYDUS_TYPE.FUSE, cwd, force: true, ignoreDeamon });
       console.log('[rapid] clean finished');
     },
   })

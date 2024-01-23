@@ -30,10 +30,12 @@ const getProjectName = cwd => {
   return hashedFolderName;
 };
 
-async function startNydusFs(cwd, pkg) {
-  await initDeamon();
-
+async function startNydusFs(cwd, pkg, ignoreDeamon) {
   await nydusdApi.initDaemon();
+
+  if (!ignoreDeamon) {
+    await initDeamon();
+  }
 
   const deamonConfig = {
     projectName: getProjectName(cwd),
@@ -49,7 +51,9 @@ async function startNydusFs(cwd, pkg) {
   console.log('[rapid] mount overlay, it may take a few seconds');
   await mountOverlay(cwd, pkg, deamonConfig);
 
-  await addProject(deamonConfig);
+  if (!ignoreDeamon) {
+    await addProject(deamonConfig);
+  }
 }
 
 async function generateBootstrapFile(cwd, pkg, config) {
@@ -87,10 +91,10 @@ async function mountNydus(cwd, pkg, config) {
     const { dirname, bootstrap } = await getWorkdir(cwd, pkgPath);
     await nydusdApi.mount(`/${dirname}`, cwd, bootstrap);
     mounts.push({
-      mountpoint: dirname,
+      mountpoint: `/${dirname}`,
       socketPath,
       bootstrap,
-      nydusdConfig: nydusdApi.nydusdConfig,
+      nydusdConfig: JSON.parse(nydusdApi.nydusdConfig),
     });
     bar.update(dirname);
   }
@@ -151,6 +155,8 @@ ${nodeModulesDir}`);
       upper,
       mnt,
       nodeModulesDir,
+      tmpDmg,
+      overlay,
     };
 
     if (os.type() === 'Darwin') {
@@ -164,6 +170,8 @@ ${nodeModulesDir}`;
         upper,
         mnt,
         nodeModulesDir,
+        tmpDmg,
+        overlay,
       };
     }
     // console.log('[rapid] mountOverlay: `%s`', shScript);
@@ -175,10 +183,12 @@ ${nodeModulesDir}`;
   config.overlays = overlays;
 }
 
-async function endNydusFs(cwd, pkg, force = true) {
+async function endNydusFs(cwd, pkg, force = true, ignoreDeamon) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const umountCmd = force ? 'umount -f' : 'umount';
-  await delProject(getProjectName(cwd));
+  if (!ignoreDeamon) {
+    await delProject(getProjectName(cwd));
+  }
   await Promise.all(allPkgs.map(async pkgPath => {
     const { dirname, overlay, baseDir, nodeModulesDir } = await getWorkdir(
       cwd,

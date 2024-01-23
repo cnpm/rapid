@@ -3,19 +3,17 @@ const AutoLaunch = require('auto-launch');
 const path = require('node:path');
 const fs = require('node:fs/promises');
 const { chmodSync } = require('node:fs');
+const { rsBindingPath } = require('@cnpmjs/binding');
+const execa = require('execa');
+
 const {
-  rsBindingPath,
+  baseRapidModeDir,
   nydusd,
   nydusdConfigFile,
   nydusdMnt,
   socketPath,
   nydusdLogFile,
-} = require('@cnpmjs/binding');
-const execa = require('execa');
-
-const {
-  baseRapidModeDir,
-} = require('../constants');
+} = require('./constants');
 
 const deamonDir = path.join(baseRapidModeDir(), 'project');
 
@@ -24,6 +22,9 @@ const metadataDir = path.join(deamonDir, 'metadata');
 const rapidDeamon = rsBindingPath
   ? path.join(rsBindingPath, 'rapid_deamon')
   : undefined;
+
+
+const destinationFilePath = path.join(deamonDir, 'rapid_deamon');
 
 const daemonPoint = 'http://localhost:33889';
 const aliveUrl = `${daemonPoint}/alive`;
@@ -49,7 +50,7 @@ const delProject = async projectName => {
     const configBuffer = await fs.readFile(configPath);
 
     config = JSON.parse(configBuffer.toString());
-    await fs.rm(`${projectName}.json`);
+    await fs.rm(`${configPath}`);
   } catch (_) {
     return true;
   }
@@ -58,6 +59,8 @@ const delProject = async projectName => {
     const result = await urllib.request(`${delUrl}`, {
       method: 'POST',
       data: { projectPath: config.projectPath },
+      dataType: 'json',
+      contentType: 'json',
     });
     return result.status === 200;
   } catch (_) {
@@ -72,11 +75,39 @@ const addProject = async config => {
     const result = await urllib.request(`${addUrl}`, {
       method: 'POST',
       data: config,
+      dataType: 'json',
+      contentType: 'json',
     });
     return result.status === 200;
   } catch (_) {
     return false;
   }
+};
+
+const runDeamon = async () => {
+  const deamon = execa(destinationFilePath, [], {
+    detached: true,
+    stdio: [ 'ignore', 'pipe', 'pipe' ],
+  });
+  await new Promise((resolve, reject) => {
+    let output = '';
+
+    const expectedMain = 'deamon main is ready';
+
+    const expectedServer = 'deamon server is ready';
+
+    deamon.stdout.on('data', data => {
+      output += data.toString();
+
+      if (output.includes(expectedMain) && output.includes(expectedServer)) {
+        resolve();
+      }
+    });
+
+    deamon.catch(e => {
+      reject(e);
+    });
+  });
 };
 
 const initDeamon = async () => {
@@ -89,13 +120,10 @@ const initDeamon = async () => {
 
   await fs.mkdir(nydusdMnt, { recursive: true });
 
-  const destinationFilePath = path.join(deamonDir, 'rapid_deamon');
-
   try {
     await fs.stat(destinationFilePath);
-    await execa.command(destinationFilePath);
-  } catch (_) {
-
+    await runDeamon();
+  } catch (e) {
     const nydusConfigPath = path.join(deamonDir, 'nydus_config.json');
 
     await fs.writeFile(nydusConfigPath, JSON.stringify({
@@ -114,7 +142,7 @@ const initDeamon = async () => {
   appenders:
     file:
       kind: file
-      path: "logs/rapid-deamon-output.log"
+      path: "${path.join(deamonDir, '/logs/rapid-deamon-output.log')}"
       encoder:
         pattern: "{d} - {l} - {m}{n}"
   
@@ -123,10 +151,9 @@ const initDeamon = async () => {
     appenders:
       - file
     `);
-
     await fs.copyFile(rapidDeamon, destinationFilePath);
 
-    chmodSync(destinationFilePath, '755');
+    chmodSync(destinationFilePath, '777');
 
     const deamonAutoLauncher = new AutoLaunch({
       name: 'rapid_deamon',
@@ -144,6 +171,8 @@ const initDeamon = async () => {
       deamonAutoLauncher.enable();
     } catch (e) {
       console.log(e);
+    } finally {
+      await runDeamon();
     }
   }
 };

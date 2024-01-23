@@ -12,9 +12,9 @@ pub fn get_ps_snapshot() -> Result<String> {
     Ok(ps_output_str)
 }
 
-pub async fn create_folder_if_not_exists(folder_path: &str) -> Result<()> {
-    if !tokio::fs::metadata(folder_path).await.is_ok() {
-        tokio::fs::create_dir_all(folder_path).await?;
+pub fn create_folder_if_not_exists(folder_path: &str) -> Result<()> {
+    if !std::fs::metadata(folder_path).is_ok() {
+        std::fs::create_dir_all(folder_path)?;
         info!("Folder created: {}", folder_path);
     } else {
         info!("Folder already exists: {}", folder_path);

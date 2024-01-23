@@ -1,133 +1,122 @@
 use std::{collections::BTreeMap, sync::Arc};
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use axum::{
+    extract::State,
+    http::StatusCode,
+    response::Json,
     routing::{get, post},
     Router,
 };
-use hyper::{Body, Request, Response};
-use log::{error, info};
-use serde::Deserialize;
-use std::convert::Infallible;
+use log::info;
+use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 
 use crate::{
     config::ProjectConfig,
-    pid::{init_project, ProjectInfo},
+    pid::{add_project, ProjectInfo},
 };
 
+#[derive(Serialize, Deserialize)]
+struct Res {
+    code: i32,
+    msg: String,
+}
+
 async fn handle_add(
-    req: Request<Body>,
-    project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>,
-) -> Result<Response<Body>, Infallible> {
-    if req.uri().path() == "/add-project" && req.method() == hyper::Method::POST {
-        let body_bytes = hyper::body::to_bytes(req.into_body()).await.unwrap();
-        let body_str = String::from_utf8_lossy(&body_bytes);
-
-        let config: ProjectConfig = serde_json::from_str(&body_str.to_string()).unwrap();
-
-        info!("handle add project path is {}", config.get_project_path());
-
-        match init_project(config, project_tree).await {
-            Ok(_) => Ok(Response::builder()
-                .status(200)
-                .body(Body::from("add project config success!"))
-                .unwrap()),
-            Err(e) => Ok(Response::builder()
-                .status(200)
-                .body(Body::from(format!(
-                    "add project config fail, err is {:?}",
-                    e
-                )))
-                .unwrap()),
-        }
-    } else {
-        Ok(Response::builder()
-            .status(404)
-            .body(Body::from("add project config fail"))
-            .unwrap())
+    State(project_tree): State<Arc<Mutex<BTreeMap<String, ProjectInfo>>>>,
+    Json(config): Json<ProjectConfig>,
+) -> Result<Json<Res>, (StatusCode, String)> {
+    let path = config.get_project_path().to_string();
+    info!("handle add project path is {}", path);
+    match add_project(config, project_tree).await {
+        Ok(_) => Ok(Json(Res {
+            code: 0,
+            msg: format!("add project {} config success!", path),
+        })),
+        Err(e) => Ok(Json(Res {
+            code: -1,
+            msg: format!("add project {} config fail, err is {:?}", path, e),
+        })),
     }
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 #[serde(rename_all = "camelCase")]
 pub struct DelReq {
     project_path: String,
 }
 
 async fn handle_del(
-    req: Request<Body>,
-    project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>,
-) -> Result<Response<Body>, Infallible> {
-    if req.uri().path() == "/del-project" && req.method() == hyper::Method::POST {
-        let body_bytes = hyper::body::to_bytes(req.into_body()).await.unwrap();
-        let body_str = String::from_utf8_lossy(&body_bytes);
+    State(project_tree): State<Arc<Mutex<BTreeMap<String, ProjectInfo>>>>,
+    Json(request): Json<DelReq>,
+) -> Result<Json<Res>, (StatusCode, String)> {
+    let mut project_tree = project_tree.lock().await;
 
-        let request: DelReq = serde_json::from_str(&body_str.to_string()).unwrap();
-
-        info!("handle del project path is {}", request.project_path);
-
-        let mut project_tree = project_tree.lock().await;
-
-        if let Some(mut project) = project_tree.remove(&request.project_path) {
-            project.kill_pids();
-        }
-
-        Ok(Response::builder()
-            .status(200)
-            .body(Body::from("del project config success!"))
-            .unwrap())
-    } else {
-        Ok(Response::builder()
-            .status(404)
-            .body(Body::from("del project config fail"))
-            .unwrap())
+    info!("handle del project path is {}", request.project_path);
+    if let Some(mut project) = project_tree.remove(&request.project_path) {
+        project.kill_pids();
     }
+
+    Ok(Json(Res {
+        code: 0,
+        msg: format!("del project {} config success!", request.project_path),
+    }))
 }
 
-async fn handle_alive(req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    if req.uri().path() == "/alive" && req.method() == hyper::Method::GET {
-        Ok(Response::builder()
-            .status(200)
-            .body(Body::from("deamon is alive"))
-            .unwrap())
-    } else {
-        Ok(Response::builder()
-            .status(404)
-            .body(Body::from("deamon is alive"))
-            .unwrap())
-    }
+async fn handle_alive() -> Result<Json<Res>, (StatusCode, String)> {
+    info!("echo alive");
+    Ok(Json(Res {
+        code: 0,
+        msg: format!("deamon is alive"),
+    }))
+}
+
+fn app(project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>) -> Router {
+    Router::new()
+        .route("/add-project", post(handle_add))
+        .route("/del-project", post(handle_del))
+        .route("/alive", get(handle_alive))
+        .with_state(Arc::clone(&project_tree))
 }
 
 pub async fn start_server(project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>) {
-    let app = {
-        let project_tree = project_tree.clone();
-        Router::new().route(
-            "/add-project",
-            post(move |req| handle_add(req, project_tree)),
-        )
-    };
-    let app = {
-        let project_tree = project_tree.clone();
-        app.route(
-            "/del-project",
-            post(move |req| handle_del(req, project_tree)),
-        )
-        .route("/alive", get(move |req| handle_alive(req)))
-    };
+    let app = app(project_tree);
 
-    axum::Server::bind(&"0.0.0.0:33889".parse().unwrap())
-        .serve(app.into_make_service())
-        .await
-        .expect("Server failed");
+    let mut port = 33889;
+
+    const MAX_RETRIES: usize = 100;
+    let mut retry_count = 0;
+
+    loop {
+        match tokio::net::TcpListener::bind(format!("127.0.0.1:{}", port)).await {
+            Ok(listener) => {
+                info!("deamon server is ready on port {}", port);
+                axum::serve(listener, app).await.expect("Server failed");
+                break;
+            }
+            Err(_) => {
+                info!("Port {} is already in use, trying the next one", port);
+                port += 1;
+                retry_count += 1;
+                if retry_count >= MAX_RETRIES {
+                    panic!("Exceeded maximum retry limit");
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod test {
-
-    use hyper::{body::to_bytes, StatusCode};
-
     use super::*;
+    use axum::{
+        body::Body,
+        http::{self, Request, StatusCode},
+    };
+    use http_body_util::BodyExt;
+    use tower::ServiceExt;
 
     async fn create_mock_tree() -> Arc<Mutex<BTreeMap<String, ProjectInfo>>> {
         let mut tree = BTreeMap::new();
@@ -156,14 +145,20 @@ mod test {
             "mock_project"
         );
         drop(tree_config);
-        let request = Request::builder()
-            .method("POST")
-            .uri("/del-project")
-            .header("Content-Type", "application/json")
-            .body(Body::from(r#"{"projectPath":"mock_project"}"#))
-            .unwrap();
 
-        let response = handle_del(request, tree.clone()).await.unwrap();
+        let app = app(tree.clone());
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method(http::Method::POST)
+                    .uri("/del-project")
+                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+                    .body(Body::from(r#"{"projectPath":"mock_project"}"#))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         let tree_config = tree.lock().await;
 
@@ -173,35 +168,46 @@ mod test {
     #[tokio::test]
     async fn test_handle_add() {
         let tree = create_mock_tree().await;
-        let request = Request::builder()
-            .method("POST")
-            .uri("/add-project")
-            .header("Content-Type", "application/json")
-            .body(Body::from(r#"{"projectName":"mock_project","projectPath":"test_project","bootstraps":[],"nydusdApiMount":[],"overlays":[]}"#))
-            .unwrap();
 
-        let response = handle_add(request, tree.clone()).await.unwrap();
+        let app = app(tree.clone());
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method(http::Method::POST)
+                    .uri("/add-project")
+                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+                    .body(Body::from(r#"{"projectName":"mock_project","projectPath":"test_project","bootstraps":[],"nydusdApiMount":[],"overlays":[]}"#))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        let binding = to_bytes(response.into_body()).await.unwrap();
-        let body = String::from_utf8_lossy(&binding);
-        assert_eq!(
-            body.to_string(),
-            r#"add project config success!"#.to_string()
-        );
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let body: Res = serde_json::from_slice(&body).unwrap();
+        assert_eq!(body.code, 0);
     }
 
     #[tokio::test]
     async fn test_handle_alive() {
-        let request = Request::builder()
-            .method("GET")
-            .uri("/alive")
-            .body(Body::from(""))
+        let tree = create_mock_tree().await;
+
+        let app = app(tree.clone());
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method(http::Method::GET)
+                    .uri("/alive")
+                    .body(Body::from(""))
+                    .unwrap(),
+            )
+            .await
             .unwrap();
 
-        let response = handle_alive(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        let binding = to_bytes(response.into_body()).await.unwrap();
-        let body = String::from_utf8_lossy(&binding);
-        assert_eq!(body.to_string(), r#"deamon is alive"#.to_string());
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let body: Res = serde_json::from_slice(&body).unwrap();
+        assert_eq!(body.code, 0);
     }
 }
