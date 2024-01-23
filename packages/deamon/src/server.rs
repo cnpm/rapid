@@ -85,7 +85,6 @@ async fn handle_kill(
 ) -> Result<Json<Res>, (StatusCode, String)> {
     info!("echo kill");
     let state = state.lock().await;
-    kill_projects(state.project_tree.clone()).await;
     let _ = state.sender.send(0).await;
     Ok(Json(Res {
         code: 0,
