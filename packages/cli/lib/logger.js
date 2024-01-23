@@ -102,6 +102,7 @@ class Alert {
     message = this.formatMessage(message);
     if (!isTTY) {
       console.log(message);
+      return;
     }
     const boxedMessage = boxen(message, {
       padding: 1,
