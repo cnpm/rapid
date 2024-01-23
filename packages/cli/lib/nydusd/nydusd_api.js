@@ -16,6 +16,7 @@ const {
   tarBucketsDir,
 } = require('../constants');
 const { wrapSudo, getWorkdir } = require('../util');
+const { killDeamon } = require('../deamon');
 
 // see all APIs at: https://github.com/dragonflyoss/image-service/blob/master/api/openapi/nydus-rs.yaml
 const endpoint = 'http://unix/api/v1';
@@ -155,6 +156,7 @@ async function exitDaemon() {
 // 强制杀掉进程
 async function forceExitDaemon() {
   try {
+    await killDeamon();
     await execa.command(`umount -f ${nydusdMnt}`);
     await execa.command('killall -9 nydusd');
   } catch (e) {

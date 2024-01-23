@@ -6,6 +6,7 @@ use config::{process_json_files_in_folder, NydusConfig};
 use homedir::get_my_home;
 use pid::{check_projects, init_projects};
 use server::start_server;
+use tokio::{select, sync::mpsc};
 use utils::create_folder_if_not_exists;
 
 mod config;
@@ -58,20 +59,28 @@ async fn main() {
 
     let project_tree = init_projects(configs).await.unwrap();
 
+    let (sender, mut receiver) = mpsc::channel::<usize>(1);
+
     {
         let project_tree = project_tree.clone();
         std::thread::spawn(move || {
             tokio::runtime::Runtime::new()
                 .unwrap()
-                .block_on(start_server(project_tree.clone()));
+                .block_on(start_server(project_tree.clone(), sender));
         });
     }
 
     println!("deamon main is ready");
 
     loop {
-        let _ = nydus.init_daemon();
-        let _ = check_projects(project_tree.clone()).await;
-        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        select! {
+            _ = receiver.recv() => {
+                return;
+            }
+            _ = tokio::time::sleep(tokio::time::Duration::from_secs(5)) => {
+                let _ = nydus.init_daemon();
+                let _ = check_projects(project_tree.clone()).await;
+            }
+        }
     }
 }

@@ -28,6 +28,7 @@ const destinationFilePath = path.join(deamonDir, 'rapid_deamon');
 
 const daemonPoint = 'http://localhost:33889';
 const aliveUrl = `${daemonPoint}/alive`;
+const killUrl = `${daemonPoint}/kill`;
 const delUrl = `${daemonPoint}/del-project`;
 const addUrl = `${daemonPoint}/add-project`;
 
@@ -110,6 +111,17 @@ const runDeamon = async () => {
   });
 };
 
+const killDeamon = async () => {
+  try {
+    const result = await urllib.request(`${killUrl}`, {
+      method: 'GET',
+    });
+    return result.status === 200;
+  } catch (_) {
+    return false;
+  }
+};
+
 const initDeamon = async () => {
   const isRunning = await checkDeamonAlive();
   if (isRunning) {
@@ -180,3 +192,4 @@ const initDeamon = async () => {
 exports.initDeamon = initDeamon;
 exports.delProject = delProject;
 exports.addProject = addProject;
+exports.killDeamon = killDeamon;

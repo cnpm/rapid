@@ -79,6 +79,14 @@ pub async fn init_projects(
     Ok(lock_map)
 }
 
+pub async fn kill_projects(process_map: Arc<Mutex<BTreeMap<String, ProjectInfo>>>) {
+    let mut map = process_map.lock().await;
+
+    for (_, info) in map.iter_mut() {
+        info.kill_pids();
+    }
+}
+
 pub async fn init_project(
     project: ProjectConfig,
     process_map: Arc<Mutex<BTreeMap<String, ProjectInfo>>>,

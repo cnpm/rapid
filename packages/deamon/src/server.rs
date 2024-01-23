@@ -10,11 +10,11 @@ use axum::{
 };
 use log::info;
 use serde::{Deserialize, Serialize};
-use tokio::sync::Mutex;
+use tokio::sync::{mpsc::Sender, Mutex};
 
 use crate::{
     config::ProjectConfig,
-    pid::{add_project, ProjectInfo},
+    pid::{add_project, kill_projects, ProjectInfo},
 };
 
 #[derive(Serialize, Deserialize)]
@@ -23,13 +23,19 @@ struct Res {
     msg: String,
 }
 
+struct RouteState {
+    pub project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>,
+    pub sender: Sender<usize>,
+}
+
 async fn handle_add(
-    State(project_tree): State<Arc<Mutex<BTreeMap<String, ProjectInfo>>>>,
+    State(state): State<Arc<Mutex<RouteState>>>,
     Json(config): Json<ProjectConfig>,
 ) -> Result<Json<Res>, (StatusCode, String)> {
     let path = config.get_project_path().to_string();
+    let state = state.lock().await;
     info!("handle add project path is {}", path);
-    match add_project(config, project_tree).await {
+    match add_project(config, state.project_tree.clone()).await {
         Ok(_) => Ok(Json(Res {
             code: 0,
             msg: format!("add project {} config success!", path),
@@ -49,10 +55,11 @@ pub struct DelReq {
 }
 
 async fn handle_del(
-    State(project_tree): State<Arc<Mutex<BTreeMap<String, ProjectInfo>>>>,
+    State(state): State<Arc<Mutex<RouteState>>>,
     Json(request): Json<DelReq>,
 ) -> Result<Json<Res>, (StatusCode, String)> {
-    let mut project_tree = project_tree.lock().await;
+    let state = state.lock().await;
+    let mut project_tree = state.project_tree.lock().await;
 
     info!("handle del project path is {}", request.project_path);
     if let Some(mut project) = project_tree.remove(&request.project_path) {
@@ -73,28 +80,48 @@ async fn handle_alive() -> Result<Json<Res>, (StatusCode, String)> {
     }))
 }
 
-fn app(project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>) -> Router {
+async fn handle_kill(
+    State(state): State<Arc<Mutex<RouteState>>>,
+) -> Result<Json<Res>, (StatusCode, String)> {
+    info!("echo kill");
+    let state = state.lock().await;
+    kill_projects(state.project_tree.clone()).await;
+    let _ = state.sender.send(0).await;
+    Ok(Json(Res {
+        code: 0,
+        msg: format!("deamon is alive"),
+    }))
+}
+
+fn app(project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>, sender: Sender<usize>) -> Router {
+    let state = RouteState {
+        project_tree,
+        sender,
+    };
     Router::new()
         .route("/add-project", post(handle_add))
         .route("/del-project", post(handle_del))
         .route("/alive", get(handle_alive))
-        .with_state(Arc::clone(&project_tree))
+        .route("/kill", get(handle_kill))
+        .with_state(Arc::new(Mutex::new(state)))
 }
 
-pub async fn start_server(project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>) {
-    let app = app(project_tree);
+pub async fn start_server(
+    project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>,
+    sender: Sender<usize>,
+) {
+    let app = app(project_tree, sender);
 
     let mut port = 33889;
 
     const MAX_RETRIES: usize = 100;
     let mut retry_count = 0;
 
-    loop {
+    let listener = loop {
         match tokio::net::TcpListener::bind(format!("127.0.0.1:{}", port)).await {
             Ok(listener) => {
                 info!("deamon server is ready on port {}", port);
-                axum::serve(listener, app).await.expect("Server failed");
-                break;
+                break listener;
             }
             Err(_) => {
                 info!("Port {} is already in use, trying the next one", port);
@@ -105,7 +132,11 @@ pub async fn start_server(project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>
                 }
             }
         }
-    }
+    };
+
+    println!("deamon server is ready");
+
+    axum::serve(listener, app).await.expect("Server failed");
 }
 
 #[cfg(test)]
@@ -117,6 +148,8 @@ mod test {
     };
     use http_body_util::BodyExt;
     use tower::ServiceExt;
+
+    use tokio::sync::mpsc;
 
     async fn create_mock_tree() -> Arc<Mutex<BTreeMap<String, ProjectInfo>>> {
         let mut tree = BTreeMap::new();
@@ -146,7 +179,8 @@ mod test {
         );
         drop(tree_config);
 
-        let app = app(tree.clone());
+        let (sender, _) = mpsc::channel::<usize>(1);
+        let app = app(tree.clone(), sender);
 
         let response = app
             .oneshot(
@@ -169,7 +203,8 @@ mod test {
     async fn test_handle_add() {
         let tree = create_mock_tree().await;
 
-        let app = app(tree.clone());
+        let (sender, _) = mpsc::channel::<usize>(1);
+        let app = app(tree.clone(), sender);
 
         let response = app
             .oneshot(
@@ -192,7 +227,8 @@ mod test {
     async fn test_handle_alive() {
         let tree = create_mock_tree().await;
 
-        let app = app(tree.clone());
+        let (sender, _) = mpsc::channel::<usize>(1);
+        let app = app(tree.clone(), sender);
 
         let response = app
             .oneshot(
@@ -209,5 +245,31 @@ mod test {
         let body = response.into_body().collect().await.unwrap().to_bytes();
         let body: Res = serde_json::from_slice(&body).unwrap();
         assert_eq!(body.code, 0);
+    }
+
+    #[tokio::test]
+    async fn test_handle_kill() {
+        let tree = create_mock_tree().await;
+
+        let (sender, mut receiver) = mpsc::channel::<usize>(1);
+        let app = app(tree.clone(), sender);
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method(http::Method::GET)
+                    .uri("/kill")
+                    .body(Body::from(""))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let body: Res = serde_json::from_slice(&body).unwrap();
+        assert_eq!(body.code, 0);
+        let msg = receiver.recv().await.unwrap();
+        assert_eq!(msg, 0);
     }
 }
