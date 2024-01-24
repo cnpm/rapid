@@ -6,10 +6,9 @@ const assert = require('node:assert');
 const coffee = require('coffee');
 const semver = require('semver');
 const execa = require('execa');
-const util = require('node:util');
-const exec = util.promisify(require('node:child_process').exec);
-const { execSync } = require('node:child_process');
+const { setTimeout } = require('node:timers/promises');
 const rapid = path.join(__dirname, '../node_modules/.bin/rapid');
+const { Pids } = require(path.join(__dirname, './fixtures/utils/pids'));
 const {
   clean,
 } = require('@cnpmjs/rapid');
@@ -17,58 +16,6 @@ const {
   exitDaemon,
   forceExitDaemon,
 } = require('@cnpmjs/rapid/lib/nydusd/nydusd_api');
-
-
-class Pids {
-  constructor(nodeModulesDir) {
-    this.nodeModulesDir = nodeModulesDir;
-  }
-
-  async getPsSnapshot() {
-    try {
-      const { stdout } = await exec('ps aux');
-      return stdout;
-    } catch (error) {
-      throw new Error(`Failed to execute 'ps aux': ${error.message}`);
-    }
-  }
-
-  async getPids() {
-    const pids = [];
-
-    try {
-      const snapshot = await this.getPsSnapshot();
-
-      const overlayPattern = new RegExp(`overlay.*?${this.nodeModulesDir}`, 'i');
-      const nfsPattern = new RegExp(
-        `/usr/local/bin/go-nfsv4.*?${this.nodeModulesDir}`, 'i'
-      );
-
-      snapshot.split('\n').forEach(line => {
-        if (overlayPattern.test(line)) {
-          const fields = line.split(/\s+/);
-          if (fields.length >= 11) {
-            const pid = parseInt(fields[1], 10) || 0;
-            pids.push(pid);
-          }
-        }
-
-        if (nfsPattern.test(line)) {
-          const fields = line.split(/\s+/);
-          if (fields.length >= 11) {
-            const pid = parseInt(fields[1], 10) || 0;
-            pids.push(pid);
-          }
-        }
-      });
-
-      return pids;
-    } catch (error) {
-      console.log(error);
-      throw new Error(`Failed to get PIDs: ${error.message}`);
-    }
-  }
-}
 
 describe('test/index.v2.test.js', () => {
   let cwd;
@@ -203,44 +150,6 @@ describe('test/index.v2.test.js', () => {
     assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
   });
 
-  it('deamon should working', async () => {
-    cwd = path.join(__dirname, './fixtures/esbuild');
-    await coffee
-      .fork(rapid, [
-        'install',
-        '--ignore-scripts',
-      ], {
-        cwd,
-      })
-      .debug()
-      .expect('code', 0)
-      .end();
-
-    const dirs = await fs.readdir(path.join(cwd, 'node_modules'));
-    assert.strictEqual(dirs.filter(dir => dir.includes('esbuild')).length, 2);
-    await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/esbuild')));
-    assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
-
-
-    const pidsInstance = new Pids(dirs);
-    let pids = await pidsInstance.getPids();
-    assert(pids.length > 0);
-    pids.forEach(pid => {
-      try {
-        execSync(`kill -9 ${pid}`);
-      } catch (err) {
-        console.error(`Failed to kill process with PID ${pid}. Error: ${err.message}`);
-      }
-    });
-    await new Promise(resolve => {
-      setTimeout(() => {
-        resolve();
-      }, 10000);
-    });
-    pids = await pidsInstance.getPids();
-    assert(pids.length > 0);
-  });
-
   it('should install optional deps successfully use npminstall', async () => {
     cwd = path.join(__dirname, './fixtures/esbuild');
     await coffee
@@ -294,6 +203,42 @@ describe('test/index.v2.test.js', () => {
 
     const res = await execa.command('mount', { stdio: 'pipe' });
     assert(res.stdout.indexOf('integration/fixtures/esbuild/node_modules') === res.stdout.lastIndexOf('integration/fixtures/esbuild/node_modules'));
+  });
+
+
+  describe('deamon', async () => {
+    it('should work', async () => {
+      cwd = path.join(__dirname, './fixtures/esbuild');
+      await coffee
+        .fork(rapid, [
+          'install',
+          '--ignore-scripts',
+        ], {
+          cwd,
+        })
+        .debug()
+        .expect('code', 0)
+        .end();
+
+      const dirs = await fs.readdir(path.join(cwd, 'node_modules'));
+      assert.strictEqual(dirs.filter(dir => dir.includes('esbuild')).length, 2);
+      await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/esbuild')));
+      assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
+
+      const pidsInstance = new Pids('esbuild/node_modules');
+      let pids = await pidsInstance.getPids();
+      assert(pids.length > 0);
+      for (const pid of pids) {
+        await execa.command(`kill -9 ${pid}`);
+      }
+      await new Promise(resolve => {
+        setTimeout(() => {
+          resolve();
+        }, 10000);
+      });
+      pids = await pidsInstance.getPids();
+      assert(pids.length > 0);
+    });
   });
 
 });

@@ -2330,6 +2330,7 @@ dependencies = [
  "http-body-util",
  "httparse",
  "hyper 0.14.14",
+ "hyper 1.1.0",
  "hyper-util",
  "hyperlocal",
  "lazy_static",

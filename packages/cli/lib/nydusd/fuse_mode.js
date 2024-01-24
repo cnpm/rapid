@@ -30,10 +30,10 @@ const getProjectName = cwd => {
   return hashedFolderName;
 };
 
-async function startNydusFs(cwd, pkg, ignoreDeamon) {
+async function startNydusFs(cwd, pkg, nodaemon) {
   await nydusdApi.initDaemon();
 
-  if (!ignoreDeamon) {
+  if (!nodaemon) {
     await initDeamon();
   }
 
@@ -51,7 +51,7 @@ async function startNydusFs(cwd, pkg, ignoreDeamon) {
   console.log('[rapid] mount overlay, it may take a few seconds');
   await mountOverlay(cwd, pkg, deamonConfig);
 
-  if (!ignoreDeamon) {
+  if (!nodaemon) {
     await addProject(deamonConfig);
   }
 }
@@ -183,10 +183,10 @@ ${nodeModulesDir}`;
   config.overlays = overlays;
 }
 
-async function endNydusFs(cwd, pkg, force = true, ignoreDeamon) {
+async function endNydusFs(cwd, pkg, force = true, nodaemon) {
   const allPkgs = await getAllPkgPaths(cwd, pkg);
   const umountCmd = force ? 'umount -f' : 'umount';
-  if (!ignoreDeamon) {
+  if (!nodaemon) {
     await delProject(getProjectName(cwd));
   }
   await Promise.all(allPkgs.map(async pkgPath => {

@@ -140,6 +140,7 @@ async function checkDaemon() {
 // 优雅退出 nydusd daemon
 async function exitDaemon() {
   try {
+    await killDeamon();
     await urllib.request(`${daemonUrl}/exit`, {
       method: 'PUT',
       socketPath,
@@ -166,6 +167,7 @@ async function forceExitDaemon() {
   }
 
   try {
+    await killDeamon();
     await execa.command('killall -9 nydusd');
   } catch (e) {
     // ignore, nydusd quits with error, but it's ok
