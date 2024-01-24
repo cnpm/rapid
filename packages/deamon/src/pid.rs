@@ -1,11 +1,12 @@
 use super::config::ProjectConfig;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use log::{debug, error, info};
 use nix::sys::signal::{self, Signal};
 use nix::unistd;
 use std::sync::Arc;
 use std::{collections::BTreeMap, process::Command};
 use tokio::{
+    fs::read_dir,
     sync::Mutex,
     time::{timeout, Duration},
 };
@@ -17,7 +18,7 @@ pub struct ProjectInfo {
 }
 
 impl ProjectInfo {
-    pub fn kill_pids(&mut self) {
+    pub fn kill_pids(&mut self) -> Result<()> {
         for pid in self.pids.iter() {
             info!(
                 "{:?} be killing, project path {}",
@@ -39,9 +40,11 @@ impl ProjectInfo {
         }
 
         self.pids = vec![];
+
+        Ok(())
     }
 
-    async fn restart(&mut self) {
+    async fn restart(&mut self) -> Result<()> {
         match self.config.restart().await {
             Ok(pids) => {
                 info!(
@@ -50,13 +53,14 @@ impl ProjectInfo {
                     pids
                 );
                 self.pids = pids;
+                return Ok(());
             }
             Err(err) => {
-                error!(
+                return Err(anyhow!(
                     "Failed to restart project path {}. Error: {:?}",
                     self.config.get_project_path(),
                     err
-                );
+                ));
             }
         };
     }
@@ -79,12 +83,14 @@ pub async fn init_projects(
     Ok(lock_map)
 }
 
-pub async fn kill_projects(process_map: Arc<Mutex<BTreeMap<String, ProjectInfo>>>) {
+pub async fn kill_projects(process_map: Arc<Mutex<BTreeMap<String, ProjectInfo>>>) -> Result<()> {
     let mut map = process_map.lock().await;
 
     for (_, info) in map.iter_mut() {
-        info.kill_pids();
+        info.kill_pids()?;
     }
+
+    Ok(())
 }
 
 pub async fn init_project(
@@ -125,7 +131,9 @@ pub async fn check_projects(process_map: Arc<Mutex<BTreeMap<String, ProjectInfo>
 
     for project in p_map.iter_mut() {
         info!("{:?} be checked", project.0);
-        let _ = check_project(project.1).await;
+        if let Err(e) = check_project(project.1).await {
+            error!("project {} err: {}", project.0, e);
+        }
     }
 
     Ok(())
@@ -137,12 +145,16 @@ async fn check_project(project: &mut ProjectInfo) -> Result<()> {
         project.config.get_project_path(),
         &project.pids
     );
+
+    #[cfg(target_os = "macos")]
     if (&project.pids).len() == 0 {
-        project.restart().await;
-    } else if !is_alive(&project.pids, project.config.get_project_path()).await {
+        project.restart().await?;
+        return Ok(());
+    }
+    if !is_alive(&project.pids, project.config.get_project_path()).await {
         info!("{:?} will be check", project.config.get_project_path());
-        project.kill_pids();
-        project.restart().await;
+        project.kill_pids()?;
+        project.restart().await?;
     }
 
     Ok(())
@@ -180,10 +192,14 @@ async fn is_alive(pids: &Vec<u32>, directory_path: &str) -> bool {
     }
 }
 
-async fn read_directory(path: &str) -> Result<Vec<std::fs::DirEntry>> {
-    let entries = std::fs::read_dir(path)?
-        .filter_map(|entry| entry.ok()) // Ignore potential errors
-        .collect();
+async fn read_directory(path: &str) -> Result<Vec<tokio::fs::DirEntry>> {
+    let mut dir = read_dir(path).await?;
+
+    let mut entries = vec![];
+
+    while let Some(entry) = dir.next_entry().await? {
+        entries.push(entry);
+    }
 
     Ok(entries)
 }

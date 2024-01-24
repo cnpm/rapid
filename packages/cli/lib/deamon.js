@@ -19,7 +19,7 @@ const deamonDir = path.join(baseRapidModeDir(), 'project');
 
 const metadataDir = path.join(deamonDir, 'metadata');
 
-// const deamonSocketPath = path.join(deamonDir, 'socket_path');
+const deamonSocketPath = path.join(deamonDir, 'socket_path');
 
 const rapidDeamon = rsBindingPath
   ? path.join(rsBindingPath, 'rapid_deamon')
@@ -38,7 +38,7 @@ const checkDeamonAlive = async () => {
   try {
     const result = await urllib.request(`${aliveUrl}`, {
       method: 'GET',
-      // socketPath: deamonSocketPath,
+      socketPath: deamonSocketPath,
       timeout: 1000,
     });
     return result.status === 200;
@@ -73,7 +73,7 @@ const delProject = async projectName => {
       data: { projectPath: config.projectPath },
       dataType: 'json',
       contentType: 'json',
-      // socketPath: deamonSocketPath,
+      socketPath: deamonSocketPath,
     });
     return result.status === 200 && result.data?.code === 0;
   } catch (error) {
@@ -91,7 +91,7 @@ const addProject = async config => {
       data: config,
       dataType: 'json',
       contentType: 'json',
-      // socketPath: deamonSocketPath,
+      socketPath: deamonSocketPath,
     });
     return result.status === 200 && result.data?.code === 0;
   } catch (_) {
@@ -124,7 +124,7 @@ const killDeamon = async () => {
   try {
     const result = await urllib.request(`${killUrl}`, {
       method: 'GET',
-      // socketPath: deamonSocketPath,
+      socketPath: deamonSocketPath,
     });
     return result.status === 200;
   } catch (_) {

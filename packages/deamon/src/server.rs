@@ -1,16 +1,25 @@
-use std::{collections::BTreeMap, sync::Arc};
+use std::{collections::BTreeMap, convert::Infallible, path::PathBuf, sync::Arc};
 
 use anyhow::Result;
 use axum::{
-    extract::State,
-    http::StatusCode,
+    extract::{connect_info, State},
+    http::{Request, StatusCode},
     response::Json,
     routing::{get, post},
     Router,
 };
-use log::info;
+use hyper_util::{
+    rt::{TokioExecutor, TokioIo},
+    server,
+};
+use hyper_v1::body::Incoming;
+use log::{error, info};
 use serde::{Deserialize, Serialize};
-use tokio::sync::{mpsc::Sender, Mutex};
+use tokio::{
+    net::{unix::UCred, UnixListener, UnixStream},
+    sync::{mpsc::Sender, Mutex},
+};
+use tower::Service;
 
 use crate::{
     config::ProjectConfig,
@@ -25,7 +34,7 @@ struct Res {
 
 struct RouteState {
     pub project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>,
-    pub sender: Sender<usize>,
+    pub sender: Arc<Mutex<Sender<usize>>>,
 }
 
 async fn handle_add(
@@ -63,7 +72,7 @@ async fn handle_del(
 
     info!("handle del project path is {}", request.project_path);
     if let Some(mut project) = project_tree.remove(&request.project_path) {
-        project.kill_pids();
+        // project.kill_pids();
     }
 
     Ok(Json(Res {
@@ -85,14 +94,23 @@ async fn handle_kill(
 ) -> Result<Json<Res>, (StatusCode, String)> {
     info!("echo kill");
     let state = state.lock().await;
-    let _ = state.sender.send(0).await;
-    Ok(Json(Res {
-        code: 0,
-        msg: format!("deamon is alive"),
-    }))
+    let sender = state.sender.lock().await;
+    match sender.send(0).await {
+        Ok(_) => Ok(Json(Res {
+            code: 0,
+            msg: format!("deamon be killed"),
+        })),
+        Err(e) => Ok(Json(Res {
+            code: -1,
+            msg: format!("deamon kill err {:?}", e),
+        })),
+    }
 }
 
-fn app(project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>, sender: Sender<usize>) -> Router {
+fn app(
+    project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>,
+    sender: Arc<Mutex<Sender<usize>>>,
+) -> Router {
     let state = RouteState {
         project_tree,
         sender,
@@ -105,37 +123,76 @@ fn app(project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>, sender: Sender<u
         .with_state(Arc::new(Mutex::new(state)))
 }
 
+#[derive(Clone, Debug)]
+#[allow(dead_code)]
+struct UdsConnectInfo {
+    peer_addr: Arc<tokio::net::unix::SocketAddr>,
+    peer_cred: UCred,
+}
+
+impl connect_info::Connected<&UnixStream> for UdsConnectInfo {
+    fn connect_info(target: &UnixStream) -> Self {
+        let peer_addr = target.peer_addr().unwrap();
+        let peer_cred = target.peer_cred().unwrap();
+
+        Self {
+            peer_addr: Arc::new(peer_addr),
+            peer_cred,
+        }
+    }
+}
+
+fn unwrap_infallible<T>(result: Result<T, Infallible>) -> T {
+    match result {
+        Ok(value) => value,
+        Err(err) => {
+            error!("unwrap_infallible err {:?}", err);
+            match err {}
+        }
+    }
+}
+
 pub async fn start_server(
     project_tree: Arc<Mutex<BTreeMap<String, ProjectInfo>>>,
     sender: Sender<usize>,
+    socket_path: PathBuf,
 ) {
-    let app = app(project_tree, sender);
+    let sender = Arc::new(Mutex::new(sender));
+    let app = app(project_tree, sender.clone());
 
-    let mut port = 33889;
+    let _ = tokio::fs::remove_file(&socket_path).await;
 
-    const MAX_RETRIES: usize = 100;
-    let mut retry_count = 0;
-
-    let listener = loop {
-        match tokio::net::TcpListener::bind(format!("127.0.0.1:{}", port)).await {
-            Ok(listener) => {
-                info!("deamon server is ready on port {}", port);
-                break listener;
-            }
-            Err(_) => {
-                info!("Port {} is already in use, trying the next one", port);
-                port += 1;
-                retry_count += 1;
-                if retry_count >= MAX_RETRIES {
-                    panic!("Exceeded maximum retry limit");
-                }
-            }
+    let uds = match UnixListener::bind(socket_path.clone()) {
+        Ok(uds) => uds,
+        Err(e) => {
+            error!("create uds error: {:?}", e);
+            sender.lock().await.send(0).await;
+            return;
         }
     };
 
-    println!("deamon server is ready");
+    let mut make_service = app.into_make_service_with_connect_info::<UdsConnectInfo>();
 
-    axum::serve(listener, app).await.expect("Server failed");
+    loop {
+        let (socket, _remote_addr) = uds.accept().await.unwrap();
+
+        let tower_service = unwrap_infallible(make_service.call(&socket).await);
+
+        tokio::spawn(async move {
+            let socket = TokioIo::new(socket);
+
+            let hyper_service = hyper_v1::service::service_fn(move |request: Request<Incoming>| {
+                tower_service.clone().call(request)
+            });
+
+            if let Err(err) = server::conn::auto::Builder::new(TokioExecutor::new())
+                .serve_connection_with_upgrades(socket, hyper_service)
+                .await
+            {
+                eprintln!("failed to serve connection: {err:#}");
+            }
+        });
+    }
 }
 
 #[cfg(test)]
@@ -179,6 +236,7 @@ mod test {
         drop(tree_config);
 
         let (sender, _) = mpsc::channel::<usize>(1);
+        let sender = Arc::new(Mutex::new(sender));
         let app = app(tree.clone(), sender);
 
         let response = app
@@ -203,6 +261,7 @@ mod test {
         let tree = create_mock_tree().await;
 
         let (sender, _) = mpsc::channel::<usize>(1);
+        let sender = Arc::new(Mutex::new(sender));
         let app = app(tree.clone(), sender);
 
         let response = app
@@ -227,6 +286,7 @@ mod test {
         let tree = create_mock_tree().await;
 
         let (sender, _) = mpsc::channel::<usize>(1);
+        let sender = Arc::new(Mutex::new(sender));
         let app = app(tree.clone(), sender);
 
         let response = app
@@ -251,6 +311,7 @@ mod test {
         let tree = create_mock_tree().await;
 
         let (sender, mut receiver) = mpsc::channel::<usize>(1);
+        let sender = Arc::new(Mutex::new(sender));
         let app = app(tree.clone(), sender);
 
         let response = app

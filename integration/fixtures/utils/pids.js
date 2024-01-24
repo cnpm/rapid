@@ -20,32 +20,25 @@ class Pids {
 
     try {
       const snapshot = await this.getPsSnapshot();
-
-      let overlayPattern;
-
-      let nfsPattern;
-
-      if (process.platform === 'linux') {
-        overlayPattern = new RegExp(`overlay.*?${this.nodeModulesDir}`, 'i');
-      } else if (process.platform === 'darwin') {
-        overlayPattern = new RegExp(`unionfs.*?${this.nodeModulesDir}`, 'i');
-        nfsPattern = new RegExp(
+      console.log(snapshot);
+      if (process.platform === 'darwin') {
+        const overlayPattern = new RegExp(`unionfs.*?${this.nodeModulesDir}`, 'i');
+        const nfsPattern = new RegExp(
           `/usr/local/bin/go-nfsv4.*?${this.nodeModulesDir}`, 'i'
         );
-      }
-      console.log('snapshot', snapshot);
-
-      for (const line of snapshot.split('\n')) {
-        if (overlayPattern.test(line)) {
-          const fields = line.split(/\s+/);
-          if (fields.length >= 11) {
-            const pid = parseInt(fields[1], 10) || 0;
-            pids.push(pid);
+        for (const line of snapshot.split('\n')) {
+          if (overlayPattern.test(line)) {
+            const fields = line.split(/\s+/);
+            console.log(fields);
+            if (fields.length >= 11) {
+              const pid = parseInt(fields[1], 10) || 0;
+              pids.push(pid);
+            }
           }
-        }
-        if (process.platform === 'darwin') {
+
           if (nfsPattern.test(line)) {
             const fields = line.split(/\s+/);
+            console.log(fields);
             if (fields.length >= 11) {
               const pid = parseInt(fields[1], 10) || 0;
               pids.push(pid);

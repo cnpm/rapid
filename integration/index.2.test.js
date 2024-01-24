@@ -6,9 +6,8 @@ const assert = require('node:assert');
 const coffee = require('coffee');
 const semver = require('semver');
 const execa = require('execa');
-const { setTimeout } = require('node:timers/promises');
+const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 const rapid = path.join(__dirname, '../node_modules/.bin/rapid');
-const { Pids } = require(path.join(__dirname, './fixtures/utils/pids'));
 const {
   clean,
 } = require('@cnpmjs/rapid');
@@ -224,20 +223,11 @@ describe('test/index.v2.test.js', () => {
       assert.strictEqual(dirs.filter(dir => dir.includes('esbuild')).length, 2);
       await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/esbuild')));
       assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
+      const nodeModulesDir = path.join(cwd, 'node_modules');
 
-      const pidsInstance = new Pids('esbuild/node_modules');
-      let pids = await pidsInstance.getPids();
-      assert(pids.length > 0);
-      for (const pid of pids) {
-        await execa.command(`kill -9 ${pid}`);
-      }
-      await new Promise(resolve => {
-        setTimeout(() => {
-          resolve();
-        }, 10000);
-      });
-      pids = await pidsInstance.getPids();
-      assert(pids.length > 0);
+      await execa.command(`umount -f ${nodeModulesDir}`);
+      await setTimeoutPromise(20000);
+      assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
     });
   });
 

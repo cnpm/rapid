@@ -20,15 +20,17 @@ log4rs = "1"
 axum = "0.7"
 http-body-util = "0.1"
 hyper = { version = "0.14", features = ["full"] }
+hyper_v1 = { package = "hyper", version = "1", features = ["full"] }
 hyperlocal = "0.8"
-hyper-util = { version = "0.1.2", features = [
+hyper-util = { version = "0.1", features = [
     "client",
     "client-legacy",
     "http1",
+    "server-auto",
     "tokio",
 ] }
 httparse = "1.8"
+tower = { version = "0.4", features = ["util"] }
 
 [dev-dependencies]
-tower = { version = "0.4", features = ["util"] }
 mime = "0.3"

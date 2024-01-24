@@ -147,15 +147,12 @@ pub struct Overlay {
 }
 
 impl Overlay {
+    #[cfg(target_os = "macos")]
     pub fn get_pids(&self) -> Result<Vec<u32>> {
         let mut pids = vec![];
 
         let snapshot = get_ps_snapshot()?;
 
-        #[cfg(target_os = "linux")]
-        let overlay_pattern = Regex::new(&format!(r#"(?i)overlay.*?{}"#, self.node_modules_dir))?;
-
-        #[cfg(target_os = "macos")]
         let unionfs = match &self.unionfs {
             Some(s) => s,
             None => {
@@ -165,7 +162,7 @@ impl Overlay {
                 ))
             }
         };
-        #[cfg(target_os = "macos")]
+
         let overlay_pattern =
             Regex::new(&format!(r#"(?i){}.*?{}"#, unionfs, self.node_modules_dir))?;
 
@@ -183,13 +180,11 @@ impl Overlay {
             }
         }
 
-        #[cfg(target_os = "macos")]
         let nfs_pattern = Regex::new(&format!(
             r#"(?i)/usr/local/bin/go-nfsv4.*?{}"#,
             self.node_modules_dir
         ))?;
 
-        #[cfg(target_os = "macos")]
         for line in snapshot.clone().lines() {
             if nfs_pattern.is_match(line) {
                 let fields: Vec<&str> = line.split_whitespace().collect();
@@ -206,10 +201,89 @@ impl Overlay {
 
         Ok(pids)
     }
+
+    #[cfg(target_os = "linux")]
     pub fn restart(&self) -> Result<Vec<u32>> {
-        #[cfg(target_os = "linux")]
+        let unmount_modules_str = format!(r#"umount -f {}"#, self.node_modules_dir);
+
+        let _ = start_command(&unmount_modules_str);
+
+        let unmount_overlay_str = format!(r#"umount -f {}"#, self.overlay);
+
+        let _ = start_command(&unmount_overlay_str);
+
         let tmp_str = format!(r#"mount -t tmpfs tmpfs {}"#, self.overlay);
-        #[cfg(target_os = "macos")]
+
+        match start_command(&tmp_str) {
+            Ok(output) => {
+                if output.status.success() {
+                    info!(
+                        "Overlay restart executed successfully, mountpoint: {:?}, tmp_str: {:?}",
+                        self.node_modules_dir, tmp_str
+                    );
+                } else {
+                    return Err(anyhow!(
+                        "Error executing Overlay restart: {:?}, mountpoint: {:?}, tmp_str: {:?}",
+                        output.status,
+                        self.node_modules_dir,
+                        tmp_str
+                    ));
+                }
+            }
+            Err(e) => {
+                return Err(anyhow!(
+                    "Error executing Overlay restart command: {:?}, mountpoint: {:?}, tmp_str: {:?}",
+                    e,
+                    self.node_modules_dir,
+                    tmp_str
+                ));
+            }
+        }
+
+        let workdir = match &self.workdir {
+            Some(s) => s,
+            None => {
+                return Err(anyhow!(
+                    "workdir is empty, node_modules_dir is {}",
+                    self.node_modules_dir
+                ))
+            }
+        };
+
+        let mount_str = format!(
+            r#"mount -t overlay overlay -o lowerdir={},upperdir={},workdir={} {}"#,
+            self.mnt, self.upper, workdir, self.node_modules_dir
+        );
+        match start_command(&mount_str) {
+            Ok(output) => {
+                if output.status.success() {
+                    info!(
+                        "Overlay restart executed successfully, mountpoint: {:?}",
+                        self.node_modules_dir
+                    );
+                } else {
+                    return Err(anyhow!(
+                        "Error executing Overlay restart: {:?}, mountpoint: {:?}",
+                        output.status,
+                        self.node_modules_dir
+                    ));
+                }
+            }
+            Err(e) => {
+                return Err(anyhow!(
+                    "Error executing Overlay restart command: {:?}, mountpoint: {:?}",
+                    e,
+                    self.node_modules_dir
+                ));
+            }
+        }
+
+        let res = vec![];
+        Ok(res)
+    }
+
+    #[cfg(target_os = "macos")]
+    pub fn restart(&self) -> Result<Vec<u32>> {
         let tmp_str = format!(
             r#"hdiutil attach -nobrowse -mountpoint {} {}"#,
             self.overlay, self.tmp_dmg
@@ -241,22 +315,6 @@ impl Overlay {
             }
         }
 
-        #[cfg(target_os = "linux")]
-        let workdir = match &self.workdir {
-            Some(s) => s,
-            None => {
-                return Err(anyhow!(
-                    "workdir is empty, node_modules_dir is {}",
-                    self.node_modules_dir
-                ))
-            }
-        };
-        #[cfg(target_os = "linux")]
-        let mount_str = format!(
-            r#"mount -t overlay overlay -o lowerdir={},upperdir={},workdir={} {}"#,
-            self.mnt, self.upper, workdir, self.node_modules_dir
-        );
-        #[cfg(target_os = "macos")]
         let unionfs = match &self.unionfs {
             Some(s) => s,
             None => {
@@ -266,7 +324,7 @@ impl Overlay {
                 ))
             }
         };
-        #[cfg(target_os = "macos")]
+
         let mount_str = format!(
             r#"{} -o cow,max_files=32768 -o allow_other,use_ino,suid,dev,nobrowse {}=RW:{}=RO {}"#,
             unionfs, self.upper, self.mnt, self.node_modules_dir
@@ -296,7 +354,8 @@ impl Overlay {
             }
         }
 
-        Ok(self.get_pids()?)
+        let res = self.get_pids()?;
+        Ok(res)
     }
 }
 
@@ -373,6 +432,7 @@ impl ProjectConfig {
     pub fn get_pids(&self) -> Result<Vec<u32>> {
         let mut pids = vec![];
 
+        #[cfg(target_os = "macos")]
         for overlay in self.overlays.iter() {
             let ps = overlay.get_pids()?;
             pids.extend(ps);
@@ -472,7 +532,12 @@ impl NydusConfig {
                     info!("init_daemon executed successfully");
                     return Ok(());
                 } else {
-                    error!("Error executing init_daemon: {:?}", output.status);
+                    error!(
+                        "Error executing init_daemon, status: {:?}, stdout: {:?}, stderr: {:?}",
+                        output.status,
+                        std::str::from_utf8(&output.stdout)?,
+                        std::str::from_utf8(&output.stderr)?,
+                    );
                 }
             }
             Err(e) => error!("Error executing init_daemon: {:?}", e),
