@@ -1,6 +1,6 @@
 {
   "name": "@cnpmjs/binding-darwin-x64",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "downloader darwin x64 binding",
   "main": "index.node",
   "homepage": "https://github.com/cnpm/rapid",
