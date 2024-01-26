@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use config::{process_json_files_in_folder, NydusConfig};
 use homedir::get_my_home;
 use log::error;
@@ -16,19 +16,17 @@ mod server;
 mod utils;
 
 fn setup_logger() -> Result<()> {
-    let log_dir = get_my_home()
-        .unwrap()
-        .unwrap()
+    let log_dir = get_my_home()?
+        .ok_or(anyhow!("get log_dir my_home fail"))?
         .join(".rapid/cache/project/logs/");
 
-    create_folder_if_not_exists(log_dir.to_str().unwrap()).unwrap();
+    create_folder_if_not_exists(log_dir.to_str().ok_or(anyhow!("log_dir to str fail"))?).unwrap();
 
-    let log_config_path = get_my_home()
-        .unwrap()
-        .unwrap()
+    let log_config_path = get_my_home()?
+        .ok_or(anyhow!("get log_config_path my_home fail"))?
         .join(".rapid/cache/project/log4rs.yaml");
 
-    log4rs::init_file(log_config_path, Default::default()).unwrap();
+    log4rs::init_file(log_config_path, Default::default())?;
 
     Ok(())
 }
@@ -70,10 +68,10 @@ async fn main() {
 
     {
         let project_tree = project_tree.clone();
-        std::thread::spawn(move || {
+        tokio::spawn(async move {
             tokio::runtime::Runtime::new()
                 .unwrap()
-                .block_on(start_server(project_tree.clone(), sender, socket_path));
+                .block_on(start_server(project_tree, sender, socket_path));
         });
     }
 

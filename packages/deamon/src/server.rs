@@ -23,7 +23,7 @@ use tower::Service;
 
 use crate::{
     config::ProjectConfig,
-    pid::{add_project, kill_projects, ProjectInfo},
+    pid::{add_project, ProjectInfo},
 };
 
 #[derive(Serialize, Deserialize)]

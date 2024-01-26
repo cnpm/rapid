@@ -34,7 +34,11 @@ impl ProjectInfo {
                     );
                 }
                 Err(err) => {
-                    error!("Failed to kill process with PID {}. Error: {:?}", pid, err);
+                    return Err(anyhow!(
+                        "Failed to kill process with PID {}. Error: {:?}",
+                        pid,
+                        err
+                    ));
                 }
             }
         }
@@ -153,7 +157,13 @@ async fn check_project(project: &mut ProjectInfo) -> Result<()> {
     }
     if !is_alive(&project.pids, project.config.get_project_path()).await {
         info!("{:?} will be check", project.config.get_project_path());
-        project.kill_pids()?;
+        if let Err(e) = project.kill_pids() {
+            error!(
+                "project {} kill fail {}",
+                project.config.get_project_path(),
+                e
+            )
+        }
         project.restart().await?;
     }
 

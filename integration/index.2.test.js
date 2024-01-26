@@ -229,6 +229,32 @@ describe('test/index.v2.test.js', () => {
       await setTimeoutPromise(20000);
       assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
     });
+
+    it('should not work', async () => {
+      cwd = path.join(__dirname, './fixtures/esbuild');
+      await coffee
+        .fork(rapid, [
+          'install',
+          '--ignore-scripts',
+          '--nodaemon',
+        ], {
+          cwd,
+        })
+        .debug()
+        .expect('code', 0)
+        .end();
+
+      const dirs = await fs.readdir(path.join(cwd, 'node_modules'));
+      assert.strictEqual(dirs.filter(dir => dir.includes('esbuild')).length, 2);
+      await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/esbuild')));
+      assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
+      const nodeModulesDir = path.join(cwd, 'node_modules');
+
+      await execa.command(`umount -f ${nodeModulesDir}`);
+      await setTimeoutPromise(20000);
+
+      await assert.rejects(fs.stat(path.join(cwd, 'node_modules', 'esbuild/package.json')));
+    });
   });
 
 });
