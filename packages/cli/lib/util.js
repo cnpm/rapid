@@ -611,6 +611,7 @@ exports.readPackageLock = async function readPackageLock(cwd) {
       'We only support package-lock.json version 3.',
       'Run `npm i --package-lock-only` to generate it.',
     ]);
+    throw e;
   }
 };
 
