@@ -84,7 +84,7 @@ class Alert {
     message = this.formatMessage(message);
     if (!isTTY) {
       console.log(message);
-      process.exit(1);
+      return;
     }
     const boxedMessage = boxen(message, {
       padding: 1,
@@ -95,7 +95,7 @@ class Alert {
       titleAlignment: 'center',
     });
     console.log(boxedMessage);
-    process.exit(1);
+    return;
   }
 
   static success(title = 'Success', message = [ 'Congratulations', 'The operation was successful' ]) {
@@ -119,6 +119,7 @@ class Alert {
 class Spin {
   constructor({ title = 'processing', showDots = false }) {
     const { createSpinner } = require('nanospinner');
+    this.start = Date.now();
 
     if (!isTTY) {
       console.log(`[rapid] ${title}`);
@@ -127,7 +128,6 @@ class Spin {
 
     this.spinner = createSpinner(title).start();
     this.dots = 0;
-    this.start = Date.now();
 
     if (showDots) {
       this.interval = setInterval(() => {

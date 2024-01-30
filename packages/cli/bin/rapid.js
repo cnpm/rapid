@@ -94,6 +94,7 @@ const argv = yargs
       'If the problem continues, please provide feedback at:',
       'https://github.com/cnpm/rapid/issues',
     ]);
+    process.exitCode = 1;
   })
   .help()
   .parse();
