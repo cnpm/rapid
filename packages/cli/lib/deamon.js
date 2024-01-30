@@ -27,12 +27,11 @@ const rapidDeamon = rsBindingPath
 
 
 const destinationFilePath = path.join(deamonDir, 'rapid_deamon');
-// TODO
-const daemonPoint = 'http://localhost:33889';
+
+const daemonPoint = 'http://unix';
 const aliveUrl = `${daemonPoint}/alive`;
 const killUrl = `${daemonPoint}/kill`;
-const delUrl = `${daemonPoint}/del-project`;
-const addUrl = `${daemonPoint}/add-project`;
+const projectUrl = `${daemonPoint}/project`;
 
 const checkDeamonAlive = async () => {
   try {
@@ -42,7 +41,8 @@ const checkDeamonAlive = async () => {
       timeout: 1000,
     });
     return result.status === 200;
-  } catch (_) {
+  } catch (error) {
+    debug('checkDeamonAlive error: ', error);
     return false;
   }
 };
@@ -55,21 +55,24 @@ const delProject = async projectName => {
     debug('delProject error: ', error);
     return false;
   }
+  const configPath = path.join(metadataDir, `${projectName}.json`);
+  try {
+    const configBuffer = await fs.readFile(configPath);
+    config = JSON.parse(configBuffer.toString());
+  } catch (error) {
+    debug('parse json error: ', error);
+  }
 
   try {
-    const configPath = path.join(metadataDir, `${projectName}.json`);
-    const configBuffer = await fs.readFile(configPath);
-
-    config = JSON.parse(configBuffer.toString());
     await fs.rm(`${configPath}`);
   } catch (error) {
-    debug('delProject error: ', error);
+    debug('rm json error: ', error);
     return false;
   }
 
   try {
-    const result = await urllib.request(`${delUrl}`, {
-      method: 'POST',
+    const result = await urllib.request(`${projectUrl}`, {
+      method: 'DELETE',
       data: { projectPath: config.projectPath },
       dataType: 'json',
       contentType: 'json',
@@ -86,7 +89,7 @@ const addProject = async config => {
   try {
     await fs.mkdir(metadataDir, { recursive: true });
     await fs.writeFile(path.join(metadataDir, `${config.projectName}.json`), JSON.stringify(config, null, 2));
-    const result = await urllib.request(`${addUrl}`, {
+    const result = await urllib.request(`${projectUrl}`, {
       method: 'POST',
       data: config,
       dataType: 'json',
@@ -94,7 +97,8 @@ const addProject = async config => {
       socketPath: deamonSocketPath,
     });
     return result.status === 200 && result.data?.code === 0;
-  } catch (_) {
+  } catch (error) {
+    debug('addProject error: ', error);
     return false;
   }
 };
@@ -127,7 +131,8 @@ const killDeamon = async () => {
       socketPath: deamonSocketPath,
     });
     return result.status === 200;
-  } catch (_) {
+  } catch (error) {
+    debug('killDeamon error: ', error);
     return false;
   }
 };
@@ -180,8 +185,6 @@ root:
     deamonAutoLauncher.enable();
   } catch (e) {
     console.log(e);
-  } finally {
-    await runDeamon();
   }
 };
 
@@ -197,9 +200,10 @@ const initDeamon = async () => {
 
   try {
     await fs.stat(destinationFilePath);
-    await runDeamon();
   } catch (e) {
     await registerDeamon();
+  } finally {
+    await runDeamon();
   }
 };
 

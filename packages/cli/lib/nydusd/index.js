@@ -31,20 +31,20 @@ exports.unregisterMode = function(mode) {
   fsImplMap[mode] = null;
 };
 
-exports.startNydusFs = async function(mode, cwd, pkg, nodaemon) {
+exports.startNydusFs = async function(mode, cwd, pkg, daemon) {
   const impl = fsImplMap[mode];
   assert(impl, `can not find fs impl for mode: ${mode}`);
-  await impl.start(cwd, pkg, nodaemon);
+  await impl.start(cwd, pkg, daemon);
 };
 
-exports.endNydusFs = async function(mode, cwd, pkg, force, nodaemon) {
+exports.endNydusFs = async function(mode, cwd, pkg, force, daemon) {
   if (!mode || mode === NYDUS_TYPE.NATIVE) {
     console.log('[rapid] nydusd is not running, skip clean');
     return;
   }
   const impl = fsImplMap[mode];
   assert(impl, `can not find fs impl for mode: ${mode}`);
-  await impl.end(cwd, pkg, force, nodaemon);
+  await impl.end(cwd, pkg, force, daemon);
 };
 
 exports.getNydusMode = async function(cwd) {

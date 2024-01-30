@@ -5,7 +5,7 @@ use axum::{
     extract::{connect_info, State},
     http::{Request, StatusCode},
     response::Json,
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use hyper_util::{
@@ -116,8 +116,8 @@ fn app(
         sender,
     };
     Router::new()
-        .route("/add-project", post(handle_add))
-        .route("/del-project", post(handle_del))
+        .route("/project", post(handle_add))
+        .route("/project", delete(handle_del))
         .route("/alive", get(handle_alive))
         .route("/kill", get(handle_kill))
         .with_state(Arc::new(Mutex::new(state)))
@@ -242,8 +242,8 @@ mod test {
         let response = app
             .oneshot(
                 Request::builder()
-                    .method(http::Method::POST)
-                    .uri("/del-project")
+                    .method(http::Method::DELETE)
+                    .uri("/project")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
                     .body(Body::from(r#"{"projectPath":"mock_project"}"#))
                     .unwrap(),
@@ -268,7 +268,7 @@ mod test {
             .oneshot(
                 Request::builder()
                     .method(http::Method::POST)
-                    .uri("/add-project")
+                    .uri("/project")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
                     .body(Body::from(r#"{"projectName":"mock_project","projectPath":"test_project","bootstraps":[],"nydusdApiMount":[],"overlays":[]}"#))
                     .unwrap(),

@@ -236,7 +236,7 @@ describe('test/index.v2.test.js', () => {
         .fork(rapid, [
           'install',
           '--ignore-scripts',
-          '--nodaemon',
+          '--daemon=false',
         ], {
           cwd,
         })

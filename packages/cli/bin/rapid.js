@@ -33,16 +33,17 @@ const argv = yargs
           type: 'array',
           default: [],
         })
-        .option('nodaemon', {
+        .option('daemon', {
           describe: 'Will not run deamon',
           type: 'boolean',
+          default: true,
         });
     },
     handler: async argv => {
       const ignoreScripts = argv['ignore-scripts'];
       const mode = argv.by || NpmFsMode.NPM;
       const productionMode = argv.production || argv.omit.includes('dev') || process.env.NODE_ENV === 'production';
-      const nodaemon = argv.nodaemon;
+      const daemon = argv.daemon;
 
       const cwd = process.cwd();
       const pkgRes = await util.readPkgJSON();
@@ -62,7 +63,7 @@ const argv = yargs
         nydusMode: NYDUS_TYPE.FUSE,
         ignoreScripts,
         productionMode,
-        nodaemon,
+        daemon,
       });
 
       Alert.success('🚀 Success', [
@@ -80,15 +81,16 @@ const argv = yargs
     describe: 'Clean up the project',
     builder: yargs => {
       return yargs
-        .option('nodaemon', {
-          describe: 'Will not run deamon',
+        .option('daemon', {
+          describe: 'Will run deamon',
           type: 'boolean',
+          default: true,
         });
     },
     handler: async argv => {
       const cwd = argv.path || process.cwd();
-      const nodaemon = argv.nodaemon;
-      await clean({ nydusMode: NYDUS_TYPE.FUSE, cwd, force: true, nodaemon });
+      const daemon = argv.daemon;
+      await clean({ nydusMode: NYDUS_TYPE.FUSE, cwd, force: true, daemon });
       console.log('[rapid] clean finished');
     },
   })
