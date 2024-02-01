@@ -105,10 +105,12 @@ const addProject = async config => {
 
 
 const runDeamon = async () => {
-  execa(destinationFilePath, [], {
+  const subprocess = execa(destinationFilePath, [], {
     detached: true,
-    stdio: [ 'ignore', 'pipe', 'pipe' ],
+    stdio: 'ignore',
   });
+
+  subprocess.unref();
 
   let count = 0;
 

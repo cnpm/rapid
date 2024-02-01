@@ -68,7 +68,7 @@ async fn main() {
 
     {
         let project_tree = project_tree.clone();
-        tokio::spawn(async move {
+        std::thread::spawn(move || {
             tokio::runtime::Runtime::new()
                 .unwrap()
                 .block_on(start_server(project_tree, sender, socket_path));
