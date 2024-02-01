@@ -18,6 +18,11 @@ const { MirrorConfig } = require('binary-mirror-config');
 // 有依赖树（package-lock.json）走 npm / npminstall 极速安装
 exports.install = async options => {
   options.env = util.getEnv(options.env, options.args);
+
+  if (!options.noPackageLock) {
+    await util.generatePackageLock(options.cwd);
+  }
+
   const { packageLock } = options.packageLock || (await util.readPackageLock(options.cwd));
 
   const currentMountInfo = await util.listMountInfo();

@@ -600,6 +600,39 @@ exports.readPkgJSON = async function readPkgJSON(cwd) {
   return { pkg, pkgPath };
 };
 
+exports.generatePackageLock = async cwd => {
+  let isExist = true;
+  try {
+    const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
+    await await fs.stat(lockPath);
+  } catch {
+    isExist = false;
+  }
+  try {
+    if (!isExist) {
+      console.log('npm install --force --package-lock-only --ignore-scripts is running');
+
+      const childProcess = execa('npm', [ 'install', '--force', '--package-lock-only', '--ignore-scripts' ], {
+        cwd,
+        stdio: 'inherit',
+      });
+
+      await new Promise((resolve, reject) => {
+        childProcess.then(resolve).catch(reject);
+
+        process.on('exit', () => {
+          childProcess.kill();
+        });
+      });
+    }
+  } catch (e) {
+    Alert.error('Error', [
+      'generate package-lock.json error.',
+      'Run `npm i --package-lock-only` to generate it.',
+    ]);
+  }
+};
+
 exports.readPackageLock = async function readPackageLock(cwd) {
   try {
     const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');

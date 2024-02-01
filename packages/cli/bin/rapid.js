@@ -32,12 +32,18 @@ const argv = yargs
           describe: 'Dependency types to omit from the installation tree on disk',
           type: 'array',
           default: [],
+        })
+        .option('package-lock', {
+          describe: 'Whether to generate package-lock.json file',
+          type: 'boolean',
+          default: true,
         });
     },
     handler: async argv => {
       const ignoreScripts = argv['ignore-scripts'];
       const mode = argv.by || NpmFsMode.NPM;
       const productionMode = argv.production || argv.omit.includes('dev') || process.env.NODE_ENV === 'production';
+      const noPackageLock = !argv['package-lock'];
 
       const cwd = process.cwd();
       const pkgRes = await util.readPkgJSON();
@@ -57,6 +63,7 @@ const argv = yargs
         nydusMode: NYDUS_TYPE.FUSE,
         ignoreScripts,
         productionMode,
+        noPackageLock,
       });
 
       Alert.success('🚀 Success', [
