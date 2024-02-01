@@ -41,6 +41,7 @@ exports.install = async options => {
         cwd: mountedInfo.mountPoint,
         pkg: options.pkg,
         force: true,
+        daemon: options.daemon,
       });
       console.timeEnd(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
     }
@@ -62,7 +63,7 @@ exports.install = async options => {
   await downloadDependency.download(options);
 
   assert(Object.keys(packageLock).length, '[rapid] depsJSON invalid.');
-  await nydusd.startNydusFs(options.nydusMode, options.cwd, options.pkg);
+  await nydusd.startNydusFs(options.nydusMode, options.cwd, options.pkg, options.daemon);
 
 
   await util.ensureAccess(options.cwd, packageLock);
@@ -75,7 +76,7 @@ exports.install = async options => {
   console.timeEnd('[rapid] run lifecycle scripts');
 };
 
-exports.clean = async function clean({ nydusMode = NYDUS_TYPE.FUSE, cwd, force, pkg }) {
+exports.clean = async function clean({ nydusMode = NYDUS_TYPE.FUSE, cwd, force, pkg, daemon }) {
   const listInfo = await util.listMountInfo();
   if (!listInfo.length) {
     console.log('[rapid] no mount info found.');
@@ -91,7 +92,7 @@ exports.clean = async function clean({ nydusMode = NYDUS_TYPE.FUSE, cwd, force, 
     pkg = pkgRes.pkg;
   }
 
-  await nydusd.endNydusFs(nydusMode, cwd, pkg, force);
+  await nydusd.endNydusFs(nydusMode, cwd, pkg, force, daemon);
 };
 
 exports.list = async () => {

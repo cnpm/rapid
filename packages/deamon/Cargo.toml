@@ -1,0 +1,36 @@
+[package]
+name = "rapid_deamon"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+homedir = "0.2.1"
+lazy_static = "1.4.0"
+tokio = { version = "1", features = ["full"] }
+serde = "1.0"
+serde_json = "1.0"
+regex = "1.5"
+anyhow = "1.0"
+nix = "0.25"
+chrono = "0.4"
+log = "0.4"
+log4rs = "1"
+axum = "0.7"
+http-body-util = "0.1"
+hyper = { version = "0.14", features = ["full"] }
+hyper_v1 = { package = "hyper", version = "1", features = ["full"] }
+hyperlocal = "0.8"
+hyper-util = { version = "0.1", features = [
+    "client",
+    "client-legacy",
+    "http1",
+    "server-auto",
+    "tokio",
+] }
+httparse = "1.8"
+tower = { version = "0.4", features = ["util"] }
+
+[dev-dependencies]
+mime = "0.3"

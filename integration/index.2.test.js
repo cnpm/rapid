@@ -6,6 +6,7 @@ const assert = require('node:assert');
 const coffee = require('coffee');
 const semver = require('semver');
 const execa = require('execa');
+const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 const rapid = path.join(__dirname, '../node_modules/.bin/rapid');
 const {
   clean,
@@ -201,6 +202,59 @@ describe('test/index.v2.test.js', () => {
 
     const res = await execa.command('mount', { stdio: 'pipe' });
     assert(res.stdout.indexOf('integration/fixtures/esbuild/node_modules') === res.stdout.lastIndexOf('integration/fixtures/esbuild/node_modules'));
+  });
+
+
+  describe('deamon', async () => {
+    it('should work', async () => {
+      cwd = path.join(__dirname, './fixtures/esbuild');
+      await coffee
+        .fork(rapid, [
+          'install',
+          '--ignore-scripts',
+        ], {
+          cwd,
+        })
+        .debug()
+        .expect('code', 0)
+        .end();
+
+      const dirs = await fs.readdir(path.join(cwd, 'node_modules'));
+      assert.strictEqual(dirs.filter(dir => dir.includes('esbuild')).length, 2);
+      await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/esbuild')));
+      assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
+      const nodeModulesDir = path.join(cwd, 'node_modules');
+
+      await execa.command(`umount -f ${nodeModulesDir}`);
+      await setTimeoutPromise(20000);
+      assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
+    });
+
+    it('should not work', async () => {
+      cwd = path.join(__dirname, './fixtures/esbuild');
+      await coffee
+        .fork(rapid, [
+          'install',
+          '--ignore-scripts',
+          '--daemon=false',
+        ], {
+          cwd,
+        })
+        .debug()
+        .expect('code', 0)
+        .end();
+
+      const dirs = await fs.readdir(path.join(cwd, 'node_modules'));
+      assert.strictEqual(dirs.filter(dir => dir.includes('esbuild')).length, 2);
+      await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/esbuild')));
+      assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
+      const nodeModulesDir = path.join(cwd, 'node_modules');
+
+      await execa.command(`umount -f ${nodeModulesDir}`);
+      await setTimeoutPromise(20000);
+
+      await assert.rejects(fs.stat(path.join(cwd, 'node_modules', 'esbuild/package.json')));
+    });
   });
 
 });

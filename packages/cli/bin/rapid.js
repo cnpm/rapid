@@ -33,6 +33,11 @@ const argv = yargs
           type: 'array',
           default: [],
         })
+        .option('daemon', {
+          describe: 'Will not run deamon',
+          type: 'boolean',
+          default: true,
+        })
         .option('package-lock', {
           describe: 'Whether to generate package-lock.json file',
           type: 'boolean',
@@ -43,6 +48,7 @@ const argv = yargs
       const ignoreScripts = argv['ignore-scripts'];
       const mode = argv.by || NpmFsMode.NPM;
       const productionMode = argv.production || argv.omit.includes('dev') || process.env.NODE_ENV === 'production';
+      const daemon = argv.daemon;
       const noPackageLock = !argv['package-lock'];
 
       const cwd = process.cwd();
@@ -63,6 +69,7 @@ const argv = yargs
         nydusMode: NYDUS_TYPE.FUSE,
         ignoreScripts,
         productionMode,
+        daemon,
         noPackageLock,
       });
 
@@ -79,9 +86,18 @@ const argv = yargs
     command: 'clean [path]',
     aliases: [ 'c', 'unmount', 'uninstall' ],
     describe: 'Clean up the project',
+    builder: yargs => {
+      return yargs
+        .option('daemon', {
+          describe: 'Will run deamon',
+          type: 'boolean',
+          default: true,
+        });
+    },
     handler: async argv => {
       const cwd = argv.path || process.cwd();
-      await clean({ nydusMode: NYDUS_TYPE.FUSE, cwd, force: true });
+      const daemon = argv.daemon;
+      await clean({ nydusMode: NYDUS_TYPE.FUSE, cwd, force: true, daemon });
       console.log('[rapid] clean finished');
     },
   })

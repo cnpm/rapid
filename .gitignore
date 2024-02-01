@@ -109,6 +109,7 @@ bindings/*/nydusd
 bindings/*/unionfs
 bindings/*/nydusd-bootstrap
 bindings/*/index.node
+bindings/*/rapid_deamon
 
 .idea
 packages/cli/test/fixtures/project-scripts/apps/a/1
@@ -117,3 +118,4 @@ packages/downloader/test/nginx.conf
 # napi-rs generate wrong type ignore for tmp
 packages/binding/index.d.ts
 .DS_Store
+package-lock.json

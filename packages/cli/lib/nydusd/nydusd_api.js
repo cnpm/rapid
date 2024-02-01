@@ -16,6 +16,7 @@ const {
   tarBucketsDir,
 } = require('../constants');
 const { wrapSudo, getWorkdir } = require('../util');
+const { killDeamon } = require('../deamon');
 
 // see all APIs at: https://github.com/dragonflyoss/image-service/blob/master/api/openapi/nydus-rs.yaml
 const endpoint = 'http://unix/api/v1';
@@ -139,6 +140,7 @@ async function checkDaemon() {
 // 优雅退出 nydusd daemon
 async function exitDaemon() {
   try {
+    await killDeamon();
     await urllib.request(`${daemonUrl}/exit`, {
       method: 'PUT',
       socketPath,
@@ -155,6 +157,7 @@ async function exitDaemon() {
 // 强制杀掉进程
 async function forceExitDaemon() {
   try {
+    await killDeamon();
     await execa.command(`umount -f ${nydusdMnt}`);
     await execa.command('killall -9 nydusd');
   } catch (e) {
@@ -164,6 +167,7 @@ async function forceExitDaemon() {
   }
 
   try {
+    await killDeamon();
     await execa.command('killall -9 nydusd');
   } catch (e) {
     // ignore, nydusd quits with error, but it's ok
@@ -235,3 +239,4 @@ exports.exitDaemon = exitDaemon;
 exports.forceExitDaemon = forceExitDaemon;
 exports.isDaemonRunning = isDaemonRunning;
 exports.list = list;
+exports.nydusdConfig = nydusdConfig;

@@ -21,5 +21,6 @@ members = [
     "packages/fcntl",
     "packages/rafs",
     "packages/tokio-tar",
-    "packages/utils"
+    "packages/utils",
+    "packages/deamon"
 ]
