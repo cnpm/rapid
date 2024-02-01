@@ -37,6 +37,11 @@ const argv = yargs
           describe: 'Will not run deamon',
           type: 'boolean',
           default: true,
+        })
+        .option('package-lock', {
+          describe: 'Whether to generate package-lock.json file',
+          type: 'boolean',
+          default: true,
         });
     },
     handler: async argv => {
@@ -44,6 +49,7 @@ const argv = yargs
       const mode = argv.by || NpmFsMode.NPM;
       const productionMode = argv.production || argv.omit.includes('dev') || process.env.NODE_ENV === 'production';
       const daemon = argv.daemon;
+      const noPackageLock = !argv['package-lock'];
 
       const cwd = process.cwd();
       const pkgRes = await util.readPkgJSON();
@@ -64,6 +70,7 @@ const argv = yargs
         ignoreScripts,
         productionMode,
         daemon,
+        noPackageLock,
       });
 
       Alert.success('🚀 Success', [
@@ -110,6 +117,7 @@ const argv = yargs
       'If the problem continues, please provide feedback at:',
       'https://github.com/cnpm/rapid/issues',
     ]);
+    process.exitCode = 1;
   })
   .help()
   .parse();

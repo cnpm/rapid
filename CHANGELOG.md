@@ -3,6 +3,66 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.10](https://github.com/cnpm/rapid/compare/v0.3.0...v0.3.10) (2024-01-30)
+
+
+### Bug Fixes
+
+* clean when install ([#50](https://github.com/cnpm/rapid/issues/50)) ([48d15f9](https://github.com/cnpm/rapid/commit/48d15f949265cc424a20b1474ace356d67cba590))
+* ensure access ([#56](https://github.com/cnpm/rapid/issues/56)) ([a60bd28](https://github.com/cnpm/rapid/commit/a60bd280735ce82d6f7e509ab87e7ea370d13298))
+* log ([#68](https://github.com/cnpm/rapid/issues/68)) ([152f399](https://github.com/cnpm/rapid/commit/152f39900064157addcf931d8b0bc19185ed8531))
+* logger ([#70](https://github.com/cnpm/rapid/issues/70)) ([fb0d1e6](https://github.com/cnpm/rapid/commit/fb0d1e6cd000819c37e8fae2018ffb632cbd6313))
+* mac finder icon ([#64](https://github.com/cnpm/rapid/issues/64)) ([2afe2f0](https://github.com/cnpm/rapid/commit/2afe2f03973317d64fc677bafe5731965ba625c9))
+* node gyp scripts ([#60](https://github.com/cnpm/rapid/issues/60)) ([9c24bbb](https://github.com/cnpm/rapid/commit/9c24bbb9bb928fe5f9ef67d702cec75dc01a9880))
+* production mode ([#46](https://github.com/cnpm/rapid/issues/46)) ([3fb30b5](https://github.com/cnpm/rapid/commit/3fb30b518408342360fadf4e5ec93258dd588418))
+* spin ([#55](https://github.com/cnpm/rapid/issues/55)) ([b1276f8](https://github.com/cnpm/rapid/commit/b1276f82838b5be769262fea2fcf46f45d9a21d2))
+* unionfs nobrowse ([#65](https://github.com/cnpm/rapid/issues/65)) ([7372db5](https://github.com/cnpm/rapid/commit/7372db5f9cef23417cf999aceb5f5ab489f2d6f7))
+
+
+### Features
+
+* better prompt ([#52](https://github.com/cnpm/rapid/issues/52)) ([ae15130](https://github.com/cnpm/rapid/commit/ae151302f3658a299b91537e5aa86e8d8cdd1c84))
+* rapid bar ([#48](https://github.com/cnpm/rapid/issues/48)) ([bb52985](https://github.com/cnpm/rapid/commit/bb5298543ce510bf3a17699fc850e96e7cc15217))
+* wrap retry for mount & detach ([#45](https://github.com/cnpm/rapid/issues/45)) ([e8621b6](https://github.com/cnpm/rapid/commit/e8621b69f4cd7484bb4b81bd55d747066c2c02f0))
+
+
+### Reverts
+
+* Revert "chore: readme" ([824c496](https://github.com/cnpm/rapid/commit/824c49631538f6bf405a2aad495f674217f54896))
+
+
+
+
+
+## [0.3.9](https://github.com/cnpm/rapid/compare/v0.3.0...v0.3.9) (2024-01-24)
+
+
+### Bug Fixes
+
+* clean when install ([#50](https://github.com/cnpm/rapid/issues/50)) ([48d15f9](https://github.com/cnpm/rapid/commit/48d15f949265cc424a20b1474ace356d67cba590))
+* ensure access ([#56](https://github.com/cnpm/rapid/issues/56)) ([a60bd28](https://github.com/cnpm/rapid/commit/a60bd280735ce82d6f7e509ab87e7ea370d13298))
+* mac finder icon ([#64](https://github.com/cnpm/rapid/issues/64)) ([2afe2f0](https://github.com/cnpm/rapid/commit/2afe2f03973317d64fc677bafe5731965ba625c9))
+* node gyp scripts ([#60](https://github.com/cnpm/rapid/issues/60)) ([9c24bbb](https://github.com/cnpm/rapid/commit/9c24bbb9bb928fe5f9ef67d702cec75dc01a9880))
+* production mode ([#46](https://github.com/cnpm/rapid/issues/46)) ([3fb30b5](https://github.com/cnpm/rapid/commit/3fb30b518408342360fadf4e5ec93258dd588418))
+* spin ([#55](https://github.com/cnpm/rapid/issues/55)) ([b1276f8](https://github.com/cnpm/rapid/commit/b1276f82838b5be769262fea2fcf46f45d9a21d2))
+* unionfs nobrowse ([#65](https://github.com/cnpm/rapid/issues/65)) ([7372db5](https://github.com/cnpm/rapid/commit/7372db5f9cef23417cf999aceb5f5ab489f2d6f7))
+
+
+### Features
+
+* better prompt ([#52](https://github.com/cnpm/rapid/issues/52)) ([ae15130](https://github.com/cnpm/rapid/commit/ae151302f3658a299b91537e5aa86e8d8cdd1c84))
+* rapid bar ([#48](https://github.com/cnpm/rapid/issues/48)) ([bb52985](https://github.com/cnpm/rapid/commit/bb5298543ce510bf3a17699fc850e96e7cc15217))
+* wrap retry for mount & detach ([#45](https://github.com/cnpm/rapid/issues/45)) ([e8621b6](https://github.com/cnpm/rapid/commit/e8621b69f4cd7484bb4b81bd55d747066c2c02f0))
+
+
+### Reverts
+
+* Revert "chore: readme" ([824c496](https://github.com/cnpm/rapid/commit/824c49631538f6bf405a2aad495f674217f54896))
+
+
+
+
+
 ## [0.3.8](https://github.com/cnpm/rapid/compare/v0.3.0...v0.3.8) (2023-11-14)
 
 
