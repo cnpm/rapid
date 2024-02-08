@@ -47,14 +47,15 @@ impl Executor for HTTPReqwester {
 }
 
 impl HTTPPool {
-    pub fn new(max_concurrent: u8) -> ProjectResult<HTTPPool> {
+    pub fn new(max_concurrent: u8, registries: Option<Vec<String>>) -> ProjectResult<HTTPPool> {
         let client_builder = reqwest::ClientBuilder::new()
             .tcp_keepalive(Duration::from_secs(60))
             .connection_verbose(true)
             .redirect(reqwest::redirect::Policy::limited(10))
             .http1_only()
             .use_rustls_tls();
-        let client_builder = HTTPReqwester::prepare_dns_resolve(client_builder)?;
+        let domains = registries.unwrap_or(vec!["registry.npmmirror.com".to_owned()]);
+        let client_builder = HTTPReqwester::prepare_dns_resolve(client_builder, domains)?;
         let client = client_builder.build()?;
         let client = Arc::new(client);
         let mut reqwesters = Vec::with_capacity(max_concurrent as usize);
@@ -101,7 +102,7 @@ mod test {
 
     #[tokio::test]
     async fn test_pool() {
-        let pool = HTTPPool::new(2).unwrap();
+        let pool = HTTPPool::new(2, None).unwrap();
         let (sx, mut rx) = mpsc::channel::<DownloadResponse>(2);
         let download_handler = tokio::spawn(async move {
             while let Some(mut response) = rx.recv().await {

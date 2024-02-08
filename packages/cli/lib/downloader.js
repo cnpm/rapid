@@ -18,6 +18,7 @@ class Downloader {
    * @param {NodeJS.Architecture} [options.arch] -
    * @param {boolean} [options.productionMode] -
    * @param {{function(*)}} [options.entryListener] -
+   * @param {Array<string>} [options.registries] -
    */
   constructor(options) {
     this.entryListener = options.entryListener;
@@ -30,6 +31,7 @@ class Downloader {
     this.rapidDownloader = this.createRapidDownloader();
     this.taskMap = new Map();
     this._dumpData = null;
+    this.registries = options.registries;
   }
 
   async init() {
@@ -58,6 +60,7 @@ class Downloader {
         map: npmCacheConfigPath,
         index: npmIndexConfigPath,
       },
+      registries: this.registries,
     });
   }
 
