@@ -395,7 +395,7 @@ async function getWorkdir(cwd, subPath = '', csiDir) {
   return {
     projectDir: workdir,
     prefix,
-    dirname: path.join(dirname, prefix),
+    dirname: path.join(dirname, prefix, os.type() === 'Linux' ? '' : 'node_modules'),
     baseDir: path.join(workdir, prefix), // .rapid/cache/xxx
     volumeName: 'rapid-' + prefix, // xxx
     tmpDmg: path.join(workdir, prefix, 'tmp.dmg'), // .rapid/cache/xxx/overlay
@@ -604,7 +604,7 @@ exports.generatePackageLock = async cwd => {
   let isExist = true;
   try {
     const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
-    await await fs.stat(lockPath);
+    await fs.stat(lockPath);
   } catch {
     isExist = false;
   }
@@ -673,7 +673,6 @@ exports.listMountInfo = async function listMountInfo() {
 
 async function storePackageLock(cwd, packageLock) {
   const lockPath = path.join(cwd, 'node_modules', '.package-lock.json');
-  await fs.mkdir(path.dirname(lockPath), { recursive: true });
   await fs.writeFile(
     lockPath,
     JSON.stringify(packageLock, null, 2)

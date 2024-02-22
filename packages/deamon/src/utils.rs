@@ -5,6 +5,22 @@ use std::fs::File;
 use std::io;
 use std::process::{Command, Output};
 
+pub fn del_dir_if_exists(folder_path: String) -> Result<()> {
+    let path = std::path::Path::new(&folder_path);
+    if path.exists() {
+        std::fs::remove_dir_all(folder_path.clone())?;
+    }
+    Ok(())
+}
+
+pub fn create_dir_if_not_exists(folder_path: String) -> Result<()> {
+    let path = std::path::Path::new(&folder_path);
+    if !path.exists() {
+        std::fs::create_dir_all(folder_path.clone())?;
+    }
+    Ok(())
+}
+
 pub fn get_ps_snapshot() -> Result<String> {
     let ps_output = Command::new("ps").arg("aux").output()?;
 

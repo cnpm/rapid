@@ -64,7 +64,7 @@ const delProject = async projectName => {
   }
 
   try {
-    await fs.rm(`${configPath}`);
+    await fs.rm(`${configPath}`, { force: true });
   } catch (error) {
     debug('rm json error: ', error);
     return false;

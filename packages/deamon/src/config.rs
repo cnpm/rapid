@@ -7,8 +7,9 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Error;
 use std::{path::PathBuf, process::Command};
+use std::os::unix::fs::PermissionsExt;
 
-use crate::utils::{get_ps_snapshot, start_command};
+use crate::utils::{del_dir_if_exists, get_ps_snapshot, start_command, create_dir_if_not_exists};
 
 // {
 //     projectName: "",
@@ -48,11 +49,27 @@ pub struct NydusdApiMount {
     socket_path: String,
     bootstrap: String,
     nydusd_config: NydusdConfig,
+    node_modules_dir: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub struct NydusdConfig {
+    rafs: NydusdRafsConfig,
+    overlay: Option<NydusdOverlayConfig>,
+}
+
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub struct NydusdOverlayConfig {
+    upper_dir: String,
+    work_dir: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub struct NydusdRafsConfig {
     device: DeviceConfig,
     mode: String,
     digest_validate: bool,
@@ -98,10 +115,42 @@ impl NydusdApiMount {
 
         Ok(serde_json::to_string(&reset_struce)?)
     }
+
+    fn link_node_modules(&self) -> Result<()> {
+        let homedir = get_my_home()?;
+
+        let base = match homedir {
+            Some(home) => home.join(".rapid/cache/mnt").join(self.mountpoint.clone()).to_string_lossy().to_string(),
+            None => return Err(anyhow!("Error executing link_node_modules: get home path false")),
+        };
+
+        let str = format!(r#"ln -s {} {}"#, base, self.node_modules_dir);
+        match start_command(&str) {
+            Ok(output) => {
+                if output.status.success() {
+                    info!("link_node_modules success base {} target {}", base, self.node_modules_dir);
+                    return Ok(());
+                } else {
+                    return Err(anyhow!(
+                        "Error executing link_node_modules, status: {:?}, stdout: {:?}, stderr: {:?}, base {}, target {}",
+                        output.status,
+                        std::str::from_utf8(&output.stdout)?,
+                        std::str::from_utf8(&output.stderr)?, 
+                        base, 
+                        self.node_modules_dir,
+                    ));
+                }
+            }
+            Err(e) => return Err(anyhow!("Error executing link_node_modules: {:?}, base {}, target {}", e, base, self.node_modules_dir)),
+        }
+    }
+
     pub async fn restart(&self) -> Result<()> {
+        del_dir_if_exists(self.node_modules_dir.clone())?;
+
         let url = Uri::new(
             &self.socket_path,
-            &format!("/api/v1/mount?mountpoint={}", self.mountpoint),
+            &format!("/api/v1/mount?mountpoint=/{}", self.mountpoint),
         );
 
         let client = Client::unix();
@@ -116,6 +165,8 @@ impl NydusdApiMount {
         let response = client.request(request).await?;
 
         if (response.status() == StatusCode::OK) || (response.status() == StatusCode::NO_CONTENT) {
+            #[cfg(target_os = "macos")]
+            self.link_node_modules()?;
             return Ok(());
         }
 
@@ -138,11 +189,10 @@ impl NydusdApiMount {
 #[serde(rename_all = "camelCase")]
 pub struct Overlay {
     unionfs: Option<String>,
-    workdir: Option<String>,
+    workdir: String,
     upper: String,
     mnt: String,
     node_modules_dir: String,
-    tmp_dmg: String,
     overlay: String,
 }
 
@@ -283,79 +333,14 @@ impl Overlay {
     }
 
     #[cfg(target_os = "macos")]
-    pub fn restart(&self) -> Result<Vec<u32>> {
-        let tmp_str = format!(
-            r#"hdiutil attach -nobrowse -mountpoint {} {}"#,
-            self.overlay, self.tmp_dmg
-        );
-
-        match start_command(&tmp_str) {
-            Ok(output) => {
-                if output.status.success() {
-                    info!(
-                        "Overlay restart executed successfully, mountpoint: {:?}, tmp_str: {:?}",
-                        self.node_modules_dir, tmp_str
-                    );
-                } else {
-                    return Err(anyhow!(
-                        "Error executing Overlay restart: {:?}, mountpoint: {:?}, tmp_str: {:?}",
-                        output.status,
-                        self.node_modules_dir,
-                        tmp_str
-                    ));
-                }
-            }
-            Err(e) => {
-                return Err(anyhow!(
-                    "Error executing Overlay restart command: {:?}, mountpoint: {:?}, tmp_str: {:?}",
-                    e,
-                    self.node_modules_dir,
-                    tmp_str
-                ));
-            }
-        }
-
-        let unionfs = match &self.unionfs {
-            Some(s) => s,
-            None => {
-                return Err(anyhow!(
-                    "unionfs is empty, node_modules_dir is {}",
-                    self.node_modules_dir
-                ))
-            }
-        };
-
-        let mount_str = format!(
-            r#"{} -o cow,max_files=32768 -o allow_other,use_ino,suid,dev,nobrowse {}=RW:{}=RO {}"#,
-            unionfs, self.upper, self.mnt, self.node_modules_dir
-        );
-
-        match start_command(&mount_str) {
-            Ok(output) => {
-                if output.status.success() {
-                    info!(
-                        "Overlay restart executed successfully, mountpoint: {:?}",
-                        self.node_modules_dir
-                    );
-                } else {
-                    return Err(anyhow!(
-                        "Error executing Overlay restart: {:?}, mountpoint: {:?}",
-                        output.status,
-                        self.node_modules_dir
-                    ));
-                }
-            }
-            Err(e) => {
-                return Err(anyhow!(
-                    "Error executing Overlay restart command: {:?}, mountpoint: {:?}",
-                    e,
-                    self.node_modules_dir
-                ));
-            }
-        }
-
-        let res = self.get_pids()?;
-        Ok(res)
+    pub fn restart(&self) -> Result<()> {
+        create_dir_if_not_exists(self.overlay.clone())?;
+        create_dir_if_not_exists(self.upper.clone())?;
+        create_dir_if_not_exists(self.workdir.clone())?;
+        std::fs::metadata(&self.upper)?.permissions().set_mode(0o777);
+        std::fs::metadata(&self.workdir)?.permissions().set_mode(0o777);
+        
+        Ok(())
     }
 }
 
@@ -429,6 +414,10 @@ impl ProjectConfig {
         return &self.project_path;
     }
 
+    pub fn get_node_modules_paths(&self) -> Vec<String> {
+        self.nydusd_api_mount.iter().map(|c| c.node_modules_dir.clone()).collect()
+    }
+
     pub fn get_pids(&self) -> Result<Vec<u32>> {
         let mut pids = vec![];
 
@@ -440,6 +429,7 @@ impl ProjectConfig {
         return Ok(pids);
     }
 
+    #[cfg(target_os = "linux")]
     pub async fn restart(&self) -> Result<Vec<u32>> {
         for bootstrap in self.bootstraps.iter() {
             bootstrap.restart()?;
@@ -456,6 +446,25 @@ impl ProjectConfig {
         }
 
         Ok(pids)
+    }
+
+    #[cfg(target_os = "macos")]
+    pub async fn restart(&self) -> Result<Vec<u32>> {
+        use std::vec;
+
+        for bootstrap in self.bootstraps.iter() {
+            bootstrap.restart()?;
+        }
+
+        for overlay in self.overlays.iter() {
+            overlay.restart()?;
+        }
+
+        for mount in self.nydusd_api_mount.iter() {
+            mount.restart().await?;
+        }
+
+        Ok(vec![])
     }
 }
 
@@ -558,6 +567,9 @@ impl NydusConfig {
             &self.socket_path,
             "--log-file",
             &self.nydusd_log_file,
+            "--log-level",
+            "error",
+            "--writable",
         ]);
         std::thread::spawn(move || {
             let _ = command.output();

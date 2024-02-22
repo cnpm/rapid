@@ -150,12 +150,7 @@ async fn check_project(project: &mut ProjectInfo) -> Result<()> {
         &project.pids
     );
 
-    #[cfg(target_os = "macos")]
-    if (&project.pids).len() == 0 {
-        project.restart().await?;
-        return Ok(());
-    }
-    if !is_alive(&project.pids, project.config.get_project_path()).await {
+    if !is_alive(&project.pids, project.config.get_node_modules_paths()).await {
         info!("{:?} will be check", project.config.get_project_path());
         if let Err(e) = project.kill_pids() {
             error!(
@@ -170,8 +165,9 @@ async fn check_project(project: &mut ProjectInfo) -> Result<()> {
     Ok(())
 }
 
-async fn is_alive(pids: &Vec<u32>, directory_path: &str) -> bool {
+async fn is_alive(pids: &Vec<u32>, directory_path: Vec<String>) -> bool {
     let mut is_pid_alive = true;
+    #[cfg(target_os = "linux")]
     for pid in pids.iter() {
         debug!("directory_path: {:?}, pid: {:?}", directory_path, pid);
         let output = Command::new("kill").arg("-0").arg(pid.to_string()).output();
@@ -186,8 +182,8 @@ async fn is_alive(pids: &Vec<u32>, directory_path: &str) -> bool {
     if !is_pid_alive {
         return false;
     }
-
-    match timeout(Duration::from_secs(1), read_directory(directory_path)).await {
+    info!("directory_path: {:?}, pids: {:?}", directory_path, pids);
+    match timeout(Duration::from_secs(1), read_directorys(&directory_path)).await {
         Ok(result) => match result {
             Ok(_) => true,
             Err(e) => {
@@ -202,13 +198,15 @@ async fn is_alive(pids: &Vec<u32>, directory_path: &str) -> bool {
     }
 }
 
-async fn read_directory(path: &str) -> Result<Vec<tokio::fs::DirEntry>> {
-    let mut dir = read_dir(path).await?;
-
+async fn read_directorys(paths: &Vec<String>) -> Result<Vec<tokio::fs::DirEntry>> {
     let mut entries = vec![];
 
-    while let Some(entry) = dir.next_entry().await? {
-        entries.push(entry);
+    for path in paths {
+        let mut dir = read_dir(path).await?;
+
+        while let Some(entry) = dir.next_entry().await? {
+            entries.push(entry);
+        }
     }
 
     Ok(entries)

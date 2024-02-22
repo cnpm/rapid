@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('node:fs/promises');
+const os = require('node:os');
 const assert = require('node:assert');
 const path = require('node:path');
 const downloadDependency = require('./download_dependency');
@@ -10,6 +11,7 @@ const {
   tarBucketsDir,
   NYDUS_TYPE,
 } = require('./constants');
+const { addProject } = require('./deamon');
 const util = require('./util');
 const nydusd = require('./nydusd');
 const nydusdApi = require('./nydusd/nydusd_api');
@@ -63,24 +65,28 @@ exports.install = async options => {
   await downloadDependency.download(options);
 
   assert(Object.keys(packageLock).length, '[rapid] depsJSON invalid.');
-  await nydusd.startNydusFs(options.nydusMode, options.cwd, options.pkg, options.daemon);
-
+  const deamonConfig = await nydusd.startNydusFs(options.nydusMode, options.cwd, options.pkg, options.daemon);
 
   await util.ensureAccess(options.cwd, packageLock);
-
   // 存放原始依赖树，用于 npm 二次更新依赖
   await util.storePackageLock(options.cwd, packageLock);
 
   console.time('[rapid] run lifecycle scripts');
   await options.scripts.runLifecycleScripts(mirrorConfig);
+
+  if (options.daemon) {
+    await addProject(deamonConfig);
+  }
   console.timeEnd('[rapid] run lifecycle scripts');
 };
 
 exports.clean = async function clean({ nydusMode = NYDUS_TYPE.FUSE, cwd, force, pkg, daemon }) {
   const listInfo = await util.listMountInfo();
-  if (!listInfo.length) {
-    console.log('[rapid] no mount info found.');
-    return;
+  if (os.type() === 'Linux') {
+    if (!listInfo.length) {
+      console.log('[rapid] no mount info found.');
+      return;
+    }
   }
 
   if (cwd.endsWith('node_modules') || cwd.endsWith('node_modules/')) {
