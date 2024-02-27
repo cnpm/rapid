@@ -3,7 +3,7 @@
 set -eux
 
 # Define versions
-NYDUS_VERSION=v2.0.0-cnpm.3
+NYDUS_VERSION=v2.0.0-cnpm.alpha.1
 os="${BUILD_OS:-darwin}"
 arch="${BUILD_ARCH:-$(uname -m)}"
 
