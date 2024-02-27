@@ -43,18 +43,5 @@ download_nydusd() {
   rm nydus.tgz
 }
 
-# Function to download and extract unionfs
-download_union_fs() {
-  version=$1
-  os=$2
-  arch=$3
-  if [[ "${os}" == "darwin" ]]; then
-    download "https://github.com/cnpm/unionfs-fuse/releases/download/${version}/unionfs-refs-tags-${version}-${os}-${arch}.tgz" unionfs.tgz
-    tar -xzf unionfs.tgz -C "$(pwd)/bindings/binding-${os}-${arch}" --strip-components 1 unionfs/unionfs
-    rm unionfs.tgz
-  fi
-}
-
 # Download and extract nydusd and unionfs
 download_nydusd ${NYDUS_VERSION} ${os} ${arch}
-download_union_fs ${UNION_FS_VERSION} ${os} ${arch}
