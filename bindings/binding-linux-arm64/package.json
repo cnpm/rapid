@@ -1,6 +1,6 @@
 {
   "name": "@cnpmjs/binding-linux-arm64",
-  "version": "0.5.0-alpha.3",
+  "version": "0.5.0-alpha.4",
   "description": "downloader linux arm64 binding",
   "main": "index.node",
   "homepage": "https://github.com/cnpm/rapid",
