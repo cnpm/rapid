@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0-alpha.4](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.3...v0.5.0-alpha.4) (2024-02-27)
+
+
+### Features
+
+* del unionfs ([7f0afbe](https://github.com/cnpm/rapid/commit/7f0afbe9cb6e2578aef52cd9aa6036f080a013b6))
+
+
+
+
+
+# [0.5.0-alpha.3](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.2...v0.5.0-alpha.3) (2024-02-27)
+
+**Note:** Version bump only for package cnpm-rapid-monorepo
+
+
+
+
+
 # [0.4.0](https://github.com/cnpm/rapid/compare/v0.3.0...v0.4.0) (2024-02-01)
 
 

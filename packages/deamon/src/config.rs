@@ -290,19 +290,9 @@ impl Overlay {
             }
         }
 
-        let workdir = match &self.workdir {
-            Some(s) => s,
-            None => {
-                return Err(anyhow!(
-                    "workdir is empty, node_modules_dir is {}",
-                    self.node_modules_dir
-                ))
-            }
-        };
-
         let mount_str = format!(
             r#"mount -t overlay overlay -o lowerdir={},upperdir={},workdir={} {}"#,
-            self.mnt, self.upper, workdir, self.node_modules_dir
+            self.mnt, self.upper, &self.workdir, self.node_modules_dir
         );
         match start_command(&mount_str) {
             Ok(output) => {
