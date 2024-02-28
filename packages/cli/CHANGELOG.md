@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0-alpha.7](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.7) (2024-02-28)
+
+
+### Features
+
+* update fuse backen rs path ([405b66e](https://github.com/cnpm/rapid/commit/405b66e3a0672a656f6d0af4e929b75a9f7dcf08))
+
+
+
+
+
 # [0.5.0-alpha.6](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.6) (2024-02-28)
 
 
