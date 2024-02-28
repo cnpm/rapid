@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0-alpha.6](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.6) (2024-02-28)
+
+
+### Features
+
+* add new version ([6ad510c](https://github.com/cnpm/rapid/commit/6ad510c65ebd28122a3740a74c2b47e823362d9c))
+
+
+
+
+
 # [0.5.0-alpha.5](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.5) (2024-02-27)
 
 
