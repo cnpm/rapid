@@ -1,6 +1,6 @@
 {
   "name": "@cnpmjs/rapid",
-  "version": "0.4.0",
+  "version": "0.5.0-alpha.6",
   "description": "The rapid npm installed cli built with Nydus",
   "main": "lib/index.js",
   "bin": {
@@ -11,7 +11,7 @@
     "lib"
   ],
   "dependencies": {
-    "@cnpmjs/binding": "^0.4.0",
+    "@cnpmjs/binding": "^0.5.0-alpha.6",
     "@npmcli/arborist": "^6.1.5",
     "@npmcli/map-workspaces": "^3.0.0",
     "auto-launch": "^5.0.6",

@@ -1,6 +1,6 @@
 {
   "name": "@cnpmjs/binding-linux-arm64",
-  "version": "0.4.0",
+  "version": "0.5.0-alpha.6",
   "description": "downloader linux arm64 binding",
   "main": "index.node",
   "homepage": "https://github.com/cnpm/rapid",
@@ -15,7 +15,8 @@
   "files": [
     "index.node",
     "nydusd",
-    "nydusd-bootstrap"
+    "nydusd-bootstrap",
+    "rapid_deamon"
   ],
   "scripts": {
     "pack": "npm pack",
