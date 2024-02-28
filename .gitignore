@@ -119,3 +119,4 @@ packages/downloader/test/nginx.conf
 packages/binding/index.d.ts
 .DS_Store
 package-lock.json
+.vscode
