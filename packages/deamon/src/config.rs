@@ -6,10 +6,10 @@ use log::{error, info};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Error;
-use std::{path::PathBuf, process::Command};
 use std::os::unix::fs::PermissionsExt;
+use std::{path::PathBuf, process::Command};
 
-use crate::utils::{del_dir_if_exists, get_ps_snapshot, start_command, create_dir_if_not_exists};
+use crate::utils::{create_dir_if_not_exists, del_dir_if_exists, get_ps_snapshot, start_command};
 
 // {
 //     projectName: "",
@@ -58,7 +58,6 @@ pub struct NydusdConfig {
     rafs: NydusdRafsConfig,
     overlay: Option<NydusdOverlayConfig>,
 }
-
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -120,28 +119,46 @@ impl NydusdApiMount {
         let homedir = get_my_home()?;
 
         let base = match homedir {
-            Some(home) => home.join(".rapid/cache/mnt").join(self.mountpoint.clone()).to_string_lossy().to_string(),
-            None => return Err(anyhow!("Error executing link_node_modules: get home path false")),
+            Some(home) => home
+                .join(".rapid/cache/mnt")
+                .join(self.mountpoint.clone())
+                .to_string_lossy()
+                .to_string(),
+            None => {
+                return Err(anyhow!(
+                    "Error executing link_node_modules: get home path false"
+                ))
+            }
         };
 
         let str = format!(r#"ln -s {} {}"#, base, self.node_modules_dir);
         match start_command(&str) {
             Ok(output) => {
                 if output.status.success() {
-                    info!("link_node_modules success base {} target {}", base, self.node_modules_dir);
+                    info!(
+                        "link_node_modules success base {} target {}",
+                        base, self.node_modules_dir
+                    );
                     return Ok(());
                 } else {
                     return Err(anyhow!(
                         "Error executing link_node_modules, status: {:?}, stdout: {:?}, stderr: {:?}, base {}, target {}",
                         output.status,
                         std::str::from_utf8(&output.stdout)?,
-                        std::str::from_utf8(&output.stderr)?, 
-                        base, 
+                        std::str::from_utf8(&output.stderr)?,
+                        base,
                         self.node_modules_dir,
                     ));
                 }
             }
-            Err(e) => return Err(anyhow!("Error executing link_node_modules: {:?}, base {}, target {}", e, base, self.node_modules_dir)),
+            Err(e) => {
+                return Err(anyhow!(
+                    "Error executing link_node_modules: {:?}, base {}, target {}",
+                    e,
+                    base,
+                    self.node_modules_dir
+                ))
+            }
         }
     }
 
@@ -327,9 +344,13 @@ impl Overlay {
         create_dir_if_not_exists(self.overlay.clone())?;
         create_dir_if_not_exists(self.upper.clone())?;
         create_dir_if_not_exists(self.workdir.clone())?;
-        std::fs::metadata(&self.upper)?.permissions().set_mode(0o777);
-        std::fs::metadata(&self.workdir)?.permissions().set_mode(0o777);
-        
+        std::fs::metadata(&self.upper)?
+            .permissions()
+            .set_mode(0o777);
+        std::fs::metadata(&self.workdir)?
+            .permissions()
+            .set_mode(0o777);
+
         Ok(())
     }
 }
@@ -405,7 +426,10 @@ impl ProjectConfig {
     }
 
     pub fn get_node_modules_paths(&self) -> Vec<String> {
-        self.nydusd_api_mount.iter().map(|c| c.node_modules_dir.clone()).collect()
+        self.nydusd_api_mount
+            .iter()
+            .map(|c| c.node_modules_dir.clone())
+            .collect()
     }
 
     pub fn get_pids(&self) -> Result<Vec<u32>> {

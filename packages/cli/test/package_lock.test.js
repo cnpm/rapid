@@ -5,8 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const mm = require('mm');
 const PackageLock = require('../lib/package_lock').PackageLock;
-const { install } = require('../lib');
-const httpclient = require('../lib/httpclient');
+const { generatePackageLock } = require('../lib/util');
 const nydusd = require('../lib/nydusd');
 const downloadDependency = require('../lib/download_dependency');
 
@@ -68,15 +67,10 @@ describe('test/package_lock.test.js', () => {
       mm.restore();
     });
 
-    it('should run all project installation scripts', async () => {
+    it('should generate package-lock.json', async () => {
       fixture = path.join(__dirname, './fixtures/not-exist-lock-file');
-      const pkg = require(path.join(fixture, 'package.json'));
-      await install({
-        httpclient,
-        pkg,
-        cwd: fixture,
-        console: global.console,
-      });
+
+      await generatePackageLock(fixture);
       await fs.stat(path.join(fixture, 'package-lock.json'));
     });
   });

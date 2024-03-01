@@ -145,12 +145,12 @@ async function checkDaemon() {
 // 优雅退出 nydusd daemon
 async function exitDaemon() {
   try {
-    await killDeamon();
     await urllib.request(`${daemonUrl}/exit`, {
       method: 'PUT',
       socketPath,
       dataType: 'json',
     });
+    await killDeamon();
   } catch (e) {
     // ignore, nydusd quits with error, but it's ok
     e.message = 'exit nydusd faield: ' + e.message;
@@ -168,15 +168,6 @@ async function forceExitDaemon() {
   } catch (e) {
     // ignore, nydusd quits with error, but it's ok
     e.message = 'umount nydusd mnt failed: ' + e.message;
-    console.warn(e);
-  }
-
-  try {
-    await killDeamon();
-    await execa.command('killall -9 nydusd');
-  } catch (e) {
-    // ignore, nydusd quits with error, but it's ok
-    e.message = 'exit nydusd failed: ' + e.message;
     console.warn(e);
   }
 }
@@ -217,6 +208,10 @@ async function mount(mountpoint, cwd, bootstrap = '') {
     dataType: 'json',
   });
   debug('mount result: %j', result);
+
+  if (os.type() === 'Darwin') {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
 
   return config;
 }

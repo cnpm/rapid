@@ -163,6 +163,8 @@ describe('test/scripts.test.js', () => {
         mm(process.env, NYDUS_CSI_ROOT_ENV, 'true');
         mm(process, 'cwd', () => fixtures);
         mm(nydusd, 'startNydusFs', async () => { });
+        mm(util, 'ensureAccess', async () => { });
+        mm(util, 'storePackageLock', async () => { });
         mm(downloadDependency, 'download', async () => {
           return {
             depsTree: [ 1 ],
