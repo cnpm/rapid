@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0-alpha.8](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.7...v0.5.0-alpha.8) (2024-03-04)
+
+
+### Features
+
+* add update deamon ([0a4a753](https://github.com/cnpm/rapid/commit/0a4a753eb274d2eab5d178160778e0061f301a2d))
+* update test ([8505bd4](https://github.com/cnpm/rapid/commit/8505bd4c42b08304c367fcaa17d970ea5775bfeb))
+
+
+
+
+
 # [0.5.0-alpha.7](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.7) (2024-02-28)
 
 
