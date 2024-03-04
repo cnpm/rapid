@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0-alpha.9](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.8...v0.5.0-alpha.9) (2024-03-04)
+
+
+### Bug Fixes
+
+* add kill deamon in register ([0057e47](https://github.com/cnpm/rapid/commit/0057e4774bf7469db1feafe65483317171cc62c4))
+
+
+
+
+
 # [0.5.0-alpha.8](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.7...v0.5.0-alpha.8) (2024-03-04)
 
 
