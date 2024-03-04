@@ -140,6 +140,16 @@ const killDeamon = async () => {
 };
 
 const registerDeamon = async () => {
+  try {
+    await execa.command('killall -9 rapid_deamon');
+
+    await execa.command(`umount -f ${nydusdMnt}`);
+
+    await execa.command('killall -9 nydusd');
+  } catch (error) {
+    debug('umount deamon error: ', error);
+  }
+
   await fs.rm(deamonDir, { recursive: true, force: true });
 
   await fs.mkdir(deamonDir, { recursive: true });
