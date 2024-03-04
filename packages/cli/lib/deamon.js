@@ -140,6 +140,12 @@ const killDeamon = async () => {
 };
 
 const registerDeamon = async () => {
+  await fs.rm(deamonDir, { recursive: true, force: true });
+
+  await fs.mkdir(deamonDir, { recursive: true });
+
+  await fs.copyFile(path.join(__dirname, '../package.json'), path.join(deamonDir, 'package.json'));
+
   const nydusConfigPath = path.join(deamonDir, 'nydus_config.json');
 
   await fs.writeFile(nydusConfigPath, JSON.stringify({
@@ -201,6 +207,11 @@ const initDeamon = async () => {
   await fs.mkdir(nydusdMnt, { recursive: true });
 
   try {
+    const rapidVersion = require(path.join(__dirname, '../package.json')).version;
+    const deamonVersion = require(path.join(deamonDir, 'package.json')).version;
+    if (rapidVersion !== deamonVersion) {
+      throw Error('[rapid] rapid and deamon version not match');
+    }
     await fs.stat(destinationFilePath);
   } catch (e) {
     await registerDeamon();
