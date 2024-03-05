@@ -49,5 +49,6 @@
     "rapid",
     "npm"
   ],
-  "author": "gemwuu <gemwuu@163.com> (https://github.com/gemwuu)"
+  "author": "gemwuu <gemwuu@163.com> (https://github.com/gemwuu)",
+  "deamonVersion": "0.0.1"
 }

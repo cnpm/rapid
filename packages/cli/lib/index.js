@@ -35,12 +35,23 @@ exports.install = async options => {
     const { baseDir, tarIndex, nodeModulesDir } = await util.getWorkdir(options.cwd, pkgPath);
 
     const mountedInfo = currentMountInfo.find(item => item.mountPoint === nodeModulesDir);
+    let isMounted = false;
 
-    if (mountedInfo) {
+    if (os.type() === 'Darwin') {
+      try {
+        await fs.stat(nodeModulesDir);
+        isMounted = true;
+      } catch (e) {
+        console.log(e);
+      }
+      await fs.rm(nodeModulesDir, { recursive: true, force: true });
+    }
+
+    if (mountedInfo || isMounted) {
       console.time(`[rapid] ${nodeModulesDir} already mounted, try to clean`);
       await exports.clean({
         nydusMode: options.nydusMode,
-        cwd: mountedInfo.mountPoint,
+        cwd: options.cwd,
         pkg: options.pkg,
         force: true,
         daemon: options.daemon,

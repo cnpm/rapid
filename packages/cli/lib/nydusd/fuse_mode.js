@@ -95,9 +95,7 @@ async function mountNydus(cwd, pkg, config) {
   // 需要串行 mount，并发创建时 nydusd 会出现问题
   for (const pkgPath of allPkgs) {
     const { dirname, bootstrap, nodeModulesDir } = await getWorkdir(cwd, pkgPath);
-    if (os.type() === 'Darwin') {
-      await fs.rm(nodeModulesDir, { recursive: true, force: true });
-    }
+
     const nydusdConfig = await nydusdApi.mount(`/${dirname}`, cwd, bootstrap);
     mounts.push({
       mountpoint: `${dirname}`,

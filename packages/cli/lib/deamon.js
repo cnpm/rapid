@@ -207,21 +207,23 @@ root:
 };
 
 const initDeamon = async () => {
-  const isRunning = await checkDeamonAlive();
-  if (isRunning) {
-    console.info('[rapid] rapid daemon is running already.');
-    return;
-  }
-  await fs.mkdir(deamonDir, { recursive: true });
-
-  await fs.mkdir(nydusdMnt, { recursive: true });
-
   try {
-    const rapidVersion = require(path.join(__dirname, '../package.json')).version;
-    const deamonVersion = require(path.join(deamonDir, 'package.json')).version;
+    const rapidVersion = require(path.join(__dirname, '../package.json')).deamonVersion;
+    const deamonVersion = require(path.join(deamonDir, './package.json')).deamonVersion;
+    console.log(rapidVersion, deamonVersion);
     if (rapidVersion !== deamonVersion) {
-      throw Error('[rapid] rapid and deamon version not match');
+      const err = '[rapid] rapid and deamon version not match';
+      console.info(err);
+      throw Error(err);
     }
+    const isRunning = await checkDeamonAlive();
+    if (isRunning) {
+      console.info('[rapid] rapid daemon is running already.');
+      return;
+    }
+    await fs.mkdir(deamonDir, { recursive: true });
+
+    await fs.mkdir(nydusdMnt, { recursive: true });
     await fs.stat(destinationFilePath);
   } catch (e) {
     await registerDeamon();
