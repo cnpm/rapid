@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0-alpha.11](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.10...v0.5.0-alpha.11) (2024-03-05)
+
+
+### Bug Fixes
+
+* del log ([423e168](https://github.com/cnpm/rapid/commit/423e168b88e12c176cb41510b2beebb177a49ba0))
+
+
+
+
+
 # [0.5.0-alpha.10](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.9...v0.5.0-alpha.10) (2024-03-05)
 
 

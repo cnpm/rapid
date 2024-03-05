@@ -1,6 +1,6 @@
 {
   "name": "@cnpmjs/binding",
-  "version": "0.5.0-alpha.10",
+  "version": "0.5.0-alpha.11",
   "description": "downloader binding",
   "main": "index.js",
   "files": [
@@ -18,10 +18,10 @@
     "pack": "npm pack"
   },
   "optionalDependencies": {
-    "@cnpmjs/binding-darwin-arm64": "^0.5.0-alpha.10",
-    "@cnpmjs/binding-darwin-x64": "^0.5.0-alpha.10",
-    "@cnpmjs/binding-linux-arm64": "^0.5.0-alpha.10",
-    "@cnpmjs/binding-linux-x64": "^0.5.0-alpha.10"
+    "@cnpmjs/binding-darwin-arm64": "^0.5.0-alpha.11",
+    "@cnpmjs/binding-darwin-x64": "^0.5.0-alpha.11",
+    "@cnpmjs/binding-linux-arm64": "^0.5.0-alpha.11",
+    "@cnpmjs/binding-linux-x64": "^0.5.0-alpha.11"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.4.2"
