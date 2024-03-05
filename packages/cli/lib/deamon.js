@@ -210,7 +210,7 @@ const initDeamon = async () => {
   try {
     const rapidVersion = require(path.join(__dirname, '../package.json')).deamonVersion;
     const deamonVersion = require(path.join(deamonDir, './package.json')).deamonVersion;
-    console.log(rapidVersion, deamonVersion);
+
     if (rapidVersion !== deamonVersion) {
       const err = '[rapid] rapid and deamon version not match';
       console.info(err);

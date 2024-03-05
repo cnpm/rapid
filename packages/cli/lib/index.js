@@ -41,9 +41,7 @@ exports.install = async options => {
       try {
         await fs.stat(nodeModulesDir);
         isMounted = true;
-      } catch (e) {
-        console.log(e);
-      }
+      } catch { /* empty */ }
       await fs.rm(nodeModulesDir, { recursive: true, force: true });
     }
 
