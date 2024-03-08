@@ -19,6 +19,7 @@ const {
   FuseDeviceError,
 } = require('./error');
 const execa = require('execa');
+const first = require('ee-first');
 const normalize = require('npm-normalize-package-bin');
 const {
   tarBucketsDir,
@@ -395,7 +396,7 @@ async function getWorkdir(cwd, subPath = '', csiDir) {
   return {
     projectDir: workdir,
     prefix,
-    dirname: path.join(dirname, prefix, os.type() === 'Linux' ? '' : 'node_modules'),
+    dirname: path.join(dirname, prefix),
     baseDir: path.join(workdir, prefix), // .rapid/cache/xxx
     volumeName: 'rapid-' + prefix, // xxx
     tmpDmg: path.join(workdir, prefix, 'tmp.dmg'), // .rapid/cache/xxx/overlay
@@ -679,6 +680,43 @@ async function storePackageLock(cwd, packageLock) {
   );
 }
 
+
+const awaitFirst = (emitter, events) => {
+  if (Array.isArray(emitter)) {
+    events = emitter;
+    emitter = this;
+  }
+  return new Promise((resolve, reject) => {
+    first([
+      [ emitter ].concat(events),
+    ], (err, ee, event, args) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ event, args });
+      }
+    });
+  });
+};
+
+const runNPM = async (args, options) => {
+  const npm = execa('npm', args, options);
+
+  const eventRes = await awaitFirst(npm, [ 'exit', 'error' ]);
+  let [ code, signal ] = eventRes.args;
+
+  if (process.env.ENV_TYPE || code) {
+    console.warn('[tnpm] subprocess:%s exit code: %s, signal: %s', args.join(' '), code, signal);
+    if (signal && !code) {
+      code = 1;
+    }
+  }
+
+
+  process.exit(code);
+};
+
+exports.runNPM = runNPM;
 exports.getWorkdir = getWorkdir;
 exports.validDep = validDep;
 exports.getDisplayName = getDisplayName;

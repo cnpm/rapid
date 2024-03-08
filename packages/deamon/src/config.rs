@@ -116,28 +116,22 @@ impl NydusdApiMount {
     }
 
     fn link_node_modules(&self) -> Result<()> {
-        let homedir = get_my_home()?;
+        let str = format!(r#"umount -f {}"#, self.node_modules_dir);
 
-        let base = match homedir {
-            Some(home) => home
-                .join(".rapid/cache/mnt")
-                .join(self.mountpoint.clone())
-                .to_string_lossy()
-                .to_string(),
-            None => {
-                return Err(anyhow!(
-                    "Error executing link_node_modules: get home path false"
-                ))
-            }
-        };
+        if let Err(e) = start_command(&str) {
+            error!("Error executing umount: {:?}", e);
+        }
 
-        let str = format!(r#"ln -s {} {}"#, base, self.node_modules_dir);
+        let str = format!(
+            r#"mount -o port=52100,mountport=52100,vers=4,namedattr,rwsize=262144,nobrowse -t nfs fuse-t:/rafs-/{} {}"#,
+            self.mountpoint, self.node_modules_dir
+        );
         match start_command(&str) {
             Ok(output) => {
                 if output.status.success() {
                     info!(
                         "link_node_modules success base {} target {}",
-                        base, self.node_modules_dir
+                        self.mountpoint, self.node_modules_dir
                     );
                     return Ok(());
                 } else {
@@ -146,7 +140,7 @@ impl NydusdApiMount {
                         output.status,
                         std::str::from_utf8(&output.stdout)?,
                         std::str::from_utf8(&output.stderr)?,
-                        base,
+                        self.mountpoint,
                         self.node_modules_dir,
                     ));
                 }
@@ -155,7 +149,7 @@ impl NydusdApiMount {
                 return Err(anyhow!(
                     "Error executing link_node_modules: {:?}, base {}, target {}",
                     e,
-                    base,
+                    self.mountpoint,
                     self.node_modules_dir
                 ))
             }

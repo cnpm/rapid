@@ -1,4 +1,5 @@
 use super::config::ProjectConfig;
+use crate::utils::list_mount_info;
 use anyhow::{anyhow, Result};
 use log::{debug, error, info};
 use nix::sys::signal::{self, Signal};
@@ -176,6 +177,18 @@ async fn is_alive(pids: &Vec<u32>, directory_path: Vec<String>) -> bool {
         } else {
             is_pid_alive = false;
             break;
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        match list_mount_info() {
+            Ok(mounts) => {
+                is_pid_alive = directory_path.iter().all(|item| mounts.contains(item));
+            }
+            Err(e) => {
+                error!("list_mount_info error: {:?}", e);
+            }
         }
     }
 

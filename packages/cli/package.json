@@ -20,6 +20,7 @@
     "boxen": "^5.1.2",
     "chalk": "^4.0.0",
     "cli-progress": "^3.12.0",
+    "ee-first": "^1.1.1",
     "execa": "^5.1.1",
     "inquirer": "^8.2.6",
     "ms": "^0.7.1",
@@ -50,5 +51,5 @@
     "npm"
   ],
   "author": "gemwuu <gemwuu@163.com> (https://github.com/gemwuu)",
-  "deamonVersion": "0.0.1"
+  "deamonVersion": "0.0.2"
 }

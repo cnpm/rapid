@@ -10,7 +10,7 @@ const {
   unionfs,
   BOOTSTRAP_BIN,
   socketPath,
-  nydusdMnt,
+  // nydusdMnt,
 } = require('../constants');
 const {
   wrapSudo,
@@ -105,7 +105,8 @@ async function mountNydus(cwd, pkg, config) {
       nodeModulesDir,
     });
     if (os.type() === 'Darwin') {
-      await execa.command(`ln -s ${path.join(nydusdMnt, dirname)} ${nodeModulesDir}`);
+      await fs.mkdir(nodeModulesDir, { recursive: true });
+      await execa.command(`mount -o port=52100,mountport=52100,vers=4,namedattr,rwsize=262144,nobrowse -t nfs fuse-t:/rafs-/${dirname} ${nodeModulesDir}`);
     }
     bar.update(dirname);
   }
@@ -210,6 +211,10 @@ async function endNydusFs(cwd, pkg, force = true, daemon) {
       pkgPath
     );
     if (os.type() === 'Darwin') {
+      await wrapRetry({
+        cmd: () => execa.command(wrapSudo(`${umountCmd} ${nodeModulesDir}`)),
+        title: 'umount node_modules',
+      });
       await fs.rm(nodeModulesDir, { recursive: true, force: true });
     } else {
       await wrapRetry({

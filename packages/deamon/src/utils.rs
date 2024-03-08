@@ -78,6 +78,36 @@ pub fn check_and_create_file(file_path: &str) -> io::Result<File> {
     }
 }
 
+pub fn list_mount_info() -> Result<Vec<String>> {
+    let output = Command::new("mount").output()?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let mount_lines: Vec<&str> = stdout.split('\n').collect();
+
+    let filtered_mounts: Vec<String> = mount_lines
+        .iter()
+        .filter(|&&line| {
+            line.contains("node_modules")
+                && (line.starts_with("fuse-t:/") || line.starts_with("overlay"))
+        })
+        .map(|&line| {
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            let device = parts[0].to_string();
+            let mount_point = parts[2].to_string();
+            // MountInfo {
+            //     device,
+            //     mount_point,
+            // }
+            mount_point
+        })
+        .collect();
+
+    let mut sorted_mounts = filtered_mounts;
+    sorted_mounts.sort_by(|a, b| a.cmp(&b));
+
+    Ok(sorted_mounts)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
