@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0-alpha.13](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.11...v0.5.0-alpha.13) (2024-03-08)
+
+
+### Features
+
+* update link to mount ([1d44dd4](https://github.com/cnpm/rapid/commit/1d44dd469e0a9512b909efea5731909d11e0b710))
+
+
+
+
+
 # [0.5.0-alpha.11](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.10...v0.5.0-alpha.11) (2024-03-05)
 
 
