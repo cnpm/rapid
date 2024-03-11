@@ -19,6 +19,7 @@ const {
   FuseDeviceError,
 } = require('./error');
 const execa = require('execa');
+const first = require('ee-first');
 const normalize = require('npm-normalize-package-bin');
 const {
   tarBucketsDir,
@@ -604,7 +605,7 @@ exports.generatePackageLock = async cwd => {
   let isExist = true;
   try {
     const lockPath = path.join(cwd || exports.findLocalPrefix(), './package-lock.json');
-    await await fs.stat(lockPath);
+    await fs.stat(lockPath);
   } catch {
     isExist = false;
   }
@@ -673,13 +674,49 @@ exports.listMountInfo = async function listMountInfo() {
 
 async function storePackageLock(cwd, packageLock) {
   const lockPath = path.join(cwd, 'node_modules', '.package-lock.json');
-  await fs.mkdir(path.dirname(lockPath), { recursive: true });
   await fs.writeFile(
     lockPath,
     JSON.stringify(packageLock, null, 2)
   );
 }
 
+
+const awaitFirst = (emitter, events) => {
+  if (Array.isArray(emitter)) {
+    events = emitter;
+    emitter = this;
+  }
+  return new Promise((resolve, reject) => {
+    first([
+      [ emitter ].concat(events),
+    ], (err, ee, event, args) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ event, args });
+      }
+    });
+  });
+};
+
+const runNPM = async (args, options) => {
+  const npm = execa('npm', args, options);
+
+  const eventRes = await awaitFirst(npm, [ 'exit', 'error' ]);
+  let [ code, signal ] = eventRes.args;
+
+  if (process.env.ENV_TYPE || code) {
+    console.warn('[tnpm] subprocess:%s exit code: %s, signal: %s', args.join(' '), code, signal);
+    if (signal && !code) {
+      code = 1;
+    }
+  }
+
+
+  process.exit(code);
+};
+
+exports.runNPM = runNPM;
 exports.getWorkdir = getWorkdir;
 exports.validDep = validDep;
 exports.getDisplayName = getDisplayName;

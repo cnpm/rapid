@@ -8,7 +8,7 @@ const checkFiles = [
   'index.node',
   // 'nydusd',
   // 'nydusd-bootstrap',
-  'unionfs',
+  'rapid_deamon',
 ];
 
 for (const file of checkFiles) {

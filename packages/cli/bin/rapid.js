@@ -83,6 +83,34 @@ const argv = yargs
     },
   })
   .command({
+    command: 'add [packages..]',
+    describe: 'add packages',
+    handler: async () => {
+      const cwd = process.cwd();
+      const args = process.argv.slice(3);
+      args.unshift('install');
+      await util.runNPM(args, {
+        env: process.env,
+        cwd,
+        stdio: 'inherit',
+      });
+    },
+  })
+  .command({
+    command: 'uninstall [packages..]',
+    describe: 'uninstall packages',
+    handler: async () => {
+      const cwd = process.cwd();
+      const args = process.argv.slice(3);
+      args.unshift('uninstall');
+      await util.runNPM(args, {
+        env: process.env,
+        cwd,
+        stdio: 'inherit',
+      });
+    },
+  })
+  .command({
     command: 'clean [path]',
     aliases: [ 'c', 'unmount', 'uninstall' ],
     describe: 'Clean up the project',

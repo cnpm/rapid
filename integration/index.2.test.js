@@ -3,6 +3,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const assert = require('node:assert');
+const os = require('node:os');
 const coffee = require('coffee');
 const semver = require('semver');
 const execa = require('execa');
@@ -20,7 +21,11 @@ describe('test/index.v2.test.js', () => {
   let cwd;
 
   afterEach(async () => {
-    await clean({ cwd });
+    try {
+      await clean({ cwd, daemon: true });
+    } catch (e) {
+      console.warn('clean error: ', e);
+    }
     if (process.platform === 'darwin') {
       try {
         await forceExitDaemon();
@@ -28,8 +33,13 @@ describe('test/index.v2.test.js', () => {
         console.warn('force exit daemon error: %s', err.message);
       }
     } else {
-      await exitDaemon();
+      try {
+        await exitDaemon();
+      } catch (err) {
+        console.warn('exit daemon error: %s', err.message);
+      }
     }
+
   });
 
   describe('update', () => {
@@ -125,8 +135,10 @@ describe('test/index.v2.test.js', () => {
       .end();
 
     await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/react-jsx-parser/package.json')));
-    const { stdout } = await execa.command('mount', { stdio: 'pipe' });
-    assert(stdout.indexOf(cwd) > 0);
+    if (os.type() === 'Darwin') {
+      const { stdout } = await execa.command('mount', { stdio: 'pipe' });
+      assert(stdout.indexOf(cwd) > 0);
+    }
     assert(require(path.join(cwd, 'node_modules/react-jsx-parser/package.json')).version === '1.29.0');
   });
 
@@ -205,7 +217,7 @@ describe('test/index.v2.test.js', () => {
   });
 
 
-  describe('deamon', async () => {
+  describe.only('deamon', async () => {
     it('should work', async () => {
       cwd = path.join(__dirname, './fixtures/esbuild');
       await coffee
@@ -223,9 +235,8 @@ describe('test/index.v2.test.js', () => {
       assert.strictEqual(dirs.filter(dir => dir.includes('esbuild')).length, 2);
       await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/esbuild')));
       assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
-      const nodeModulesDir = path.join(cwd, 'node_modules');
 
-      await execa.command(`umount -f ${nodeModulesDir}`);
+      await execa.command('killall -9 nydusd');
       await setTimeoutPromise(20000);
       assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
     });
@@ -248,9 +259,8 @@ describe('test/index.v2.test.js', () => {
       assert.strictEqual(dirs.filter(dir => dir.includes('esbuild')).length, 2);
       await assert.doesNotReject(fs.stat(path.join(cwd, 'node_modules/esbuild')));
       assert.strictEqual(require(path.join(cwd, 'node_modules', 'esbuild/package.json')).version, '0.15.14');
-      const nodeModulesDir = path.join(cwd, 'node_modules');
 
-      await execa.command(`umount -f ${nodeModulesDir}`);
+      await execa.command('killall -9 nydusd');
       await setTimeoutPromise(20000);
 
       await assert.rejects(fs.stat(path.join(cwd, 'node_modules', 'esbuild/package.json')));

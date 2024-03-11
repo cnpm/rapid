@@ -3,6 +3,122 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0-alpha.15](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.13...v0.5.0-alpha.15) (2024-03-11)
+
+
+### Bug Fixes
+
+* fix sudo ([f33f576](https://github.com/cnpm/rapid/commit/f33f57699c28b07d570239df3cba9fcea01b49cd))
+
+
+
+
+
+# [0.5.0-alpha.13](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.11...v0.5.0-alpha.13) (2024-03-08)
+
+
+### Features
+
+* update link to mount ([1d44dd4](https://github.com/cnpm/rapid/commit/1d44dd469e0a9512b909efea5731909d11e0b710))
+
+
+
+
+
+# [0.5.0-alpha.11](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.10...v0.5.0-alpha.11) (2024-03-05)
+
+
+### Bug Fixes
+
+* del log ([423e168](https://github.com/cnpm/rapid/commit/423e168b88e12c176cb41510b2beebb177a49ba0))
+
+
+
+
+
+# [0.5.0-alpha.10](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.9...v0.5.0-alpha.10) (2024-03-05)
+
+
+### Features
+
+* update mac already clean ([2c13f8c](https://github.com/cnpm/rapid/commit/2c13f8caa25119cb6b2acc39ca212598130b84e4))
+
+
+
+
+
+# [0.5.0-alpha.9](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.8...v0.5.0-alpha.9) (2024-03-04)
+
+
+### Bug Fixes
+
+* add kill deamon in register ([0057e47](https://github.com/cnpm/rapid/commit/0057e4774bf7469db1feafe65483317171cc62c4))
+
+
+
+
+
+# [0.5.0-alpha.8](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.7...v0.5.0-alpha.8) (2024-03-04)
+
+
+### Features
+
+* add update deamon ([0a4a753](https://github.com/cnpm/rapid/commit/0a4a753eb274d2eab5d178160778e0061f301a2d))
+* update test ([8505bd4](https://github.com/cnpm/rapid/commit/8505bd4c42b08304c367fcaa17d970ea5775bfeb))
+
+
+
+
+
+# [0.5.0-alpha.7](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.7) (2024-02-28)
+
+
+### Features
+
+* update fuse backen rs path ([405b66e](https://github.com/cnpm/rapid/commit/405b66e3a0672a656f6d0af4e929b75a9f7dcf08))
+
+
+
+
+
+# [0.5.0-alpha.6](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.6) (2024-02-28)
+
+
+### Features
+
+* add new version ([6ad510c](https://github.com/cnpm/rapid/commit/6ad510c65ebd28122a3740a74c2b47e823362d9c))
+
+
+
+
+
+# [0.5.0-alpha.5](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.5) (2024-02-27)
+
+
+### Features
+
+* add new version ([615e447](https://github.com/cnpm/rapid/commit/615e447c3eb652bf671ec9add48cad008e8de23a))
+
+
+
+
+
+# [0.5.0-alpha.4](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.3...v0.5.0-alpha.4) (2024-02-27)
+
+**Note:** Version bump only for package @cnpmjs/rapid
+
+
+
+
+
+# [0.5.0-alpha.3](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.2...v0.5.0-alpha.3) (2024-02-27)
+
+**Note:** Version bump only for package @cnpmjs/rapid
+
+
+
+
+
 # [0.4.0](https://github.com/cnpm/rapid/compare/v0.3.0...v0.4.0) (2024-02-01)
 
 

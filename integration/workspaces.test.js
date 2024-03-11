@@ -17,10 +17,14 @@ describe('test/workspaces.test.js', () => {
 
   it('should install lodash successfully', async () => {
     cwd = path.join(__dirname, './fixtures/workspaces');
-    await clean({
-      cwd,
-      force: true,
-    });
+    try {
+      await clean({
+        cwd,
+        force: true,
+      });
+    } catch (e) {
+      console.warn('clean error: ', e);
+    }
     await install({
       nydusMode: 'FUSE',
       cwd,

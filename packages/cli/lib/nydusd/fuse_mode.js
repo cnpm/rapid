@@ -10,17 +10,18 @@ const {
   unionfs,
   BOOTSTRAP_BIN,
   socketPath,
+  // nydusdMnt,
 } = require('../constants');
 const {
   wrapSudo,
   getWorkdir,
   getAllPkgPaths,
   wrapRetry,
-  listMountInfo,
+  // listMountInfo,
 } = require('../util');
 const nydusdApi = require('./nydusd_api');
 const { Bar } = require('../logger');
-const { addProject, delProject, initDeamon } = require('../deamon');
+const { delProject, initDeamon } = require('../deamon');
 
 const getProjectName = cwd => {
   const folderName = path.basename(cwd);
@@ -45,15 +46,20 @@ async function startNydusFs(cwd, pkg, daemon) {
   console.log('[rapid] generate bootstrap');
   await generateBootstrapFile(cwd, pkg, deamonConfig);
 
+  if (os.type() === 'Darwin') {
+    console.log('[rapid] init overlay, it may take a few seconds');
+    await macosOverlayInit(cwd, pkg, deamonConfig);
+  }
+
   console.log('[rapid] mount nydusd');
   await mountNydus(cwd, pkg, deamonConfig);
 
-  console.log('[rapid] mount overlay, it may take a few seconds');
-  await mountOverlay(cwd, pkg, deamonConfig);
-
-  if (daemon) {
-    await addProject(deamonConfig);
+  if (os.type() === 'Linux') {
+    console.log('[rapid] mount overlay, it may take a few seconds');
+    await mountOverlay(cwd, pkg, deamonConfig);
   }
+
+  return deamonConfig;
 }
 
 async function generateBootstrapFile(cwd, pkg, config) {
@@ -88,18 +94,59 @@ async function mountNydus(cwd, pkg, config) {
 
   // 需要串行 mount，并发创建时 nydusd 会出现问题
   for (const pkgPath of allPkgs) {
-    const { dirname, bootstrap } = await getWorkdir(cwd, pkgPath);
-    await nydusdApi.mount(`/${dirname}`, cwd, bootstrap);
+    const { dirname, bootstrap, nodeModulesDir } = await getWorkdir(cwd, pkgPath);
+
+    const nydusdConfig = await nydusdApi.mount(`/${dirname}`, cwd, bootstrap);
     mounts.push({
-      mountpoint: `/${dirname}`,
+      mountpoint: `${dirname}`,
       socketPath,
       bootstrap,
-      nydusdConfig: JSON.parse(nydusdApi.nydusdConfig),
+      nydusdConfig: JSON.parse(nydusdConfig),
+      nodeModulesDir,
     });
+    if (os.type() === 'Darwin') {
+      await fs.mkdir(nodeModulesDir, { recursive: true });
+      await execa.command(`mount -o port=52100,mountport=52100,vers=4,namedattr,rwsize=262144,nobrowse -t nfs fuse-t:/rafs-/${dirname} ${nodeModulesDir}`);
+    }
     bar.update(dirname);
   }
   bar.stop();
   config.nydusdApiMount = mounts;
+}
+
+async function macosOverlayInit(cwd, pkg, config) {
+  const allPkgs = await getAllPkgPaths(cwd, pkg);
+  const bar = new Bar({
+    type: 'overlay',
+    total: allPkgs.length,
+  });
+  const overlays = [];
+  await Promise.all(allPkgs.map(async pkgPath => {
+    const {
+      upper,
+      workdir,
+      mnt,
+      overlay,
+      nodeModulesDir,
+    } = await getWorkdir(cwd, pkgPath);
+    await fs.mkdir(overlay, { recursive: true });
+    await fs.mkdir(upper, { recursive: true });
+    await fs.mkdir(workdir, { recursive: true });
+    await fs.chmod(upper, 0o777);
+    await fs.chmod(workdir, 0o777);
+    const overlayConfig = {
+      unionfs,
+      upper,
+      mnt,
+      nodeModulesDir,
+      overlay,
+      workdir,
+    };
+    bar.update(nodeModulesDir);
+    overlays.push(overlayConfig);
+  }));
+  bar.stop();
+  config.overlays = overlays;
 }
 
 async function mountOverlay(cwd, pkg, config) {
@@ -116,37 +163,21 @@ async function mountOverlay(cwd, pkg, config) {
       mnt,
       overlay,
       nodeModulesDir,
-      volumeName,
+      // volumeName,
       tmpDmg,
     } = await getWorkdir(cwd, pkgPath);
     await fs.mkdir(nodeModulesDir, { recursive: true });
     await fs.mkdir(overlay, { recursive: true });
     await fs.mkdir(mnt, { recursive: true });
-    if (os.type() === 'Linux') {
-      await wrapRetry({
-        cmd: async () =>
-          await execa.command(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`)),
-        title: 'mount tnpmfs',
-      });
-    } else if (os.type() === 'Darwin') {
-      // hdiutil create -size 512m -fs "APFS" -volname "NewAPFSDisk" -type SPARSE -layout NONE -imagekey diskimage-class=CRawDiskImage loopfile.dmg
-      await fs.rm(tmpDmg, { force: true });
-      await wrapRetry({
-        cmd: async () =>
-          await execa.command(
-            `hdiutil create -size 512m -fs APFS -volname ${volumeName} -type SPARSE -layout NONE -imagekey diskimage-class=CRawDiskImage ${tmpDmg}`
-          ),
-        title: 'hdiutil create',
-      });
-      await wrapRetry({
-        cmd: async () => await execa.command(`hdiutil attach -nobrowse -mountpoint ${overlay} ${tmpDmg}`),
-        title: 'hdiutil attach',
-      });
-    }
+    await wrapRetry({
+      cmd: async () =>
+        await execa.command(wrapSudo(`mount -t tmpfs tmpfs ${overlay}`)),
+      title: 'mount tnpmfs',
+    });
     await fs.mkdir(upper, { recursive: true });
     await fs.mkdir(workdir, { recursive: true });
     let overlayConfig = {};
-    let shScript = wrapSudo(`mount \
+    const shScript = wrapSudo(`mount \
 -t overlay overlay \
 -o lowerdir=${mnt},upperdir=${upper},workdir=${workdir} \
 ${nodeModulesDir}`);
@@ -159,21 +190,6 @@ ${nodeModulesDir}`);
       overlay,
     };
 
-    if (os.type() === 'Darwin') {
-      shScript = `${unionfs} \
--o cow,max_files=32768 \
--o allow_other,use_ino,suid,dev,nobrowse \
-${upper}=RW:${mnt}=RO \
-${nodeModulesDir}`;
-      overlayConfig = {
-        unionfs,
-        upper,
-        mnt,
-        nodeModulesDir,
-        tmpDmg,
-        overlay,
-      };
-    }
     // console.log('[rapid] mountOverlay: `%s`', shScript);
     await execa.command(shScript);
     bar.update(nodeModulesDir);
@@ -196,47 +212,10 @@ async function endNydusFs(cwd, pkg, force = true, daemon) {
     );
     if (os.type() === 'Darwin') {
       await wrapRetry({
-        cmd: async () => {
-          const currentMountInfo = await listMountInfo();
-          const mounted = currentMountInfo.find(
-            item => item.mountPoint === nodeModulesDir
-          );
-          if (!mounted) {
-            console.log(`[rapid] ${nodeModulesDir} is unmounted, skip`);
-            return;
-          }
-          await execa.command(`umount ${nodeModulesDir}`);
-        },
+        cmd: () => execa.command(`${umountCmd} ${nodeModulesDir}`),
         title: 'umount node_modules',
-        fallback: force
-          ? async () => {
-            // force 模式再次尝试
-            await execa.command(`umount -f ${nodeModulesDir}`);
-          }
-          : undefined,
       });
-
-      await wrapRetry({
-        cmd: async () => {
-          const listInfo = await execa.command(
-            `hdiutil info | grep ${overlay} || echo ""`,
-            {
-              shell: true,
-            }
-          );
-          if (!listInfo.stdout) {
-            return;
-          }
-          await execa.command(`hdiutil detach ${overlay}`);
-        },
-        title: 'hdiutil detach',
-        fallback: force
-          ? async () => {
-            console.log(`[rapid] use fallback umount -f ${overlay}`);
-            await execa.command(`umount -f ${overlay}`);
-          }
-          : undefined,
-      });
+      await fs.rm(nodeModulesDir, { recursive: true, force: true });
     } else {
       await wrapRetry({
         cmd: () => execa.command(wrapSudo(`${umountCmd} ${nodeModulesDir}`)),

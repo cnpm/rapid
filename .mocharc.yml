@@ -10,3 +10,4 @@ require:
   - intelli-espower-loader
 full-trace: true
 exit: true
+parallel: false

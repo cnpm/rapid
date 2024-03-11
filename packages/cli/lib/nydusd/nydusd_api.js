@@ -1,6 +1,7 @@
 'use strict';
 
 const debug = require('node:util').debuglog('rapid:nydusd_api');
+const os = require('node:os');
 const fs = require('node:fs/promises');
 const urllib = require('urllib');
 const execa = require('execa');
@@ -71,6 +72,8 @@ async function initDaemon(nydusdBin = '') {
       '--mountpoint', nydusdMnt,
       '--apisock', socketPath,
       '--log-file', nydusdLogFile,
+      '--log-level', 'error',
+      '--writable',
     ];
     subprocess = execa('sudo', args, {
       detached: true,
@@ -83,6 +86,8 @@ async function initDaemon(nydusdBin = '') {
       '--mountpoint', nydusdMnt,
       '--apisock', socketPath,
       '--log-file', nydusdLogFile,
+      '--log-level', 'error',
+      '--writable',
     ];
     subprocess = execa(nydusdBin, args, {
       detached: true,
@@ -140,12 +145,12 @@ async function checkDaemon() {
 // 优雅退出 nydusd daemon
 async function exitDaemon() {
   try {
-    await killDeamon();
     await urllib.request(`${daemonUrl}/exit`, {
       method: 'PUT',
       socketPath,
       dataType: 'json',
     });
+    await killDeamon();
   } catch (e) {
     // ignore, nydusd quits with error, but it's ok
     e.message = 'exit nydusd faield: ' + e.message;
@@ -165,31 +170,50 @@ async function forceExitDaemon() {
     e.message = 'umount nydusd mnt failed: ' + e.message;
     console.warn(e);
   }
-
-  try {
-    await killDeamon();
-    await execa.command('killall -9 nydusd');
-  } catch (e) {
-    // ignore, nydusd quits with error, but it's ok
-    e.message = 'exit nydusd failed: ' + e.message;
-    console.warn(e);
-  }
 }
 
 async function mount(mountpoint, cwd, bootstrap = '') {
   const workDir = await getWorkdir(cwd);
+  const config = JSON.stringify({
+    rafs: {
+      device: {
+        backend: {
+          type: 'localfs',
+          config: {
+            dir: tarBucketsDir,
+            readahead: true,
+          },
+        },
+      },
+      mode: 'direct',
+      digest_validate: false, // skip entry shasum check
+      iostats_files: false, // skip profile file generation
+    },
+    ...(os.type() === 'Linux' ? {} : {
+      overlay: {
+        upper_dir: workDir.upper,
+        work_dir: workDir.workdir,
+      },
+    }),
+  });
   const result = await urllib.request(`${mountUrl}?mountpoint=${mountpoint}`, {
     method: 'POST',
     socketPath,
     data: {
       source: bootstrap || workDir.bootstrap,
       fs_type: 'rafs',
-      config: nydusdConfig,
+      config,
     },
     contentType: 'json',
     dataType: 'json',
   });
   debug('mount result: %j', result);
+
+  if (os.type() === 'Darwin') {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
+  return config;
 }
 
 // 重新配置挂载点

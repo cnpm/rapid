@@ -3,6 +3,103 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0-alpha.15](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.13...v0.5.0-alpha.15) (2024-03-11)
+
+**Note:** Version bump only for package @cnpmjs/binding-darwin-x64
+
+
+
+
+
+# [0.5.0-alpha.13](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.11...v0.5.0-alpha.13) (2024-03-08)
+
+**Note:** Version bump only for package @cnpmjs/binding-darwin-x64
+
+
+
+
+
+# [0.5.0-alpha.11](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.10...v0.5.0-alpha.11) (2024-03-05)
+
+**Note:** Version bump only for package @cnpmjs/binding-darwin-x64
+
+
+
+
+
+# [0.5.0-alpha.10](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.9...v0.5.0-alpha.10) (2024-03-05)
+
+**Note:** Version bump only for package @cnpmjs/binding-darwin-x64
+
+
+
+
+
+# [0.5.0-alpha.9](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.8...v0.5.0-alpha.9) (2024-03-04)
+
+**Note:** Version bump only for package @cnpmjs/binding-darwin-x64
+
+
+
+
+
+# [0.5.0-alpha.8](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.7...v0.5.0-alpha.8) (2024-03-04)
+
+**Note:** Version bump only for package @cnpmjs/binding-darwin-x64
+
+
+
+
+
+# [0.5.0-alpha.7](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.7) (2024-02-28)
+
+
+### Features
+
+* update fuse backen rs path ([405b66e](https://github.com/cnpm/rapid/commit/405b66e3a0672a656f6d0af4e929b75a9f7dcf08))
+
+
+
+
+
+# [0.5.0-alpha.6](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.6) (2024-02-28)
+
+
+### Features
+
+* add new version ([6ad510c](https://github.com/cnpm/rapid/commit/6ad510c65ebd28122a3740a74c2b47e823362d9c))
+
+
+
+
+
+# [0.5.0-alpha.5](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.1...v0.5.0-alpha.5) (2024-02-27)
+
+
+### Features
+
+* add new version ([615e447](https://github.com/cnpm/rapid/commit/615e447c3eb652bf671ec9add48cad008e8de23a))
+
+
+
+
+
+# [0.5.0-alpha.4](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.3...v0.5.0-alpha.4) (2024-02-27)
+
+**Note:** Version bump only for package @cnpmjs/binding-darwin-x64
+
+
+
+
+
+# [0.5.0-alpha.3](https://github.com/cnpm/rapid/compare/v0.5.0-alpha.2...v0.5.0-alpha.3) (2024-02-27)
+
+**Note:** Version bump only for package @cnpmjs/binding-darwin-x64
+
+
+
+
+
 # [0.4.0](https://github.com/cnpm/rapid/compare/v0.3.0...v0.4.0) (2024-02-01)
 
 **Note:** Version bump only for package @cnpmjs/binding-darwin-x64

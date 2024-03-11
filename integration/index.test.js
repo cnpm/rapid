@@ -16,9 +16,13 @@ const {
 describe('test/index.test.js', () => {
   let fixture;
   afterEach(async () => {
-    await clean({
-      cwd: fixture,
-    });
+    try {
+      await clean({
+        cwd: fixture,
+      });
+    } catch (e) {
+      console.warn('clean error: ', e);
+    }
     if (process.platform === 'darwin') {
       await forceExitDaemon();
     } else {

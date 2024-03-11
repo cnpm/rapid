@@ -64,7 +64,7 @@ const delProject = async projectName => {
   }
 
   try {
-    await fs.rm(`${configPath}`);
+    await fs.rm(`${configPath}`, { force: true });
   } catch (error) {
     debug('rm json error: ', error);
     return false;
@@ -140,6 +140,22 @@ const killDeamon = async () => {
 };
 
 const registerDeamon = async () => {
+  try {
+    await execa.command('killall -9 rapid_deamon');
+
+    await execa.command(`umount -f ${nydusdMnt}`);
+
+    await execa.command('killall -9 nydusd');
+  } catch (error) {
+    debug('umount deamon error: ', error);
+  }
+
+  await fs.rm(deamonDir, { recursive: true, force: true });
+
+  await fs.mkdir(deamonDir, { recursive: true });
+
+  await fs.copyFile(path.join(__dirname, '../package.json'), path.join(deamonDir, 'package.json'));
+
   const nydusConfigPath = path.join(deamonDir, 'nydus_config.json');
 
   await fs.writeFile(nydusConfigPath, JSON.stringify({
@@ -191,16 +207,23 @@ root:
 };
 
 const initDeamon = async () => {
-  const isRunning = await checkDeamonAlive();
-  if (isRunning) {
-    console.info('[rapid] rapid daemon is running already.');
-    return;
-  }
-  await fs.mkdir(deamonDir, { recursive: true });
-
-  await fs.mkdir(nydusdMnt, { recursive: true });
-
   try {
+    const rapidVersion = require(path.join(__dirname, '../package.json')).deamonVersion;
+    const deamonVersion = require(path.join(deamonDir, './package.json')).deamonVersion;
+
+    if (rapidVersion !== deamonVersion) {
+      const err = '[rapid] rapid and deamon version not match';
+      console.info(err);
+      throw Error(err);
+    }
+    const isRunning = await checkDeamonAlive();
+    if (isRunning) {
+      console.info('[rapid] rapid daemon is running already.');
+      return;
+    }
+    await fs.mkdir(deamonDir, { recursive: true });
+
+    await fs.mkdir(nydusdMnt, { recursive: true });
     await fs.stat(destinationFilePath);
   } catch (e) {
     await registerDeamon();
