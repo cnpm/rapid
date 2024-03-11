@@ -122,10 +122,13 @@ impl NydusdApiMount {
             error!("Error executing umount: {:?}", e);
         }
 
+        create_dir_if_not_exists(self.node_modules_dir.clone())?;
+
         let str = format!(
             r#"mount -o port=52100,mountport=52100,vers=4,namedattr,rwsize=262144,nobrowse -t nfs fuse-t:/rafs-/{} {}"#,
             self.mountpoint, self.node_modules_dir
         );
+
         match start_command(&str) {
             Ok(output) => {
                 if output.status.success() {
@@ -185,6 +188,8 @@ impl NydusdApiMount {
         let body = String::from_utf8_lossy(&binding).to_string();
 
         if body.contains("object or filesystem already exists") {
+            #[cfg(target_os = "macos")]
+            self.link_node_modules()?;
             return Ok(());
         }
 

@@ -212,7 +212,7 @@ async function endNydusFs(cwd, pkg, force = true, daemon) {
     );
     if (os.type() === 'Darwin') {
       await wrapRetry({
-        cmd: () => execa.command(wrapSudo(`${umountCmd} ${nodeModulesDir}`)),
+        cmd: () => execa.command(`${umountCmd} ${nodeModulesDir}`),
         title: 'umount node_modules',
       });
       await fs.rm(nodeModulesDir, { recursive: true, force: true });
