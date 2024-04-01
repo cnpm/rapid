@@ -103,6 +103,28 @@ const addProject = async config => {
   }
 };
 
+const compareVersions = (version1, version2) => {
+  if (!version1 || !version2) {
+    return true;
+  }
+  const v1Parts = version1.split('.');
+  const v2Parts = version2.split('.');
+
+  const maxLength = Math.max(v1Parts.length, v2Parts.length);
+
+  for (let i = 0; i < maxLength; i++) {
+    const v1Part = parseInt(v1Parts[i] || 0);
+    const v2Part = parseInt(v2Parts[i] || 0);
+
+    if (v1Part > v2Part) {
+      return false;
+    } else if (v1Part < v2Part) {
+      return true;
+    }
+  }
+
+  return false; // version1 === version2
+};
 
 const runDeamon = async () => {
   const subprocess = execa(destinationFilePath, [], {
@@ -140,6 +162,22 @@ const killDeamon = async () => {
 };
 
 const registerDeamon = async () => {
+  try {
+    await execa.command('killall -9 rapid_deamon');
+
+    await execa.command(`umount -f ${nydusdMnt}`);
+
+    await execa.command('killall -9 nydusd');
+  } catch (error) {
+    debug('umount deamon error: ', error);
+  }
+
+  await fs.rm(deamonDir, { recursive: true, force: true });
+
+  await fs.mkdir(deamonDir, { recursive: true });
+
+  await fs.copyFile(path.join(__dirname, '../package.json'), path.join(deamonDir, 'package.json'));
+
   const nydusConfigPath = path.join(deamonDir, 'nydus_config.json');
 
   await fs.writeFile(nydusConfigPath, JSON.stringify({
@@ -191,16 +229,25 @@ root:
 };
 
 const initDeamon = async () => {
-  const isRunning = await checkDeamonAlive();
-  if (isRunning) {
-    console.info('[rapid] rapid daemon is running already.');
-    return;
-  }
-  await fs.mkdir(deamonDir, { recursive: true });
-
-  await fs.mkdir(nydusdMnt, { recursive: true });
-
   try {
+    const rapidVersion = require(path.join(__dirname, '../package.json')).deamonVersion;
+    const deamonVersion = require(path.join(deamonDir, './package.json')).deamonVersion;
+
+    if (compareVersions(deamonVersion, rapidVersion)) {
+      const err = '[rapid] rapid and deamon version not match';
+      console.info(err);
+      throw Error(err);
+    }
+
+    const isRunning = await checkDeamonAlive();
+    if (isRunning) {
+      console.info('[rapid] rapid daemon is running already.');
+      return;
+    }
+    await fs.mkdir(deamonDir, { recursive: true });
+
+    await fs.mkdir(nydusdMnt, { recursive: true });
+
     await fs.stat(destinationFilePath);
   } catch (e) {
     await registerDeamon();

@@ -15,7 +15,8 @@
   "files": [
     "index.node",
     "nydusd",
-    "nydusd-bootstrap"
+    "nydusd-bootstrap",
+    "rapid_deamon"
   ],
   "scripts": {
     "pack": "npm pack",

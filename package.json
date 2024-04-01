@@ -51,5 +51,6 @@
   },
   "engines": {
     "node": ">=14.19.1"
-  }
+  },
+  "rapidVersion": "0.0.1"
 }

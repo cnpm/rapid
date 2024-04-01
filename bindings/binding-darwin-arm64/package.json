@@ -16,7 +16,8 @@
     "index.node",
     "nydusd",
     "nydusd-bootstrap",
-    "unionfs"
+    "unionfs",
+    "rapid_deamon"
   ],
   "scripts": {
     "pack": "npm pack",
