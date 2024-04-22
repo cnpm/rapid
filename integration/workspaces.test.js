@@ -43,7 +43,7 @@ describe('test/workspaces.test.js', () => {
         force: true,
       });
       if (process.platform === 'darwin') {
-        await forceExitDaemon();
+        await forceExitDaemon(clean);
       } else {
         await exitDaemon();
       }

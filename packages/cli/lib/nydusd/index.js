@@ -34,7 +34,7 @@ exports.unregisterMode = function(mode) {
 exports.startNydusFs = async function(mode, cwd, pkg, daemon) {
   const impl = fsImplMap[mode];
   assert(impl, `can not find fs impl for mode: ${mode}`);
-  await impl.start(cwd, pkg, daemon);
+  return await impl.start(cwd, pkg, daemon);
 };
 
 exports.endNydusFs = async function(mode, cwd, pkg, force, daemon) {

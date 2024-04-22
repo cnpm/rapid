@@ -20,7 +20,7 @@ const {
 } = require('../util');
 const nydusdApi = require('./nydusd_api');
 const { Bar } = require('../logger');
-const { addProject, delProject, initDeamon } = require('../deamon');
+const { delProject, initDeamon } = require('../deamon');
 
 const getProjectName = cwd => {
   const folderName = path.basename(cwd);
@@ -51,9 +51,7 @@ async function startNydusFs(cwd, pkg, daemon) {
   console.log('[rapid] mount overlay, it may take a few seconds');
   await mountOverlay(cwd, pkg, deamonConfig);
 
-  if (daemon) {
-    await addProject(deamonConfig);
-  }
+  return deamonConfig;
 }
 
 async function generateBootstrapFile(cwd, pkg, config) {

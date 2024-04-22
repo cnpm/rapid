@@ -139,6 +139,7 @@ const runDeamon = async () => {
   while (count < 10) {
     const res = await checkDeamonAlive();
     if (res) {
+      console.info('[rapid] rapid daemon is running.');
       return true;
     }
     count++;
@@ -161,6 +162,20 @@ const killDeamon = async () => {
   }
 };
 
+const clearMetadata = async () => {
+  try {
+    await fs.stat(metadataDir);
+  } catch (error) {
+    debug('delProject error: ', error);
+    return false;
+  }
+  const files = await fs.readdir(metadataDir);
+  for (let i = 0; i < files.length; i++) {
+    const projectName = files[i].split('.')[0];
+    await delProject(projectName);
+  }
+};
+
 const registerDeamon = async () => {
   try {
     await execa.command('killall -9 rapid_deamon');
@@ -175,6 +190,8 @@ const registerDeamon = async () => {
   await fs.rm(deamonDir, { recursive: true, force: true });
 
   await fs.mkdir(deamonDir, { recursive: true });
+
+  await fs.mkdir(nydusdMnt, { recursive: true });
 
   await fs.copyFile(path.join(__dirname, '../package.json'), path.join(deamonDir, 'package.json'));
 
@@ -219,6 +236,8 @@ root:
 
   deamonAutoLauncher.enable();
 
+  console.info('[rapid] register rapid daemon end.');
+
   try {
     const isEnabled = deamonAutoLauncher.isEnabled();
     if (isEnabled) return;
@@ -230,8 +249,8 @@ root:
 
 const initDeamon = async () => {
   try {
-    const rapidVersion = require(path.join(__dirname, '../package.json')).deamonVersion;
-    const deamonVersion = require(path.join(deamonDir, './package.json')).deamonVersion;
+    const rapidVersion = require(path.join(__dirname, '../package.json')).rapidVersion;
+    const deamonVersion = require(path.join(deamonDir, './package.json')).rapidVersion;
 
     if (compareVersions(deamonVersion, rapidVersion)) {
       const err = '[rapid] rapid and deamon version not match';
@@ -249,9 +268,9 @@ const initDeamon = async () => {
     await fs.mkdir(nydusdMnt, { recursive: true });
 
     await fs.stat(destinationFilePath);
+    await runDeamon();
   } catch (e) {
     await registerDeamon();
-  } finally {
     await runDeamon();
   }
 };
@@ -260,3 +279,4 @@ exports.initDeamon = initDeamon;
 exports.delProject = delProject;
 exports.addProject = addProject;
 exports.killDeamon = killDeamon;
+exports.clearMetadata = clearMetadata;

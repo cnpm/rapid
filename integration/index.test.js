@@ -20,7 +20,7 @@ describe('test/index.test.js', () => {
       cwd: fixture,
     });
     if (process.platform === 'darwin') {
-      await forceExitDaemon();
+      await forceExitDaemon(clean);
     } else {
       await exitDaemon();
     }
