@@ -5,6 +5,17 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [0.4.1](https://github.com/cnpm/rapid/compare/v0.4.0...v0.4.1) (2024-04-22)
 
+
+### Bug Fixes
+
+* fix mutli deamon run ([a1c1f84](https://github.com/cnpm/rapid/commit/a1c1f84d8fcdb485facbf4b89875690e49e8739b))
+
+
+
+
+
+## [0.4.1](https://github.com/cnpm/rapid/compare/v0.4.0...v0.4.1) (2024-04-22)
+
 **Note:** Version bump only for package @cnpmjs/binding
 
 

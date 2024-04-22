@@ -9,6 +9,18 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Bug Fixes
 
 * add rapid_deamon to package ([aa05edb](https://github.com/cnpm/rapid/commit/aa05edbe4f9d532db42e1a3e802bba2468126627))
+* fix mutli deamon run ([a1c1f84](https://github.com/cnpm/rapid/commit/a1c1f84d8fcdb485facbf4b89875690e49e8739b))
+
+
+
+
+
+## [0.4.1](https://github.com/cnpm/rapid/compare/v0.4.0...v0.4.1) (2024-04-22)
+
+
+### Bug Fixes
+
+* add rapid_deamon to package ([aa05edb](https://github.com/cnpm/rapid/commit/aa05edbe4f9d532db42e1a3e802bba2468126627))
 * fix mutli deamon run ([429b083](https://github.com/cnpm/rapid/commit/429b08393b4fba00f65d47a7e633102fb3751612))
 
 
