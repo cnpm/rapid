@@ -14,6 +14,7 @@ const util = require('./util');
 const nydusd = require('./nydusd');
 const nydusdApi = require('./nydusd/nydusd_api');
 const { MirrorConfig } = require('binary-mirror-config');
+const { addProject } = require('./deamon');
 
 // 有依赖树（package-lock.json）走 npm / npminstall 极速安装
 exports.install = async options => {
@@ -63,7 +64,7 @@ exports.install = async options => {
   await downloadDependency.download(options);
 
   assert(Object.keys(packageLock).length, '[rapid] depsJSON invalid.');
-  await nydusd.startNydusFs(options.nydusMode, options.cwd, options.pkg, options.daemon);
+  const deamonConfig = await nydusd.startNydusFs(options.nydusMode, options.cwd, options.pkg, options.daemon);
 
 
   await util.ensureAccess(options.cwd, packageLock);
@@ -73,6 +74,11 @@ exports.install = async options => {
 
   console.time('[rapid] run lifecycle scripts');
   await options.scripts.runLifecycleScripts(mirrorConfig);
+
+  if (options.daemon) {
+    await addProject(deamonConfig);
+  }
+
   console.timeEnd('[rapid] run lifecycle scripts');
 };
 

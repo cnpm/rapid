@@ -15,8 +15,8 @@ const {
   socketPath,
   tarBucketsDir,
 } = require('../constants');
-const { wrapSudo, getWorkdir } = require('../util');
-const { killDeamon } = require('../deamon');
+const { wrapSudo, getWorkdir, listMountInfo } = require('../util');
+const { killDeamon, clearMetadata } = require('../deamon');
 
 // see all APIs at: https://github.com/dragonflyoss/image-service/blob/master/api/openapi/nydus-rs.yaml
 const endpoint = 'http://unix/api/v1';
@@ -140,6 +140,7 @@ async function checkDaemon() {
 // 优雅退出 nydusd daemon
 async function exitDaemon() {
   try {
+    await clearMetadata();
     await killDeamon();
     await urllib.request(`${daemonUrl}/exit`, {
       method: 'PUT',
@@ -155,8 +156,15 @@ async function exitDaemon() {
 
 // macos fuse-t 中暂未实现 fuse 的优雅退出只能 umount 之后
 // 强制杀掉进程
-async function forceExitDaemon() {
+async function forceExitDaemon(clean) {
   try {
+    await clearMetadata();
+    if (clean) {
+      const currentMountInfo = await listMountInfo();
+      for (const info of currentMountInfo) {
+        await clean({ cwd: info.mountPoint });
+      }
+    }
     await killDeamon();
     await execa.command(`umount -f ${nydusdMnt}`);
     await execa.command('killall -9 nydusd');

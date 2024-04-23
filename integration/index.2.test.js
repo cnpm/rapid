@@ -23,7 +23,7 @@ describe('test/index.v2.test.js', () => {
     await clean({ cwd });
     if (process.platform === 'darwin') {
       try {
-        await forceExitDaemon();
+        await forceExitDaemon(clean);
       } catch (err) {
         console.warn('force exit daemon error: %s', err.message);
       }

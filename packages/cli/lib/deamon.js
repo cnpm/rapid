@@ -5,6 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const { rsBindingPath } = require('@cnpmjs/binding');
 const execa = require('execa');
+const semver = require('semver');
 
 const {
   baseRapidModeDir,
@@ -103,7 +104,6 @@ const addProject = async config => {
   }
 };
 
-
 const runDeamon = async () => {
   const subprocess = execa(destinationFilePath, [], {
     detached: true,
@@ -117,6 +117,7 @@ const runDeamon = async () => {
   while (count < 10) {
     const res = await checkDeamonAlive();
     if (res) {
+      console.info('[rapid] rapid daemon is running.');
       return true;
     }
     count++;
@@ -139,7 +140,39 @@ const killDeamon = async () => {
   }
 };
 
+const clearMetadata = async () => {
+  try {
+    await fs.stat(metadataDir);
+  } catch (error) {
+    debug('delProject error: ', error);
+    return false;
+  }
+  const files = await fs.readdir(metadataDir);
+  for (let i = 0; i < files.length; i++) {
+    const projectName = files[i].split('.')[0];
+    await delProject(projectName);
+  }
+};
+
 const registerDeamon = async () => {
+  try {
+    await execa.command('killall -9 rapid_deamon');
+
+    await execa.command(`umount -f ${nydusdMnt}`);
+
+    await execa.command('killall -9 nydusd');
+  } catch (error) {
+    debug('umount deamon error: ', error);
+  }
+
+  await fs.rm(deamonDir, { recursive: true, force: true });
+
+  await fs.mkdir(deamonDir, { recursive: true });
+
+  await fs.mkdir(nydusdMnt, { recursive: true });
+
+  await fs.copyFile(path.join(__dirname, '../package.json'), path.join(deamonDir, 'package.json'));
+
   const nydusConfigPath = path.join(deamonDir, 'nydus_config.json');
 
   await fs.writeFile(nydusConfigPath, JSON.stringify({
@@ -181,6 +214,8 @@ root:
 
   deamonAutoLauncher.enable();
 
+  console.info('[rapid] register rapid daemon end.');
+
   try {
     const isEnabled = deamonAutoLauncher.isEnabled();
     if (isEnabled) return;
@@ -191,20 +226,29 @@ root:
 };
 
 const initDeamon = async () => {
-  const isRunning = await checkDeamonAlive();
-  if (isRunning) {
-    console.info('[rapid] rapid daemon is running already.');
-    return;
-  }
-  await fs.mkdir(deamonDir, { recursive: true });
-
-  await fs.mkdir(nydusdMnt, { recursive: true });
-
   try {
+    const rapidVersion = require(path.join(__dirname, '../package.json')).rapidVersion;
+    const deamonVersion = require(path.join(deamonDir, './package.json')).rapidVersion;
+
+    if (!deamonVersion || !semver.gte(deamonVersion, rapidVersion)) {
+      const err = '[rapid] rapid and deamon version not match';
+      console.info(err);
+      throw Error(err);
+    }
+
+    const isRunning = await checkDeamonAlive();
+    if (isRunning) {
+      console.info('[rapid] rapid daemon is running already.');
+      return;
+    }
+    await fs.mkdir(deamonDir, { recursive: true });
+
+    await fs.mkdir(nydusdMnt, { recursive: true });
+
     await fs.stat(destinationFilePath);
+    await runDeamon();
   } catch (e) {
     await registerDeamon();
-  } finally {
     await runDeamon();
   }
 };
@@ -213,3 +257,4 @@ exports.initDeamon = initDeamon;
 exports.delProject = delProject;
 exports.addProject = addProject;
 exports.killDeamon = killDeamon;
+exports.clearMetadata = clearMetadata;

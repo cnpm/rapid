@@ -1,6 +1,6 @@
 {
   "name": "@cnpmjs/binding-darwin-x64",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "downloader darwin x64 binding",
   "main": "index.node",
   "homepage": "https://github.com/cnpm/rapid",
@@ -16,7 +16,8 @@
     "index.node",
     "nydusd",
     "nydusd-bootstrap",
-    "unionfs"
+    "unionfs",
+    "rapid_deamon"
   ],
   "scripts": {
     "pack": "npm pack",
