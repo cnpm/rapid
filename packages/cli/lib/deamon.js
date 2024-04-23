@@ -5,6 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const { rsBindingPath } = require('@cnpmjs/binding');
 const execa = require('execa');
+const semver = require('semver');
 
 const {
   baseRapidModeDir,
@@ -101,29 +102,6 @@ const addProject = async config => {
     debug('addProject error: ', error);
     return false;
   }
-};
-
-const compareVersions = (version1, version2) => {
-  if (!version1 || !version2) {
-    return true;
-  }
-  const v1Parts = version1.split('.');
-  const v2Parts = version2.split('.');
-
-  const maxLength = Math.max(v1Parts.length, v2Parts.length);
-
-  for (let i = 0; i < maxLength; i++) {
-    const v1Part = parseInt(v1Parts[i] || 0);
-    const v2Part = parseInt(v2Parts[i] || 0);
-
-    if (v1Part > v2Part) {
-      return false;
-    } else if (v1Part < v2Part) {
-      return true;
-    }
-  }
-
-  return false; // version1 === version2
 };
 
 const runDeamon = async () => {
@@ -252,7 +230,7 @@ const initDeamon = async () => {
     const rapidVersion = require(path.join(__dirname, '../package.json')).rapidVersion;
     const deamonVersion = require(path.join(deamonDir, './package.json')).rapidVersion;
 
-    if (compareVersions(deamonVersion, rapidVersion)) {
+    if (!deamonVersion || !semver.gte(deamonVersion, rapidVersion)) {
       const err = '[rapid] rapid and deamon version not match';
       console.info(err);
       throw Error(err);
