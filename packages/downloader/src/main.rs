@@ -22,7 +22,7 @@ use tokio::task::JoinHandle;
 async fn black_hole_download() {
     let lock = get_chair_lock();
     let pkg_requests = lock.list_all_packages();
-    let pool = HTTPPool::new(50).unwrap();
+    let pool = HTTPPool::new(50, None).unwrap();
     let bucket = 50;
     let (sx, rx_list) = subscriber(bucket);
     let handlers: Vec<JoinHandle<()>> = rx_list
@@ -61,7 +61,7 @@ async fn file_download() {
         }
     });
 
-    let http_pool = HTTPPool::new(bucket_size * 2).unwrap();
+    let http_pool = HTTPPool::new(bucket_size * 2, None).unwrap();
     let store = NpmStore::new(
         bucket_size,
         download_dir.as_path(),
