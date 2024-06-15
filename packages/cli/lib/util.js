@@ -460,6 +460,7 @@ exports.ensureAccess = async function ensureAccess(cwd, packageLock) {
     fallback: async () => {
       console.warn('[rapid] ensure node_modules access failed');
     },
+    timeout: 3000 * 10,
   });
 };
 
