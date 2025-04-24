@@ -466,7 +466,7 @@ exports.ensureAccess = async function ensureAccess(cwd, packageLock) {
 exports.getAllPkgPaths = async function getAllPkgPaths(cwd, pkg, singleMount = false) {
   if (singleMount) {
     // 单挂载模式下只返回根包路径
-    return [''];
+    return [ '' ];
   }
   const workspaces = await exports.getWorkspaces(cwd, pkg);
   const allPkgs = Object.values(workspaces);

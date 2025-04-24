@@ -147,7 +147,7 @@ class TnpmFsBuilder {
     this.fsMeta.addEntry(blobId, Util.generateSymbolLink(name, linkPath, this.uid, this.gid, true));
   }
 
-  createPackageMeta(name, version, pkgPath, currentPkgPath, projectPkg) {
+  createPackageMeta(name, version, pkgPath) {
     pkgPath = pkgPath.substring(PREFIX_LENGTH);
     const pkgId = Util.generatePackageId(name, version);
     const displayName = Util.getDisplayName({ name, version }, this.mode);
