@@ -20,6 +20,7 @@ class TnpmFsBuilder {
     this.gid = options.gid;
     this.productionMode = options.productionMode;
     this.mode = NpmFsMode.NPMINSTALL;
+    this.singleMount = options.singleMount;
     // fork from: https://github.com/cnpm/npminstall/blob/master/lib/install.js#L157
     this.latestVersions = new Map();
     this.projectVersions = new Map();

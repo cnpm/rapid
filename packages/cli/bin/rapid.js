@@ -42,6 +42,11 @@ const argv = yargs
           describe: 'Whether to generate package-lock.json file',
           type: 'boolean',
           default: true,
+        })
+        .option('single-mount', {
+          describe: 'Use single mount mode for monorepo projects',
+          type: 'boolean',
+          default: false,
         });
     },
     handler: async argv => {
@@ -50,6 +55,7 @@ const argv = yargs
       const productionMode = argv.production || argv.omit.includes('dev') || process.env.NODE_ENV === 'production';
       const daemon = argv.daemon;
       const noPackageLock = !argv['package-lock'];
+      const singleMount = argv['single-mount'];
 
       const cwd = process.cwd();
       const pkgRes = await util.readPkgJSON();
@@ -71,6 +77,7 @@ const argv = yargs
         productionMode,
         daemon,
         noPackageLock,
+        singleMount,
       });
 
       Alert.success('🚀 Success', [

@@ -13,6 +13,7 @@ class NpmFs {
    * @param {string} [options.mode] -
    * @param {number} [options.uid] -
    * @param {number} [options.gid] -
+   * @param {boolean} [options.singleMount] -
    */
   constructor(blobManager, options) {
     this.blobManager = blobManager;
@@ -21,11 +22,16 @@ class NpmFs {
       uid: process.getuid(),
       gid: process.getgid(),
       mode: NpmFsMode.NPM,
+      singleMount: false,
     }, options);
   }
 
   get mode() {
     return this.options.mode;
+  }
+
+  get singleMount() {
+    return this.options.singleMount;
   }
 
   async getFsMeta(pkgLockJson, pkgPath = '') {

@@ -21,6 +21,7 @@ class NpmFsMetaBuilder {
     this.cwd = options.cwd;
     this.entryListener = options.entryListener;
     this.productionMode = options.productionMode;
+    this.singleMount = options.singleMount;
     // 项目直接依赖的 bin
     this.pkgBinSet = new Set();
   }
@@ -36,10 +37,13 @@ class NpmFsMetaBuilder {
       const name = Util.getAliasPackageNameFromPackagePath(pkgPath, packages);
       const version = pkgItem.version;
       // node_modules 目录需要处理所有的提升过的依赖
-      // 子目录需要处理自己的依赖
-      if ((packageLock.isRootPkg(currentPkgPath) && pkgPath.startsWith('node_modules/')) || (!packageLock.isRootPkg(currentPkgPath) && pkgPath.startsWith(currentPkgPath))) {
+      // singleMount 模式下，需要一起挂载
+      if (this.singleMount) {
+        this.createPackageMeta(name, version, pkgPath, currentPkgPath, packages['']);
+      } else if ((packageLock.isRootPkg(currentPkgPath) && pkgPath.startsWith('node_modules/')) || (!packageLock.isRootPkg(currentPkgPath) && pkgPath.startsWith(currentPkgPath))) {
         this.createPackageMeta(name, version, pkgPath, currentPkgPath, packages['']);
       }
+
     }
 
     const blobId = this.fsMeta.blobIds[0] || 'bucket_0.stgz';
@@ -61,7 +65,9 @@ class NpmFsMetaBuilder {
   }
 
   createPackageMeta(name, version, packagePath, currentPkgPath, pkgJSON) {
-    packagePath = path.relative(currentPkgPath, packagePath).substring(PREFIX_LENGTH);
+    if (!this.singleMount) {
+      packagePath = path.relative(currentPkgPath, packagePath).substring(PREFIX_LENGTH);
+    }
     const pkgId = Util.generatePackageId(name, version);
 
     const pkg = this.blobManager.getPackage(name, version);

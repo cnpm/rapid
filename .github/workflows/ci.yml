@@ -20,7 +20,7 @@ jobs:
       matrix:
         node-version: [ 16.x, 18.x, 20.x ]
         platform:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             shell: bash
 
     runs-on: ${{ matrix.platform.os }}
@@ -86,7 +86,7 @@ jobs:
       matrix:
         node-version: [ 16.x, 18.x, 20.x ]
         platform:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             shell: bash
         python-version: [ 3.9 ]
 
@@ -153,7 +153,7 @@ jobs:
         platform:
           - shell: bash
 
-    runs-on: macos-11
+    runs-on: macos-latest
 
     defaults:
       run:
@@ -181,6 +181,9 @@ jobs:
       - name: Change directory ownership
         run: chown -R $(id -un):$(id -gn) .
 
+      - name: Install nginx
+        run: brew install nginx
+
       - name: Rust Cache
         uses: actions/cache@v3
         with:
@@ -197,7 +200,7 @@ jobs:
 
       - name: Init CI
         run: |
-          CARGO_BUILD_TARGET=x86_64-apple-darwin BUILD_OS=macos BUILD_ARCH=amd64 npm run init:ci
+          npm run init:ci
 
       - name: Run CI
         run: INSTALL_FUSE_T=true npm run test:integration
