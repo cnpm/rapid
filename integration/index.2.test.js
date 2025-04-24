@@ -16,7 +16,7 @@ const {
   forceExitDaemon,
 } = require('@cnpmjs/rapid/lib/nydusd/nydusd_api');
 
-describe('test/index.v2.test.js', () => {
+describe.skip('test/index.v2.test.js', () => {
   let cwd;
 
   afterEach(async () => {

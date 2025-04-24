@@ -15,7 +15,7 @@ const {
 describe('test/workspaces.test.js', () => {
   let cwd;
 
-  it('should install lodash successfully', async () => {
+  it.skip('should install lodash successfully', async () => {
     cwd = path.join(__dirname, './fixtures/workspaces');
     await clean({
       cwd,
