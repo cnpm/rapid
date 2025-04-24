@@ -97,16 +97,25 @@ async function download(options) {
 
   console.log('[rapid] generate fs meta');
 
-
   const npmFs = new NpmFs(blobManager, options);
-  const allPkgs = await util.getAllPkgPaths(options.cwd, options.pkg);
+  const allPkgs = await util.getAllPkgPaths(options.cwd, options.pkg, options.singleMount);
 
-  await Promise.all(allPkgs.map(async pkgPath => {
-    const { tarIndex } = await util.getWorkdir(options.cwd, pkgPath);
-    const fsMeta = await npmFs.getFsMeta(depsTree, pkgPath);
+  if (options.singleMount) {
+    // 单挂载模式下，为根包生成一个包含所有依赖的 fsMeta
+    const { tarIndex } = await util.getWorkdir(options.cwd, '');
+    const fsMeta = await npmFs.getFsMeta(depsTree, '');
     await fs.mkdir(path.dirname(tarIndex), { recursive: true });
+    console.log('tarIndex %s', tarIndex);
     await fs.writeFile(tarIndex, JSON.stringify(fsMeta), 'utf8');
-  }));
+  } else {
+    // 多挂载模式，为每个包生成独立的 fsMeta
+    await Promise.all(allPkgs.map(async pkgPath => {
+      const { tarIndex } = await util.getWorkdir(options.cwd, pkgPath);
+      const fsMeta = await npmFs.getFsMeta(depsTree, pkgPath);
+      await fs.mkdir(path.dirname(tarIndex), { recursive: true });
+      await fs.writeFile(tarIndex, JSON.stringify(fsMeta), 'utf8');
+    }));
+  }
 
   // FIXME atomic write
   await fs.writeFile(npmCacheConfigPath, JSON.stringify(tocMap), 'utf8');

@@ -20,6 +20,7 @@ class TnpmFsBuilder {
     this.gid = options.gid;
     this.productionMode = options.productionMode;
     this.mode = NpmFsMode.NPMINSTALL;
+    this.singleMount = options.singleMount;
     // fork from: https://github.com/cnpm/npminstall/blob/master/lib/install.js#L157
     this.latestVersions = new Map();
     this.projectVersions = new Map();
@@ -146,7 +147,7 @@ class TnpmFsBuilder {
     this.fsMeta.addEntry(blobId, Util.generateSymbolLink(name, linkPath, this.uid, this.gid, true));
   }
 
-  createPackageMeta(name, version, pkgPath) {
+  createPackageMeta(name, version, pkgPath, currentPkgPath, projectPkg) {
     pkgPath = pkgPath.substring(PREFIX_LENGTH);
     const pkgId = Util.generatePackageId(name, version);
     const displayName = Util.getDisplayName({ name, version }, this.mode);

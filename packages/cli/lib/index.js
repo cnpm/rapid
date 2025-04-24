@@ -28,7 +28,7 @@ exports.install = async options => {
 
   const currentMountInfo = await util.listMountInfo();
 
-  const allPkgs = await util.getAllPkgPaths(options.cwd, options.pkg);
+  const allPkgs = await util.getAllPkgPaths(options.cwd, options.pkg, options.singleMount);
 
   for (const pkgPath of allPkgs) {
     const { baseDir, tarIndex, nodeModulesDir } = await util.getWorkdir(options.cwd, pkgPath);
