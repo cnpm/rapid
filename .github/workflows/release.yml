@@ -16,7 +16,7 @@ jobs:
       matrix:
         arch: [amd64, arm64]
 
-    runs-on: ubuntu-20.04
+    runs-on: Ubuntu 22.04
 
     defaults:
       run:
@@ -85,7 +85,7 @@ jobs:
           name: linux-binding-release
           path: |
             ${{ env.tarball }}
-            ${{ env.tarball_shasum }}        
+            ${{ env.tarball_shasum }}
 
 
   macos-binding-release:
@@ -165,7 +165,7 @@ jobs:
           name: macos-binding-release
           path: |
             ${{ env.tarball }}
-            ${{ env.tarball_shasum }}        
+            ${{ env.tarball_shasum }}
 
   binding-pkg-release:
     strategy:
@@ -173,7 +173,7 @@ jobs:
       matrix:
         arch: [amd64]
 
-    runs-on: ubuntu-20.04
+    runs-on: Ubuntu 22.04
 
     defaults:
       run:
@@ -225,7 +225,7 @@ jobs:
           name: binding-pkg-release
           path: |
             ${{ env.tarball }}
-            ${{ env.tarball_shasum }}        
+            ${{ env.tarball_shasum }}
 
   lib-release:
     strategy:
@@ -233,7 +233,7 @@ jobs:
       matrix:
         arch: [amd64]
 
-    runs-on: ubuntu-20.04
+    runs-on: Ubuntu 22.04
 
     defaults:
       run:
@@ -285,7 +285,7 @@ jobs:
           name: lib-release
           path: |
             ${{ env.tarball }}
-            ${{ env.tarball_shasum }}        
+            ${{ env.tarball_shasum }}
 
 
   release:
@@ -294,7 +294,7 @@ jobs:
       matrix:
         arch: [amd64]
 
-    runs-on: ubuntu-20.04
+    runs-on: Ubuntu 22.04
     needs: [linux-binding-release, macos-binding-release, binding-pkg-release, lib-release]
 
     defaults:
