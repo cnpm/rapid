@@ -95,7 +95,7 @@ jobs:
         arch: [amd64, arm64]
 
 
-    runs-on: macos-11
+    runs-on: macos-latest
 
     defaults:
       run:

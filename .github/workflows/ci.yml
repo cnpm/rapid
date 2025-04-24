@@ -153,7 +153,7 @@ jobs:
         platform:
           - shell: bash
 
-    runs-on: macos-11
+    runs-on: macos-latest
 
     defaults:
       run:
