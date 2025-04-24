@@ -80,7 +80,7 @@ jobs:
           sha256sum $tarball > $shasum
           echo "tarball_shasum=${shasum}" >> $GITHUB_ENV
       - name: store-artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-binding-release
           path: |
@@ -160,7 +160,7 @@ jobs:
           echo "tarball_shasum=${shasum}" >> $GITHUB_ENV
 
       - name: store-artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-binding-release
           path: |
@@ -220,7 +220,7 @@ jobs:
           echo "tarball_shasum=${shasum}" >> $GITHUB_ENV
 
       - name: store-artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: binding-pkg-release
           path: |
@@ -280,7 +280,7 @@ jobs:
           echo "tarball_shasum=${shasum}" >> $GITHUB_ENV
 
       - name: store-artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: lib-release
           path: |
@@ -303,22 +303,22 @@ jobs:
 
     steps:
       - name: download packages artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: lib-release
           path: packages
       - name: download binding pkg packages artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: binding-pkg-release
           path: packages
       - name: download macos binding artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: macos-binding-release
           path: packages
       - name: download linux binding artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: linux-binding-release
           path: packages
