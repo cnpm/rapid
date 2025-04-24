@@ -82,7 +82,7 @@ jobs:
       - name: store-artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: linux-binding-release
+          name: linux-binding-release-${{ matrix.arch }}
           path: |
             ${{ env.tarball }}
             ${{ env.tarball_shasum }}
@@ -162,7 +162,7 @@ jobs:
       - name: store-artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: macos-binding-release
+          name: macos-binding-release-${{ matrix.arch }}
           path: |
             ${{ env.tarball }}
             ${{ env.tarball_shasum }}
@@ -315,12 +315,12 @@ jobs:
       - name: download macos binding artifacts
         uses: actions/download-artifact@v4
         with:
-          name: macos-binding-release
+          name: macos-binding-release-${{ matrix.arch }}
           path: packages
       - name: download linux binding artifacts
         uses: actions/download-artifact@v4
         with:
-          name: linux-binding-release
+          name: linux-binding-release-${{ matrix.arch }}
           path: packages
       - name: prepare release env
         run: |
