@@ -181,6 +181,9 @@ jobs:
       - name: Change directory ownership
         run: chown -R $(id -un):$(id -gn) .
 
+      - name: Install nginx
+        run: brew install nginx
+
       - name: Rust Cache
         uses: actions/cache@v3
         with:
