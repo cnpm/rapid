@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.2](https://github.com/cnpm/rapid/compare/v0.4.1...v0.4.2) (2025-04-24)
+
+
+### Features
+
+* single mount ([#77](https://github.com/cnpm/rapid/issues/77)) ([0b55784](https://github.com/cnpm/rapid/commit/0b55784a36603e46f4bcaf517a42fee2457f6d3a))
+
+
+
+
+
 ## [0.4.1](https://github.com/cnpm/rapid/compare/v0.4.0...v0.4.1) (2024-04-22)
 
 
