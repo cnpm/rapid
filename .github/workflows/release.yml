@@ -4,13 +4,7 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+*"
-      - "test-v*"
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to test (e.g. 0.0.0)'
-        required: true
-        default: '0.0.0'
+      # - "test-v*"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -317,19 +311,29 @@ jobs:
       - name: download macos binding artifacts
         uses: actions/download-artifact@v4
         with:
-          name: macos-binding-release-${{ matrix.arch }}
+          name: macos-binding-release-amd64
+          path: packages
+      - name: download macos binding artifacts arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-binding-release-arm64
           path: packages
       - name: download linux binding artifacts
         uses: actions/download-artifact@v4
         with:
-          name: linux-binding-release-${{ matrix.arch }}
+          name: linux-binding-release-amd64
+          path: packages
+      - name: download linux binding artifacts arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-binding-release-arm64
           path: packages
       - name: prepare release env
         run: |
           echo "tarballs<<EOF" >> $GITHUB_ENV
           for I in $(ls packages);do echo "packages/${I}" >> $GITHUB_ENV; done
           echo "EOF" >> $GITHUB_ENV
-          tag=${{ github.event.inputs.version || github.ref_name }}
+          tag=$(echo $GITHUB_REF | cut -d/ -f3-)
           echo "tag=${tag}" >> $GITHUB_ENV
           cat $GITHUB_ENV
       - name: push release
@@ -354,6 +358,6 @@ jobs:
             if [[ "$I" == *.tgz ]]; then
               rm -rf package && mkdir -p package
               tar -xzf "packages/$I" --strip-components 1 -C package
-              npm publish --ignore-scripts file://$(pwd)/package --dry-run
+              npm publish --ignore-scripts file://$(pwd)/package
             fi
           done
