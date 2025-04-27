@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+*"
-      # - "test-v*"
+      - "test-v*"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -17,13 +17,33 @@ jobs:
       matrix:
         arch: [amd64, arm64]
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:20.04
 
     defaults:
       run:
         shell: bash
 
     steps:
+      - name: Install Linux Dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt-get update && apt-get install -y \
+            build-essential \
+            libc6-dev \
+            libglib2.0-0 \
+            curl \
+            tzdata \
+            pkg-config \
+            libssl-dev \
+            gnupg2 \
+            software-properties-common \
+            git \
+            libpango1.0-dev \
+            gcc-aarch64-linux-gnu
+
       - uses: actions/checkout@v2
 
       - name: Set up Python
