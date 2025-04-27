@@ -67,7 +67,7 @@ jobs:
         run: chown -R $(id -un):$(id -gn) .
 
       - name: Install
-        run: sudo apt-get update && sudo apt-get install -y sudo libssl-dev libpango1.0-dev gcc-aarch64-linux-gnu
+        run: apt-get update && apt-get install -y sudo libssl-dev libpango1.0-dev gcc-aarch64-linux-gnu
 
       - name: Rust Cache
         uses: actions/cache@v3
