@@ -17,13 +17,41 @@ jobs:
       matrix:
         arch: [amd64, arm64]
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:20.04
+      options: --entrypoint /bin/bash
 
     defaults:
       run:
         shell: bash
 
     steps:
+      - name: Install Linux Dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt-get update && apt-get install -y \
+            build-essential \
+            libc6-dev \
+            libglib2.0-0 \
+            curl \
+            tzdata \
+            pkg-config \
+            libssl-dev \
+            gnupg2 \
+            software-properties-common \
+            git \
+            libpango1.0-dev \
+            gcc-aarch64-linux-gnu
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
       - uses: actions/checkout@v2
 
       - name: Set up Python
@@ -46,7 +74,7 @@ jobs:
         run: chown -R $(id -un):$(id -gn) .
 
       - name: Install
-        run: sudo apt-get update && sudo apt-get install -y sudo libssl-dev libpango1.0-dev gcc-aarch64-linux-gnu
+        run: apt-get update && apt-get install -y sudo libssl-dev libpango1.0-dev gcc-aarch64-linux-gnu
 
       - name: Rust Cache
         uses: actions/cache@v3
@@ -174,7 +202,7 @@ jobs:
       matrix:
         arch: [amd64]
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     defaults:
       run:
@@ -234,7 +262,7 @@ jobs:
       matrix:
         arch: [amd64]
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     defaults:
       run:
@@ -290,7 +318,7 @@ jobs:
 
 
   release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [linux-binding-release, macos-binding-release, binding-pkg-release, lib-release]
 
     defaults:
