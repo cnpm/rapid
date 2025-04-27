@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to test (e.g. 0.0.0)'
+        required: true
+        default: '0.0.0'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -289,11 +295,6 @@ jobs:
 
 
   release:
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64]
-
     runs-on: ubuntu-22.04
     needs: [linux-binding-release, macos-binding-release, binding-pkg-release, lib-release]
 
@@ -327,7 +328,7 @@ jobs:
           echo "tarballs<<EOF" >> $GITHUB_ENV
           for I in $(ls packages);do echo "packages/${I}" >> $GITHUB_ENV; done
           echo "EOF" >> $GITHUB_ENV
-          tag=$(echo $GITHUB_REF | cut -d/ -f3-)
+          tag=${{ github.event.inputs.version || github.ref_name }}
           echo "tag=${tag}" >> $GITHUB_ENV
           cat $GITHUB_ENV
       - name: push release
@@ -352,6 +353,6 @@ jobs:
             if [[ "$I" == *.tgz ]]; then
               rm -rf package && mkdir -p package
               tar -xzf "packages/$I" --strip-components 1 -C package
-              npm publish --ignore-scripts file://$(pwd)/package
+              npm publish --ignore-scripts file://$(pwd)/package --dry-run
             fi
           done
