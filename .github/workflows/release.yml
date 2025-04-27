@@ -45,6 +45,14 @@ jobs:
             libpango1.0-dev \
             gcc-aarch64-linux-gnu
 
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: $([[ ${{matrix.arch}} == 'amd64' ]] && echo "x86_64-unknown-linux-gnu" || echo "aarch64-unknown-linux-gnu")
+          override: true
+
       - uses: actions/checkout@v2
 
       - name: Set up Python
