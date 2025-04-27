@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.6](https://github.com/cnpm/rapid/compare/v0.4.3...v0.4.6) (2025-04-27)
+
+
+### Bug Fixes
+
+* artifacts upload ([#80](https://github.com/cnpm/rapid/issues/80)) ([5e45b6d](https://github.com/cnpm/rapid/commit/5e45b6d49f3de8f2943b9fa0cd4ec434ca08ab20))
+
+
+
+
+
 ## [0.4.5](https://github.com/cnpm/rapid/compare/v0.4.3...v0.4.5) (2025-04-24)
 
 
