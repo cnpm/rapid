@@ -50,7 +50,6 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-          target: $([[ ${{matrix.arch}} == 'amd64' ]] && echo "x86_64-unknown-linux-gnu" || echo "aarch64-unknown-linux-gnu")
           override: true
 
       - uses: actions/checkout@v2
