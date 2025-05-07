@@ -22,7 +22,7 @@ pub struct HTTPReqwester {
 }
 
 impl HTTPReqwester {
-    pub fn new() -> TnpmResult<Self> {
+    pub fn new(registries: Option<Vec<String>>) -> TnpmResult<Self> {
         let client_builder = reqwest::ClientBuilder::new()
             .tcp_keepalive(Duration::from_secs(60))
             .connection_verbose(true)
@@ -30,7 +30,8 @@ impl HTTPReqwester {
             .http1_only()
             .use_rustls_tls();
 
-        let client_builder = HTTPReqwester::prepare_dns_resolve(client_builder)?;
+        let domains = registries.unwrap_or(vec!["registry.npmmirror.com".to_owned()]);
+        let client_builder = HTTPReqwester::prepare_dns_resolve(client_builder, domains)?;
         let client = client_builder.build()?;
         Ok(HTTPReqwester {
             client: Arc::new(client),
@@ -43,9 +44,9 @@ impl HTTPReqwester {
 
     pub(crate) fn prepare_dns_resolve(
         mut client_builder: reqwest::ClientBuilder,
+        pre_resolve_list: Vec<String>,
     ) -> Result<reqwest::ClientBuilder, IoError> {
         // 在大量连接建立时，容易发生 DNS 超时
-        let pre_resolve_list = vec!["registry.npmmirror.com"];
         let mut client_builder = client_builder;
         for address in pre_resolve_list {
             let address_with_port = format!("{}:443", address);
@@ -56,7 +57,7 @@ impl HTTPReqwester {
                     format!("not found address for {}", address),
                 )
             })?;
-            client_builder = client_builder.resolve(address, socket_addr);
+            client_builder = client_builder.resolve(&address, socket_addr);
         }
         Ok(client_builder)
     }
@@ -100,7 +101,7 @@ mod test {
 
     #[tokio::test]
     async fn test_download() {
-        let req = HTTPReqwester::new().unwrap();
+        let req = HTTPReqwester::new(None).unwrap();
         let stream = req
             .request(
                 PackageRequestBuilder::new()

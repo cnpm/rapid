@@ -247,7 +247,7 @@ mod test {
         bucket_path: &str,
         entry_listener: Option<EntryListener>,
     ) -> Downloader {
-        let http_pool = HTTPPool::new(1).expect("create http pool failed");
+        let http_pool = HTTPPool::new(1, None).expect("create http pool failed");
         let store = NpmStore::new(
             1,
             Path::new(bucket_path),
